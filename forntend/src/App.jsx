@@ -9,28 +9,11 @@
 // ─────────────────────────────────────────────────────────
 
 // import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
+import { AuthProvider,useAuth } from "./Contexts/AuthContext.jsx";
 import AuthPage from "./Pages/AuthPage.jsx";
-import { useAuth,AuthProvider } from "./Contexts/AuthContext";
-
-// ── Placeholder Dashboard ──────────────────────────────────
-// החלף בקומפוננטה האמיתית של האפליקציה
-const Dashboard = () => {
-  const { user, logout } = useAuth();
-  return (
-    <div className="min-h-screen flex items-center justify-center" dir="rtl">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-800">שלום, {user.name} 👋</h1>
-        <p className="text-gray-500 mt-1">ברוך הבא לקבלות חכמות</p>
-        <button
-          onClick={logout}
-          className="mt-4 px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm hover:bg-red-200 transition"
-        >
-          התנתק
-        </button>
-      </div>
-    </div>
-  );
-};
+import Dashboard from "./Pages/Dashboard.jsx";
+// import AuthPage from "./pages/AuthPage.jsx";
+// import Dashboard from "./pages/Dashboard.jsx";
 
 // ── Auth Guard ─────────────────────────────────────────────
 const AppContent = () => {

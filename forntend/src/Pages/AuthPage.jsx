@@ -5,8 +5,8 @@
 // ─────────────────────────────────────────────────────────
 
 import { useState } from "react";
-import LoginForm from "../Comps/LoginForm.jsx";
-import RegisterForm from "../Comps/RegisterForm.jsx";
+import LoginForm from "../Comps/Auth/LoginForm.jsx";
+import RegisterForm from "../Comps/Auth/RegisterForm.jsx";
 
 const AuthPage = () => {
   // true = טופס התחברות, false = טופס הרשמה
@@ -24,7 +24,7 @@ const AuthPage = () => {
                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-gray-800">קבלות חכמות</h1>
+          <h1 className="text-xl font-bold text-gray-800">קניות חכמות</h1>
           <p className="text-sm text-gray-400 mt-0.5">ניהול קניות בקלות</p>
         </div>
 
