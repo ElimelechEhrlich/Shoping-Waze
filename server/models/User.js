@@ -1,18 +1,27 @@
 // models/User.js
 // ─────────────────────────────────────────────────────────
 // Model של המשתמש — כל הפעולות על collection "users".
-// במקום Mongoose Schema, כאן פונקציות טהורות שעובדות
-// ישירות מול MongoDB native driver.
+// עובד ישירות מול MongoDB native driver (ללא Mongoose).
 //
-// מבנה מסמך משתמש ב-DB:
+// מבנה מסמך משתמש מלא ב-DB:
 // {
-//   _id        : ObjectId (נוצר אוטומטית)
-//   name       : string
-//   email      : string (unique, lowercase)
-//   password   : string (bcrypt hash — לעולם לא חוזר ל-client)
-//   cart       : [] (סל קניות ריק — יתמלא בהמשך הפרויקט)
-//   createdAt  : Date
-//   updatedAt  : Date
+//   _id           : ObjectId (נוצר אוטומטית)
+//   name          : string
+//   email         : string (unique, lowercase)
+//   password      : string (bcrypt hash — לעולם לא חוזר ל-client)
+//   cart          : CartItem[]  (סל קניות)
+//   selectedStore : string | null  (סופרמרקט שנבחר לסל)
+//   createdAt     : Date
+//   updatedAt     : Date
+// }
+//
+// מבנה CartItem:
+// {
+//   name      : string   — שם המוצר
+//   qty       : number   — כמות
+//   price     : number   — מחיר (0 = אין מחיר)
+//   category  : string   — קטגוריה (dairy, dry, bakery וכו')
+//   addedAt   : Date
 // }
 // ─────────────────────────────────────────────────────────
 
@@ -47,11 +56,12 @@ export const createUser = async ({ name, email, password }) => {
 
   const newUser = {
     name,
-    email: email.toLowerCase().trim(),
-    password: hashedPassword, // נשמר ב-DB בלבד
-    cart: [],                 // סל קניות ריק לכל משתמש חדש
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    email:         email.toLowerCase().trim(),
+    password:      hashedPassword, // נשמר ב-DB בלבד, לא חוזר ל-client
+    cart:          [],             // סל קניות ריק לכל משתמש חדש
+    selectedStore: null,           // סופרמרקט — יוגדר בעת הקנייה
+    createdAt:     new Date(),
+    updatedAt:     new Date(),
   };
 
   const result = await getCollection().insertOne(newUser);
@@ -95,8 +105,8 @@ export const findById = async (id) => {
 /**
  * משווה סיסמה גולמית מול ה-hash שב-DB.
  *
- * @param {string} plainPassword - הסיסמה שהמשתמש הכניס
- * @param {string} hashedPassword - ה-hash מה-DB
+ * @param {string} plainPassword   - הסיסמה שהמשתמש הכניס
+ * @param {string} hashedPassword  - ה-hash מה-DB
  * @returns {Promise<boolean>}
  */
 export const comparePassword = async (plainPassword, hashedPassword) => {

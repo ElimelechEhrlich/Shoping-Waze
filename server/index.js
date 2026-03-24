@@ -1,34 +1,26 @@
 // index.js
-// ─────────────────────────────────────────────────────────
-// נקודת כניסה לשרת.
-// אחראי על: טעינת env, חיבור ל-DB, הרשמת middleware ו-routes,
-// והרצת השרת.
-// ─────────────────────────────────────────────────────────
-
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { connectDB } from "./db/client.js";
 import { createIndexes } from "./models/User.js";
-import authRoutes from "./routes/auth.js";
+import authRoutes     from "./routes/auth.js";
+import productsRoutes from "./routes/products.js";
+import cartRoutes     from "./routes/cart.js";
 
 const app = express();
-
-// ── Global Middleware ──────────────────────────────────
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
-app.use(express.json()); // פירוש JSON מגוף הבקשה
+app.use(express.json());
 
-// ── Routes ─────────────────────────────────────────────
-app.use("/api/auth", authRoutes);
+app.use("/api/auth",     authRoutes);
+app.use("/api/products", productsRoutes);
+app.use("/api/cart",     cartRoutes);
 
-// בדיקת תקינות השרת
 app.get("/api/health", (_, res) => res.json({ status: "ok" }));
 
-// ── Startup ────────────────────────────────────────────
 const start = async () => {
-  await connectDB();          // חיבור ל-MongoDB
-  await createIndexes();      // הבטחת unique index על email
-
+  await connectDB();
+  await createIndexes();
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 };
