@@ -4,8 +4,8 @@
 // ─────────────────────────────────────────────────────────
 
 import NavCard from "../Comps/Dashboard/NavCard.jsx";
-import { useAuth } from "../Contexts/AuthContext.jsx";
-import PopularProducts from "../comps/dashboard/PopularProducts.jsx";
+import { useAuth } from "../hooks/useAuth.js";
+import PopularProducts from "../Comps/Dashboard/PopularProducts.jsx";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();

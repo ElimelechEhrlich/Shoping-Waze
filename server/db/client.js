@@ -6,8 +6,10 @@
 // ─────────────────────────────────────────────────────────
 
 import { MongoClient } from "mongodb";
+import { MongoMemoryServer } from "mongodb-memory-server";
 
 let db = null; // מאוחסן פעם אחת לאורך כל חיי השרת
+let memoryServer = null;
 
 /**
  * מתחבר ל-MongoDB ושומר את ה-db instance.
@@ -16,11 +18,28 @@ let db = null; // מאוחסן פעם אחת לאורך כל חיי השרת
 export const connectDB = async () => {
   if (db) return db;
 
-  const client = new MongoClient(process.env.MONGO_URI);
-  await client.connect();
+  const dbName = process.env.DB_NAME || "smart-receipts";
+  const mongoUri = process.env.MONGO_URI;
 
-  db = client.db(process.env.DB_NAME || "smart-receipts");
-  console.log("✅ MongoDB connected");
+  if (mongoUri) {
+    try {
+      const client = new MongoClient(mongoUri);
+      await client.connect();
+      db = client.db(dbName);
+      console.log("✅ MongoDB connected");
+      return db;
+    } catch (error) {
+      console.warn(`⚠️ MongoDB connection failed (${error.message}). Falling back to in-memory DB.`);
+    }
+  } else {
+    console.warn("⚠️ MONGO_URI is missing. Falling back to in-memory DB.");
+  }
+
+  memoryServer = await MongoMemoryServer.create({ instance: { dbName } });
+  const memoryClient = new MongoClient(memoryServer.getUri());
+  await memoryClient.connect();
+  db = memoryClient.db(dbName);
+  console.log("✅ In-memory MongoDB started");
   return db;
 };
 

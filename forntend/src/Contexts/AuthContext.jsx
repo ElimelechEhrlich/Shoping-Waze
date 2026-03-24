@@ -8,9 +8,9 @@
 // גם אחרי רענון הדף.
 // ─────────────────────────────────────────────────────────
 
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useState, useEffect, useCallback } from "react";
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   // טוען token מ-localStorage בעת אתחול (persist session)
   const [token, setToken] = useState(() => localStorage.getItem("token"));
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !!localStorage.getItem("token"));
 
   /** שומר token ומשתמש ב-state ו-localStorage */
   const saveSession = (newToken, newUser) => {
@@ -42,7 +42,6 @@ export const AuthProvider = ({ children }) => {
    */
   useEffect(() => {
     if (!token) {
-      setLoading(false);
       return;
     }
 
@@ -93,16 +92,4 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-// ── Hook ──────────────────────────────────────────────────
-
-/**
- * useAuth — hook לגישה ל-AuthContext.
- * חייב להיות בתוך <AuthProvider>.
- */
-export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
-  return ctx;
 };

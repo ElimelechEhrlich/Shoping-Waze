@@ -12,11 +12,12 @@
 //   לא מחובר → redirect ל-/login
 // ─────────────────────────────────────────────────────────
 
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import AuthPage from "./Pages/AuthPage.jsx";
 import CartPage from "./Pages/CartPage.jsx";
 import Dashboard from "./Pages/Dashboard.jsx";
-import { AuthProvider,useAuth } from "./Contexts/AuthContext.jsx";
+import { AuthProvider } from "./Contexts/AuthContext.jsx";
+import { useAuth } from "./hooks/useAuth.js";
 
 // ── Route מוגן — רק למשתמשים מחוברים ────────────────────
 const ProtectedRoute = ({ children }) => {

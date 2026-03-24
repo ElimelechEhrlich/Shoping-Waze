@@ -7,7 +7,6 @@ import { createIndexes } from "./models/User.js";
 import authRoutes     from "./routes/auth.js";
 import productsRoutes from "./routes/products.js";
 import cartRoutes     from "./routes/cart.js";
-
 const app = express();
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
 app.use(express.json());

@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────────────────
 
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "../Contexts/AuthContext";
+import { useAuth } from "./useAuth.js";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -15,13 +15,13 @@ const useCart = () => {
   const [loading, setLoading]             = useState(true);
   const [error, setError]                 = useState(null);
 
-  const authHeaders = {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  };
-
   // ── שליפת הסל מהשרת ────────────────────────────────────
   const fetchCart = useCallback(async () => {
+    const authHeaders = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+
     try {
       setLoading(true);
       const res  = await fetch(`${API_URL}/cart`, { headers: authHeaders });
@@ -36,11 +36,18 @@ const useCart = () => {
     }
   }, [token]);
 
-  useEffect(() => { if (token) fetchCart(); }, [fetchCart]);
+  useEffect(() => {
+    if (token) fetchCart();
+  }, [token, fetchCart]);
 
   // ── עדכון כמות ו/או מחיר של פריט ─────────────────────
   // אם הפריט לא קיים בסל — השרת יוסיף אותו (addToCart מטפל בזה)
   const updateItem = async (name, fields) => {
+    const authHeaders = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+
     // אם הפריט לא קיים בסל — שולחים POST להוספה
     const exists = cart.some((c) => c.name.toLowerCase() === name.toLowerCase());
 
@@ -77,6 +84,11 @@ const useCart = () => {
 
   // ── מחיקת פריט ────────────────────────────────────────
   const removeItem = async (name) => {
+    const authHeaders = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+
     const res  = await fetch(`${API_URL}/cart/${encodeURIComponent(name)}`, {
       method: "DELETE",
       headers: authHeaders,
@@ -87,6 +99,11 @@ const useCart = () => {
 
   // ── שמירת סופרמרקט ────────────────────────────────────
   const saveStore = async (store) => {
+    const authHeaders = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+
     const res  = await fetch(`${API_URL}/cart/store`, {
       method: "PUT",
       headers: authHeaders,
