@@ -29,7 +29,7 @@ const ScanPage = () => {
     try {
       const response = await fetch(`${API_URL}/upload-receipt`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` },
+        // headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` },
         body: formData,
       });
 
@@ -44,6 +44,7 @@ const ScanPage = () => {
 
       navigate("/details", { state: { receipt: data.receipt } });
     } catch {
+
       setError("סריקה אוטומטית לא זמינה כרגע בשרת הזה. אפשר לעבור לסל ולנהל ידנית.");
     } finally {
       setLoading(false);
