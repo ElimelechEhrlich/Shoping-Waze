@@ -16,6 +16,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import AuthPage from "./Pages/AuthPage.jsx";
 import CartPage from "./Pages/CartPage.jsx";
 import Dashboard from "./Pages/Dashboard.jsx";
+import ScanPage from "./Pages/ScanPage.jsx";
+import ReceiptDetailsPage from "./Pages/ReceiptDetailsPage.jsx";
 import { AuthProvider } from "./Contexts/AuthContext.jsx";
 import { useAuth } from "./hooks/useAuth.js";
 
@@ -72,6 +74,22 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <CartPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/scan"
+            element={
+              <ProtectedRoute>
+                <ScanPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/details"
+            element={
+              <ProtectedRoute>
+                <ReceiptDetailsPage />
               </ProtectedRoute>
             }
           />
