@@ -2,24 +2,27 @@
 // ─────────────────────────────────────────────────────────
 // Root של האפליקציה.
 // AuthProvider עוטף הכל כדי ש-useAuth יהיה זמין בכל מקום.
-// AppContent מחליט מה לרנדר לפי מצב ה-auth:
-//   loading → ספינר
-//   user    → Dashboard (ה-app האמיתי)
-//   null    → AuthPage
+//
+// ניתוב:
+//   /          → Dashboard (דורש התחברות)
+//   /cart      → CartPage  (דורש התחברות)
+//   /login     → AuthPage  (ציבורי)
+//
+// ProtectedRoute — מגן על routes פרטיים:
+//   לא מחובר → redirect ל-/login
 // ─────────────────────────────────────────────────────────
 
-// import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
-import { AuthProvider,useAuth } from "./Contexts/AuthContext.jsx";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AuthPage from "./Pages/AuthPage.jsx";
+import CartPage from "./Pages/CartPage.jsx";
 import Dashboard from "./Pages/Dashboard.jsx";
-// import AuthPage from "./pages/AuthPage.jsx";
-// import Dashboard from "./pages/Dashboard.jsx";
+import { AuthProvider,useAuth } from "./Contexts/AuthContext.jsx";
 
-// ── Auth Guard ─────────────────────────────────────────────
-const AppContent = () => {
+// ── Route מוגן — רק למשתמשים מחוברים ────────────────────
+const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
-  // ממתין לבדיקת ה-token מול השרת
+  // ממתין לבדיקת token מול השרת לפני ניתוב
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -28,15 +31,53 @@ const AppContent = () => {
     );
   }
 
-  // ניתוב: מחובר → Dashboard, לא מחובר → AuthPage
-  return user ? <Dashboard /> : <AuthPage />;
+  // לא מחובר — שולח לדף login
+  return user ? children : <Navigate to="/login" replace />;
+};
+
+// ── Route ציבורי — מפנה מחוברים לדף הבית ────────────────
+const PublicRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  return user ? <Navigate to="/" replace /> : children;
 };
 
 // ── Root ───────────────────────────────────────────────────
 export default function App() {
   return (
     <AuthProvider>
-      <AppContent />
+        <Routes>
+          {/* ציבורי */}
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <AuthPage />
+              </PublicRoute>
+            }
+          />
+
+          {/* מוגנים */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute>
+                <CartPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* כל נתיב אחר → דף הבית */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
     </AuthProvider>
   );
 }
