@@ -1,11 +1,12 @@
 // App.jsx
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-// import { AuthProvider, useAuth } from "./Context/AuthContext.jsx";
-import AuthPage            from "./pages/AuthPage.jsx";
-import Dashboard           from "./pages/Dashboard.jsx";
-import CartPage            from "./Pages/CartPage.jsx";
-import CompareResultsPage  from "./Pages/CompareResultsPage.jsx";
-import { AuthProvider,AuthContext } from "./Contexts/AuthContext.jsx";
+import { Routes, Route, Navigate } from "react-router-dom";
+import AuthPage from "./pages/AuthPage.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
+import CartPage from "./Pages/CartPage.jsx";
+import CompareResultsPage from "./Pages/CompareResultsPage.jsx";
+import ScanPage from "./Pages/ScanPage.jsx";
+import ReceiptDetailsPage from "./Pages/ReceiptDetailsPage.jsx";
+import { AuthProvider } from "./Contexts/AuthContext.jsx";
 import { useAuth } from "./hooks/useAuth.js";
 
 const ProtectedRoute = ({ children }) => {
@@ -32,6 +33,8 @@ export default function App() {
           <Route path="/"       element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/cart"   element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
           <Route path="/compare" element={<ProtectedRoute><CompareResultsPage /></ProtectedRoute>} />
+          <Route path="/scan" element={<ProtectedRoute><ScanPage /></ProtectedRoute>} />
+          <Route path="/details" element={<ProtectedRoute><ReceiptDetailsPage /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     </AuthProvider>

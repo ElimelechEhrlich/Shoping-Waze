@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pydantic
+python-dotenv
+pymysql
+google-genai
+alembic
+python-multipart
+uvicorn
