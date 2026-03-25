@@ -22,7 +22,7 @@ const CartPage = () => {
   const navigate = useNavigate();
 
   const {
-    cart, selectedStore, loading: cartLoading, error: cartError,
+    cart, selectedStore, loading: cartLoading, error: _cartError,
     updateItem, removeItem, saveStore,
     totalItems, totalPrice, missingPrice,
   } = useCart();

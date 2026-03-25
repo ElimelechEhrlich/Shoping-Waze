@@ -19,4 +19,5 @@ class ReceiptExtracted(BaseModel):
 class ReceiptUploadResponse(BaseModel):
     message: str
     items_saved: int
+    receipt: ReceiptExtracted | None = None
 
