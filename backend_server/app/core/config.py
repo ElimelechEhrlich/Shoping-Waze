@@ -1,12 +1,9 @@
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-
 from dotenv import load_dotenv
 
-
 load_dotenv()
-
 
 @dataclass(frozen=True)
 class Settings:
@@ -21,15 +18,19 @@ class Settings:
     log_level: str = os.getenv("LOG_LEVEL", "INFO")
     log_file_path: Path = Path(os.getenv("LOG_FILE_PATH", "logs/app.log"))
     create_tables_on_startup: bool = os.getenv("CREATE_TABLES_ON_STARTUP", "true").lower() == "true"
-    cors_allow_origins: list[str] = list(
-        origin.strip()
-        for origin in os.getenv(
-            "CORS_ALLOW_ORIGINS",
-            "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000",
-        ).split(",")
-        if origin.strip()
+    
+    # התיקון כאן: משתמשים ב-field עם default_factory שמריץ פונקציה אנונימית (lambda)
+    cors_allow_origins: list[str] = field(
+        default_factory=lambda: [
+            origin.strip()
+            for origin in os.getenv(
+                "CORS_ALLOW_ORIGINS",
+                "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000",
+            ).split(",")
+            if origin.strip()
+        ]
     )
 
-
 settings = Settings()
+
 
