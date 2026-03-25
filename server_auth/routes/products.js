@@ -4,15 +4,13 @@
 // ─────────────────────────────────────────────────────────
 
 import { Router } from "express";
-import { getPopularProducts } from "../controllers/productsController.js";
+import { getPopularProducts, getAllProducts } from "../controllers/productsController.js";
 import { protect } from "../middleware/auth.js";
 
 const router = Router();
-
-// כל routes המוצרים דורשים התחברות
 router.use(protect);
 
-// GET /api/products/popular
-router.get("/popular", getPopularProducts);
+router.get("/popular",  getPopularProducts); // GET /api/products/popular
+router.get("/",         getAllProducts);      // GET /api/products
 
 export default router;

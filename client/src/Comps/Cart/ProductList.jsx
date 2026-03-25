@@ -1,25 +1,30 @@
 // components/cart/ProductList.jsx
 // ─────────────────────────────────────────────────────────
-// פאנל שמאל — רשימת מוצרים מחולקת לפי קטגוריה.
-// מתחיל בקטגוריית ירקות פתוחה, שאר סגורות.
-// לחיצה על + מוסיפה את המוצר לסל.
-// אם אין מחיר — מעלה callback לפתיחת NoPriceModal.
+// רשימת מוצרים מחולקת לקטגוריות.
+// מקבל את products מה-prop (מגיעים מה-DB דרך useProducts).
 // ─────────────────────────────────────────────────────────
 
 import { useState, useMemo } from "react";
-import { PRODUCTS, CATEGORIES } from "../../data/products.js";
+
+// שמות קטגוריות בעברית
+const CAT_LABELS = {
+  vegetables: "ירקות",
+  fruits:     "פירות",
+  dairy:      "מוצרי חלב",
+  bakery:     "מאפים",
+  dry:        "יבשים",
+  meat:       "בשר ועוף",
+  frozen:     "קפואים",
+  cleaning:   "ניקיון",
+};
 
 const formatPrice = (p) =>
   new Intl.NumberFormat("he-IL", {
     style: "currency", currency: "ILS", maximumFractionDigits: 2,
   }).format(p);
 
-/**
- * @param {{ search: string, cart: Array, onAdd: (product) => void }} props
- * onAdd — נקרא כשלוחצים + (CartPage מטפל בפתיחת modal אם צריך)
- */
-const ProductList = ({ search, cart, onAdd }) => {
-  // קטגוריות פתוחות — ברירת מחדל: ירקות
+const ProductList = ({ products = [], search, cart, onAdd }) => {
+  // ירקות פתוחה כברירת מחדל
   const [openCats, setOpenCats] = useState({ vegetables: true });
 
   const toggleCat = (cat) =>
@@ -27,26 +32,26 @@ const ProductList = ({ search, cart, onAdd }) => {
 
   // סינון לפי חיפוש
   const filtered = useMemo(() =>
-    PRODUCTS.filter((p) =>
+    products.filter((p) =>
       p.name.toLowerCase().includes(search.toLowerCase())
-    ), [search]);
+    ), [products, search]);
 
-  // חלוקה לפי קטגוריה
+  // חלוקה לקטגוריות
   const grouped = useMemo(() =>
     filtered.reduce((acc, p) => {
-      if (!acc[p.category]) acc[p.category] = [];
-      acc[p.category].push(p);
+      const cat = p.category || "כללי";
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(p);
       return acc;
     }, {}), [filtered]);
 
-  // כמה יחידות מהמוצר כבר בסל
   const qtyInCart = (name) =>
     cart.find((c) => c.name.toLowerCase() === name.toLowerCase())?.qty ?? 0;
 
   if (filtered.length === 0) {
     return (
       <div className="text-center py-10 text-slate-400 text-sm">
-        לא נמצאו מוצרים עבור "{search}"
+        לא נמצאו מוצרים{search ? ` עבור "${search}"` : ""}
       </div>
     );
   }
@@ -56,14 +61,13 @@ const ProductList = ({ search, cart, onAdd }) => {
       {Object.entries(grouped).map(([cat, items]) => (
         <div key={cat} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
 
-          {/* כותרת קטגוריה — לחיץ לפתיחה/סגירה */}
+          {/* כותרת קטגוריה */}
           <button
             onClick={() => toggleCat(cat)}
-            className="w-full flex items-center justify-between px-4 py-3
-              hover:bg-slate-50 transition-colors"
+            className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors"
           >
             <span className="font-semibold text-slate-700 text-sm">
-              {CATEGORIES[cat] || cat}
+              {CAT_LABELS[cat] || cat}
             </span>
             <div className="flex items-center gap-2">
               <span className="text-xs text-slate-400">{items.length} מוצרים</span>
@@ -83,16 +87,13 @@ const ProductList = ({ search, cart, onAdd }) => {
                 const inCart = qtyInCart(product.name);
                 return (
                   <div
-                    key={product.id}
+                    key={product._id || product.id || product.name}
                     className={`flex items-center gap-3 px-4 py-3
                       ${idx < items.length - 1 ? "border-b border-slate-50" : ""}
                       hover:bg-slate-50 transition-colors`}
                   >
-                    {/* שם + מחיר */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-800 truncate">
-                        {product.name}
-                      </p>
+                      <p className="text-sm font-medium text-slate-800 truncate">{product.name}</p>
                       <p className="text-xs mt-0.5">
                         {product.price > 0
                           ? <span className="text-slate-400">{formatPrice(product.price)} / {product.unit}</span>
@@ -101,7 +102,6 @@ const ProductList = ({ search, cart, onAdd }) => {
                       </p>
                     </div>
 
-                    {/* תג "בסל" אם קיים */}
                     {inCart > 0 && (
                       <span className="text-xs bg-emerald-100 text-emerald-700
                         px-2 py-0.5 rounded-full font-medium flex-shrink-0">
@@ -109,7 +109,6 @@ const ProductList = ({ search, cart, onAdd }) => {
                       </span>
                     )}
 
-                    {/* כפתור הוספה */}
                     <button
                       onClick={() => onAdd(product)}
                       className="w-8 h-8 rounded-xl bg-emerald-500 hover:bg-emerald-600
