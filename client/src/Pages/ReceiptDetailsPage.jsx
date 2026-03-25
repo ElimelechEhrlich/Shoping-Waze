@@ -8,7 +8,7 @@ const normalizeItems = (receipt) => {
   return receipt.items.map((item) => ({
     name: item.name || "מוצר",
     qty: Number(item.qty ?? item.quantity ?? 1) || 1,
-    price: Number(item.price ?? 0) || 0,
+    price: Number(item.price ?? item.unit_price ?? 0) || 0,
     category: item.category || "כללי",
   }));
 };

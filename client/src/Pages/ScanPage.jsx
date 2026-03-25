@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const DATA_API_URL = import.meta.env.VITE_DATA_API_URL || "http://localhost:8000";
 
 const ScanPage = () => {
   const navigate = useNavigate();
@@ -24,12 +24,11 @@ const ScanPage = () => {
     setError("");
 
     const formData = new FormData();
-    formData.append("receipt", file);
+    formData.append("file", file);
 
     try {
-      const response = await fetch(`${API_URL}/upload-receipt`, {
+      const response = await fetch(`${DATA_API_URL}/receipts/upload`, {
         method: "POST",
-        // headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` },
         body: formData,
       });
 
@@ -38,7 +37,7 @@ const ScanPage = () => {
       }
 
       const data = await response.json();
-      if (!data?.success || !data?.receipt) {
+      if (!data?.receipt) {
         throw new Error("invalid receipt response");
       }
 
