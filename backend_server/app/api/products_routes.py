@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
+from app.models.price_history import PriceHistory
 from app.models.product import Product
 from app.schemas.products_schema import ProductListResponse, ProductListItem
 
@@ -18,22 +19,29 @@ def list_products(
     limit: int = Query(default=500, ge=1, le=5000),
     db_session: Session = Depends(get_db),
 ) -> ProductListResponse:
-    stmt = select(Product).order_by(Product.name.asc()).limit(limit)
-    products = db_session.scalars(stmt).all()
+    stmt = (
+        select(Product, func.avg(PriceHistory.unit_price).label("avg_price"))
+        .outerjoin(PriceHistory, Product.id == PriceHistory.product_id)
+        .group_by(Product.id, Product.name, Product.canonical_name, Product.source)
+        .order_by(Product.name.asc())
+    )
 
     q_norm = (q or "").strip().lower()
     if q_norm:
-        products = [p for p in products if q_norm in p.name.lower()]
+        stmt = stmt.where(Product.name.ilike(f"%{q_norm}%"))
+
+    stmt = stmt.limit(limit)
+    rows = db_session.execute(stmt).all()
 
     items = [
         ProductListItem(
-            id=p.id,
-            name=p.name,
-            category=_guess_category(p.name),
+            id=row.Product.id,
+            name=row.Product.name,
+            category=_guess_category(row.Product.name),
             unit="יח'",
-            price=0.0,
+            price=round(float(row.avg_price), 2) if row.avg_price else 0.0,
         )
-        for p in products
+        for row in rows
     ]
     return ProductListResponse(products=items)
 

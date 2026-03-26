@@ -169,6 +169,21 @@ export const setStore = async (req, res) => {
   }
 };
 
+// ── DELETE /api/cart ──────────────────────────────────────
+// מרוקן את כל הסל של המשתמש (לא משפיע על רשימת המוצרים הכללית)
+export const clearCart = async (req, res) => {
+  try {
+    await getCollection().updateOne(
+      { _id: new ObjectId(req.user._id) },
+      { $set: { cart: [], updatedAt: new Date() } }
+    );
+    res.status(200).json({ success: true, cart: [] });
+  } catch (err) {
+    console.error("clearCart error:", err);
+    res.status(500).json({ success: false, message: "שגיאת שרת" });
+  }
+};
+
 // ── POST /api/cart/compare ────────────────────────────────
 // שולח את הסל ל-AI agent ומחזיר השוואת מחירים.
 // כשחבר הצוות נותן URL — מעדכנים AI_AGENT_URL ב-.env

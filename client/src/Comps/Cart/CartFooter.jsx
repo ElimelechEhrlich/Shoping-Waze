@@ -9,11 +9,11 @@ const formatPrice = (n) =>
     style: "currency", currency: "ILS", maximumFractionDigits: 2,
   }).format(n);
 
-const CartFooter = ({ totalItems, totalPrice, missingPrice, selectedStore }) => (
+const CartFooter = ({ totalItems, totalPrice, missingPrice }) => (
   <div className="fixed bottom-0 right-0 left-0 bg-white border-t border-slate-200 shadow-lg z-40" dir="rtl">
     <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
 
-      {/* שמאל — סיכום */}
+      {/* סיכום */}
       <div className="flex items-center gap-5">
         <div className="text-center">
           <p className="text-xs text-slate-400">פריטים</p>
@@ -28,15 +28,10 @@ const CartFooter = ({ totalItems, totalPrice, missingPrice, selectedStore }) => 
         </div>
       </div>
 
-      {/* ימין — הערות */}
+      {/* הערות */}
       <div className="text-left flex-1">
-        {selectedStore && (
-          <p className="text-xs text-slate-500">
-            🏪 <span className="font-medium">{selectedStore}</span>
-          </p>
-        )}
         {missingPrice && (
-          <p className="text-xs text-amber-500 mt-0.5">
+          <p className="text-xs text-amber-500">
             ⚠️ חלק מהמוצרים ללא מחיר — המחיר הסופי חלקי
           </p>
         )}

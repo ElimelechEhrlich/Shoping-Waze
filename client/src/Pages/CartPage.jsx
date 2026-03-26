@@ -16,14 +16,12 @@ import CartCategory from "../Comps/Cart/CartCategory.jsx";
 import CartFooter   from "../Comps/Cart/CartFooter.jsx";
 import NoPriceModal from "../Comps/Cart/NoPriceModal.jsx";
 
-const STORES = ["שופרסל", "רמי לוי", "ויקטורי", "מגה"];
-
 const CartPage = () => {
   const navigate = useNavigate();
 
   const {
-    cart, selectedStore, loading: cartLoading, error: _cartError,
-    updateItem, removeItem, saveStore,
+    cart, loading: cartLoading, error: _cartError,
+    updateItem, removeItem, clearCart,
     totalItems, totalPrice, missingPrice,
   } = useCart();
 
@@ -68,9 +66,16 @@ const CartPage = () => {
     updateItem(item.name, { qty: item.qty - 1 });
   };
 
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+  const handleClearCart = async () => {
+    await clearCart();
+    setShowClearConfirm(false);
+  };
+
   // ── השוואת מחירים → עובר לדף תוצאות ──────────────────
   const handleCompare = async () => {
-    const data = await compare(cart, selectedStore);
+    const data = await compare(cart, null);
     if (data) {
       navigate("/compare", { state: { compareData: data } });
     }
@@ -99,42 +104,47 @@ const CartPage = () => {
             </Link>
             <h1 className="text-lg font-bold text-slate-900 flex-1">סל הקניות</h1>
 
-            {/* כפתור השוואת מחירים */}
             {cart.length > 0 && (
-              <button
-                onClick={handleCompare}
-                disabled={compareLoading}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600
-                  disabled:opacity-60 text-white text-sm font-semibold rounded-xl
-                  transition shadow-sm"
-              >
-                {compareLoading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    משווה...
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                    השווה מחירים
-                  </>
-                )}
-              </button>
-            )}
+              <>
+                {/* כפתור ריקון סל */}
+                <button
+                  onClick={() => setShowClearConfirm(true)}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-500
+                    hover:text-red-600 border border-red-200 hover:border-red-300 hover:bg-red-50
+                    rounded-xl transition"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  רוקן סל
+                </button>
 
-            {/* dropdown סופרמרקט */}
-            <select
-              value={selectedStore || ""}
-              onChange={(e) => saveStore(e.target.value)}
-              className="text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white
-                text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-            >
-              <option value="" disabled>בחר סופרמרקט</option>
-              {STORES.map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
+                {/* כפתור השוואת מחירים */}
+                <button
+                  onClick={handleCompare}
+                  disabled={compareLoading}
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600
+                    disabled:opacity-60 text-white text-sm font-semibold rounded-xl
+                    transition shadow-sm"
+                >
+                  {compareLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      משווה...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      השווה מחירים
+                    </>
+                  )}
+                </button>
+              </>
+            )}
           </div>
 
           {/* חיפוש */}
@@ -231,12 +241,43 @@ const CartPage = () => {
         />
       )}
 
+      {/* מודל אישור ריקון סל */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" dir="rtl">
+          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full">
+            <div className="text-center mb-5">
+              <p className="text-4xl mb-3">🗑️</p>
+              <h3 className="font-bold text-slate-800 text-lg">לרוקן את הסל?</h3>
+              <p className="text-slate-500 text-sm mt-1">
+                כל הפריטים יוסרו מהסל שלך.<br />
+                המוצרים עצמם נשארים במאגר המערכת.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600
+                  hover:bg-slate-50 text-sm font-medium transition"
+              >
+                ביטול
+              </button>
+              <button
+                onClick={handleClearCart}
+                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600
+                  text-white text-sm font-semibold transition"
+              >
+                כן, רוקן
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {!cartLoading && cart.length > 0 && (
         <CartFooter
           totalItems={totalItems}
           totalPrice={totalPrice}
           missingPrice={missingPrice}
-          selectedStore={selectedStore}
         />
       )}
     </div>

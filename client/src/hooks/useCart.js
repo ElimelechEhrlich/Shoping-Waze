@@ -97,6 +97,21 @@ const useCart = () => {
     if (data.success) setCart(data.cart);
   };
 
+  // ── ריקון הסל כולו ────────────────────────────────────
+  const clearCart = async () => {
+    const authHeaders = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+
+    const res  = await fetch(`${API_URL}/cart`, {
+      method: "DELETE",
+      headers: authHeaders,
+    });
+    const data = await res.json();
+    if (data.success) setCart([]);
+  };
+
   // ── שמירת סופרמרקט ────────────────────────────────────
   const saveStore = async (store) => {
     const authHeaders = {
@@ -120,7 +135,7 @@ const useCart = () => {
 
   return {
     cart, selectedStore, loading, error,
-    updateItem, removeItem, saveStore,
+    updateItem, removeItem, saveStore, clearCart,
     totalItems, totalPrice, missingPrice,
   };
 };

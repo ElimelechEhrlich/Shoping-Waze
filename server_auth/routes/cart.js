@@ -7,7 +7,7 @@
 import { Router } from "express";
 import {
   getCart, addToCart, updateCartItem,
-  removeFromCart, setStore, compareCart,
+  removeFromCart, clearCart, setStore, compareCart,
 } from "../controllers/cartController.js";
 import { protect } from "../middleware/auth.js";
 
@@ -16,6 +16,7 @@ router.use(protect);
 
 router.get("/",           getCart);         // GET    /api/cart
 router.post("/",          addToCart);       // POST   /api/cart
+router.delete("/",        clearCart);       // DELETE /api/cart — רוקן סל (חייב לפני /:name)
 router.put("/store",      setStore);        // PUT    /api/cart/store
 router.post("/compare",   compareCart);     // POST   /api/cart/compare
 router.patch("/:name",    updateCartItem);  // PATCH  /api/cart/:name
