@@ -13,33 +13,39 @@ from app.schemas.receipt_schema import ReceiptExtracted, ReceiptItemExtracted
 
 logger = logging.getLogger(__name__)
 
+_UNKNOWN_STORE_NAMES: frozenset[str] = frozenset({"unknown", "לא ידוע", "לא מזוהה", ""})
+
 
 class ReceiptService:
     def __init__(self, db_session: Session) -> None:
         self.db_session = db_session
 
     def save(self, receipt_data: ReceiptExtracted) -> int:
-        store = self._get_or_create_store(receipt_data.store_name)
+        raw_store_name = (receipt_data.store_name or "").strip()
+        store_is_known = raw_store_name.lower() not in _UNKNOWN_STORE_NAMES
+
+        store = self._get_or_create_store(raw_store_name) if store_is_known else None
         saved_items_count = 0
 
         for item in receipt_data.items:
             product = self._get_or_create_product(item.name)
-            unit_price = self._calculate_unit_price(item)
 
-            price_row = PriceHistory(
-                product_id=product.id,
-                store_id=store.id,
-                unit_price=unit_price,
-                receipt_date=receipt_data.date,
-            )
-            self.db_session.add(price_row)
-            saved_items_count += 1
+            if store is not None:
+                unit_price = self._calculate_unit_price(item)
+                price_row = PriceHistory(
+                    product_id=product.id,
+                    store_id=store.id,
+                    unit_price=unit_price,
+                    receipt_date=receipt_data.date,
+                )
+                self.db_session.add(price_row)
+                saved_items_count += 1
 
         self.db_session.commit()
         logger.info(
-            "Receipt saved successfully. store_name=%s receipt_date=%s items_saved=%s",
-            store.name,
-            receipt_data.date.isoformat(),
+            "Receipt saved successfully. store_name=%s store_known=%s items_saved=%s",
+            raw_store_name or "(empty)",
+            store_is_known,
             saved_items_count,
         )
         return saved_items_count

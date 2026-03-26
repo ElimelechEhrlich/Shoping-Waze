@@ -18,12 +18,20 @@ from app.schemas.basket_schema import (
 logger = logging.getLogger(__name__)
 
 
+_UNKNOWN_STORE_NAMES: frozenset[str] = frozenset({"unknown", "לא ידוע", "לא מזוהה", ""})
+
+
+def _is_known_store(store: Store) -> bool:
+    return store.name.strip().lower() not in _UNKNOWN_STORE_NAMES
+
+
 class BasketService:
     def __init__(self, db_session: Session) -> None:
         self.db_session = db_session
 
     def compare_basket_prices(self, request_data: BasketCompareRequest) -> BasketCompareResponse:
-        stores = self.db_session.scalars(select(Store).order_by(Store.name.asc())).all()
+        all_stores = self.db_session.scalars(select(Store).order_by(Store.name.asc())).all()
+        stores = [s for s in all_stores if _is_known_store(s)]
         store_results: list[StoreBasketResult] = []
 
         baseline_store_name = (request_data.baseline_store or "").strip()

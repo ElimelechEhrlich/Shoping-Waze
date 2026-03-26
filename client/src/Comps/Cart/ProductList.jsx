@@ -18,11 +18,6 @@ const CAT_LABELS = {
   cleaning:   "ניקיון",
 };
 
-const formatPrice = (p) =>
-  new Intl.NumberFormat("he-IL", {
-    style: "currency", currency: "ILS", maximumFractionDigits: 2,
-  }).format(p);
-
 const ProductList = ({ products = [], search, cart, onAdd }) => {
   // ירקות פתוחה כברירת מחדל
   const [openCats, setOpenCats] = useState({ vegetables: true });
@@ -94,12 +89,6 @@ const ProductList = ({ products = [], search, cart, onAdd }) => {
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-slate-800 truncate">{product.name}</p>
-                      <p className="text-xs mt-0.5">
-                        {product.price > 0
-                          ? <span className="text-slate-400">{formatPrice(product.price)} / {product.unit}</span>
-                          : <span className="text-amber-500">אין מחיר כרגע</span>
-                        }
-                      </p>
                     </div>
 
                     {inCart > 0 && (
