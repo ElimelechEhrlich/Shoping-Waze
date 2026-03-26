@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import usePageTitle from "../hooks/usePageTitle.js";
 
@@ -18,6 +18,11 @@ const CompareResultsPage = () => {
 
   usePageTitle(cheapest ? `השוואה — הזול: ${cheapest}` : "השוואת מחירים");
 
+  // רענון דף — אין state → חזור לסל
+  useEffect(() => {
+    if (!compareData) navigate("/cart", { replace: true });
+  }, [compareData, navigate]);
+
   const storesSorted = useMemo(() => {
     const results = compareData?.results || [];
     return [...results].sort((a, b) => (a.total ?? 0) - (b.total ?? 0));
@@ -25,20 +30,8 @@ const CompareResultsPage = () => {
 
   const minTotal = storesSorted[0]?.total ?? 0;
 
-  if (!compareData) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-10" dir="rtl">
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
-          <h1 className="text-xl font-bold text-slate-900">אין תוצאות להצגה</h1>
-          <p className="text-sm text-slate-500">חזור לסל ובצע השוואה מחדש.</p>
-          <button type="button" onClick={() => navigate("/cart")}
-            className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold">
-            חזרה לסל
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // ממתין להפניה אוטומטית מה-useEffect למעלה
+  if (!compareData) return null;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6" dir="rtl">

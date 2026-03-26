@@ -1,10 +1,14 @@
 services:
+  # ── Full-stack service: Express serves API + React SPA ──
+  # Build: installs & builds the React client, then installs server deps.
+  # Start: Node.js Express server which also serves the React build.
+  # SPA routing is handled by the Express catch-all — no static-site tricks needed.
   - type: web
-    name: client-app-shoping-waze
-    env: static
-    buildCommand: cd client && npm install && npm run build
-    staticPublishPath: client/dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
+    name: shoping-waze-server-auth
+    env: node
+    region: frankfurt
+    buildCommand: cd client && npm install && npm run build && cd ../server_auth && npm install
+    startCommand: node server_auth/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "../Contexts/ToastContext.jsx";
 import usePageTitle from "../hooks/usePageTitle.js";
@@ -29,6 +29,11 @@ const ReceiptDetailsPage = () => {
   const receipt        = state?.receipt;
 
   usePageTitle(receipt?.store_name ? `קבלה — ${receipt.store_name}` : "פרטי קבלה");
+
+  // רענון דף — אין state → חזור לסריקה
+  useEffect(() => {
+    if (!receipt) navigate("/scan", { replace: true });
+  }, [receipt, navigate]);
 
   const [items, setItems]       = useState(() => normalizeItems(receipt));
   const [approving, setApproving] = useState(false);
@@ -90,20 +95,8 @@ const ReceiptDetailsPage = () => {
     }
   };
 
-  if (!receipt) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-10" dir="rtl">
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
-          <h1 className="text-xl font-bold text-slate-900">אין קבלה להצגה</h1>
-          <p className="text-sm text-slate-500">חזור למסך הסריקה והעלה קבלה חדשה.</p>
-          <button type="button" onClick={() => navigate("/scan")}
-            className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold">
-            חזרה לסריקה
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // ממתין להפניה אוטומטית מה-useEffect למעלה
+  if (!receipt) return null;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6" dir="rtl">
