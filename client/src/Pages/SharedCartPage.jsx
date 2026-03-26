@@ -128,60 +128,49 @@ const SharedCartPage = () => {
 
       {/* ── Page sub-header ──────────────────────────────────
           sticky top-[60px]: stacks below the global AppHeader (≈60 px). */}
-      <header className="bg-white border-b border-slate-200 px-4 py-3 sticky top-[60px] z-30">
-        <div className="max-w-3xl mx-auto flex items-center gap-2 flex-wrap">
-          <HomeButton />
-
-          <Link to="/shared-carts"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200
-              text-slate-600 hover:bg-slate-50 text-sm font-medium transition flex-shrink-0">
-            <svg className="w-4 h-4 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-            סלים משותפים
-          </Link>
-
-          {/* שם הסל + חברים */}
-          <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold text-slate-900 truncate">
-              {currentCart?.name ?? "טוען..."}
-            </h1>
-            {currentCart && (
-              <div className="flex items-center gap-2">
-                <p className="text-xs text-slate-400">
-                  {currentCart.members.length} חברים · {totalItems} פריטים
-                </p>
-                {/* אווטרים של חברים */}
-                <div className="flex items-center gap-0.5">
-                  {currentCart.members.slice(0, 4).map((m, i) => (
-                    <div key={i} title={m.displayName}
-                      className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-400 to-blue-600
-                        flex items-center justify-center text-[8px] text-white font-bold ring-1 ring-white">
-                      {(m.displayName?.[0] ?? "?").toUpperCase()}
-                    </div>
-                  ))}
-                  {currentCart.members.length > 4 && (
-                    <span className="text-xs text-slate-400 mr-1">+{currentCart.members.length - 4}</span>
-                  )}
-                </div>
-              </div>
-            )}
+      <header className="bg-white border-b border-slate-200 px-3 sm:px-4 py-3 sticky top-[60px] z-30">
+        <div className="max-w-3xl mx-auto space-y-3">
+          {/* שורה 1 — ניווט בלבד (לא דוחסים עם שתף קוד) */}
+          <div className="flex flex-wrap items-center gap-2">
+            <HomeButton />
+            <Link to="/shared-carts"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200
+                text-slate-600 hover:bg-slate-50 text-sm font-medium transition flex-shrink-0">
+              <svg className="w-4 h-4 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+              סלים משותפים
+            </Link>
           </div>
 
-          {/* כפתור שיתוף קוד */}
-          {currentCart && (
-            <button
-              onClick={() => setShowInvite((v) => !v)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-600
-                border border-blue-200 hover:bg-blue-50 rounded-xl transition flex-shrink-0"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-              </svg>
-              שתף קוד
-            </button>
-          )}
+          {/* שורה 2 — כותרת + מטא + שתף קוד (במובייל כפתור בשורה נפרדת) */}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-base sm:text-lg font-bold text-slate-900 leading-snug break-words">
+                {currentCart?.name ?? "טוען..."}
+              </h1>
+              {currentCart && (
+                <p className="text-xs text-slate-400 mt-1">
+                  {currentCart.members.length} חברים · {totalItems} פריטים
+                </p>
+              )}
+            </div>
+            {currentCart && (
+              <button
+                type="button"
+                onClick={() => setShowInvite((v) => !v)}
+                className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-600
+                  border border-blue-200 hover:bg-blue-50 rounded-xl transition flex-shrink-0
+                  w-full sm:w-auto self-stretch sm:self-center"
+              >
+                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                שתף קוד
+              </button>
+            )}
+          </div>
         </div>
 
         {/* פאנל קוד הזמנה — עם שיתוף מלא */}
@@ -388,11 +377,11 @@ const SharedCartPage = () => {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
               {currentCart.items.map((item, idx) => (
                 <div key={item.name}
-                  className={`flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 transition-colors
+                  className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-3.5 hover:bg-slate-50 transition-colors
                     ${idx < currentCart.items.length - 1 ? "border-b border-slate-50" : ""}`}>
 
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-slate-800 text-sm truncate">{item.name}</p>
+                  <div className="flex-1 min-w-0 ps-0.5">
+                    <p className="font-medium text-slate-800 text-sm line-clamp-2 sm:truncate">{item.name}</p>
                     <p className="text-xs text-slate-400">
                       {item.category}
                       {item.price > 0 && ` · ₪${item.price.toFixed(2)} ליחידה`}
@@ -402,7 +391,7 @@ const SharedCartPage = () => {
                   <QtyInput item={item} cartId={id} updateItem={updateItem} />
 
                   {/* סה"כ */}
-                  <div className="w-16 text-left flex-shrink-0">
+                  <div className="w-14 sm:w-16 text-end flex-shrink-0 tabular-nums">
                     {item.price > 0 ? (
                       <span className="text-sm font-semibold text-slate-700">
                         ₪{(item.price * item.qty).toFixed(2)}
@@ -413,9 +402,10 @@ const SharedCartPage = () => {
                   </div>
 
                   <button
+                    type="button"
                     onClick={() => removeItem(id, item.name)}
-                    className="w-7 h-7 rounded-lg hover:bg-red-50 text-slate-300
-                      hover:text-red-400 flex items-center justify-center transition flex-shrink-0"
+                    className="w-9 h-9 sm:w-8 sm:h-8 rounded-lg hover:bg-red-50 text-slate-300
+                      hover:text-red-400 flex items-center justify-center transition flex-shrink-0 touch-manipulation"
                     aria-label={`הסר ${item.name}`}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

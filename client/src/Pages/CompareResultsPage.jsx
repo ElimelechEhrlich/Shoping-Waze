@@ -1,6 +1,19 @@
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import usePageTitle from "../hooks/usePageTitle.js";
+
+const ChevronIcon = ({ expanded }) => (
+  <svg
+    className={`w-5 h-5 text-slate-500 flex-shrink-0 transition-transform duration-200
+      ${expanded ? "-rotate-180" : ""}`}
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    aria-hidden
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+  </svg>
+);
 
 const HomeIcon = () => (
   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -29,6 +42,18 @@ const CompareResultsPage = () => {
   }, [compareData]);
 
   const minTotal = storesSorted[0]?.total ?? 0;
+
+  /** מפתחות רשתות פתוחות באקורדיון (ברירת מחדל: סגור — קל לדפדף בין רשתות) */
+  const [openStores, setOpenStores] = useState(() => new Set());
+
+  const toggleStore = useCallback((storeName) => {
+    setOpenStores((prev) => {
+      const next = new Set(prev);
+      if (next.has(storeName)) next.delete(storeName);
+      else next.add(storeName);
+      return next;
+    });
+  }, []);
 
   // ממתין להפניה אוטומטית מה-useEffect למעלה
   if (!compareData) return null;
@@ -70,41 +95,63 @@ const CompareResultsPage = () => {
         {storesSorted.map((store, rank) => {
           const isCheapest = store.store === cheapest;
           const diff       = store.total - minTotal;
+          const itemCount  = Array.isArray(store.items) ? store.items.length : 0;
+          const expanded   = openStores.has(store.store);
+          const panelId    = `compare-store-panel-${rank}`;
 
           return (
             <div key={store.store}
               className={`bg-white border rounded-2xl shadow-sm overflow-hidden
                 ${isCheapest ? "border-emerald-300 ring-1 ring-emerald-200" : "border-slate-200"}`}>
 
-              {/* Store header */}
-              <div className={`px-5 py-4 flex items-center justify-between border-b
-                ${isCheapest ? "bg-emerald-50 border-emerald-100" : "border-slate-100"}`}>
-                <div className="flex items-center gap-3">
+              {/* כותרת רשת — לחיצה פותחת/סוגרת את רשימת המוצרים */}
+              <button
+                type="button"
+                id={`${panelId}-trigger`}
+                aria-expanded={expanded}
+                aria-controls={panelId}
+                onClick={() => toggleStore(store.store)}
+                className={`w-full px-5 py-4 flex items-center justify-between gap-3 text-start border-b
+                  transition-colors hover:brightness-[0.99] active:bg-slate-50/80
+                  ${isCheapest ? "bg-emerald-50 border-emerald-100" : "border-slate-100"}`}
+              >
+                <div className="flex items-center gap-3 min-w-0 flex-1">
                   {isCheapest && (
-                    <span className="text-xs font-bold bg-emerald-500 text-white px-2.5 py-1 rounded-full">
+                    <span className="text-xs font-bold bg-emerald-500 text-white px-2.5 py-1 rounded-full flex-shrink-0">
                       הזול ביותר
                     </span>
                   )}
                   {!isCheapest && (
-                    <span className="text-slate-400 text-sm font-medium">#{rank + 1}</span>
+                    <span className="text-slate-400 text-sm font-medium flex-shrink-0">#{rank + 1}</span>
                   )}
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-lg font-bold text-slate-900">{store.store}</p>
+                    {itemCount > 0 && (
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {itemCount} מוצרים
+                        {!expanded && " · לחץ לפתיחה"}
+                      </p>
+                    )}
                   </div>
                 </div>
-                <div className="text-left">
-                  <p className="text-xl font-bold text-emerald-700">₪{(store.total ?? 0).toFixed(2)}</p>
-                  {!isCheapest && diff > 0 && (
-                    <p className="text-xs text-red-500 font-medium mt-0.5">
-                      +₪{diff.toFixed(2)} מהזול ביותר
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="text-end">
+                    <p className="text-xl font-bold text-emerald-700 tabular-nums">
+                      ₪{(store.total ?? 0).toFixed(2)}
                     </p>
-                  )}
+                    {!isCheapest && diff > 0 && (
+                      <p className="text-xs text-red-500 font-medium mt-0.5">
+                        +₪{diff.toFixed(2)} מהזול ביותר
+                      </p>
+                    )}
+                  </div>
+                  <ChevronIcon expanded={expanded} />
                 </div>
-              </div>
+              </button>
 
               {/* Items table */}
-              {Array.isArray(store.items) && store.items.length > 0 && (
-                <div className="px-5 py-4">
+              {expanded && Array.isArray(store.items) && store.items.length > 0 && (
+                <div id={panelId} role="region" aria-labelledby={`${panelId}-trigger`} className="px-5 py-4">
                   <div className="overflow-x-auto">
                     <table className="w-full text-right">
                       <thead>

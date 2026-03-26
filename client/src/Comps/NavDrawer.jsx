@@ -2,15 +2,15 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // תפריט ניווט צדדי — נפתח מהמבורגר שב-AppHeader.
 //
+// RTL + מיקום המבורגר:
+//   ב-html יש dir="rtl", לכן ב-flex הילד הראשון (לוגו) מוצג מימין וההמבורגר — משמאל.
+//   הדרוואר חייב להינעץ באותו צד חזותי: left-0 + החלקה מ־translate-x-full השלילי (סגור)
+//   כדי שהתפריט "יבוא" מתחת לכפתור, ולא מצד ימין המסך.
+//
 // מבנה:
 //   • Overlay כהה (לחיצה סוגרת)
-//   • Drawer לבן מימין (RTL) ב-z-[70]
-//     ├── פס עליון: אווטר + שם + אימייל + כפתור X
-//     ├── קישורי ניווט עם הדגשה על הדף הפעיל
-//     └── כפתור התנתקות
-//
-// הדרוואר משתמש ב-translate-x לאנימציה חלקה ב-GPU
-// (ולא ב-display:none) כדי שה-transition יעבוד.
+//   • Drawer לבן ב-z-[70], נצמד ל-left-0
+//   • border-s-4 בקישורים — קו הדגשה בצד "ההתחלה" הלוגי בעברית (inline-start)
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useEffect } from "react";
@@ -140,9 +140,9 @@ const NavDrawer = ({ open, onClose }) => {
         aria-modal="true"
         aria-label="תפריט ניווט"
         dir="rtl"
-        className={`fixed top-0 right-0 h-full w-72 bg-white z-[70] shadow-2xl
+        className={`fixed top-0 left-0 h-full w-72 max-w-[min(18rem,100vw-1rem)] bg-white z-[70] shadow-2xl
           flex flex-col transition-transform duration-300 ease-in-out
-          ${open ? "translate-x-0" : "translate-x-full"}`}
+          ${open ? "translate-x-0" : "-translate-x-full"}`}
       >
 
         {/* ── פס עליון — פרופיל ────────────────────── */}
@@ -181,7 +181,7 @@ const NavDrawer = ({ open, onClose }) => {
               onClick={onClose}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-5 py-3.5 text-sm font-medium transition-colors
-                 border-r-4 ${
+                 border-s-4 ${
                    isActive
                      ? "bg-emerald-50 text-emerald-700 border-emerald-500"
                      : "text-slate-700 hover:bg-slate-50 border-transparent hover:border-slate-200"
