@@ -1,20 +1,23 @@
 // pages/CartPage.jsx
-// ─────────────────────────────────────────────────────────
-// עמוד סל הקניות.
-// שמאל  — מוצרים מה-DB (דרך useProducts)
-// ימין  — הסל הנוכחי
-// כפתור "השווה מחירים" — שולח ל-AI agent ועובר לדף תוצאות
-// ─────────────────────────────────────────────────────────
-
 import { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useCart      from "../hooks/useCart.js";
 import useProducts  from "../hooks/useProducts.js";
 import useCompare   from "../hooks/useCompare.js";
+import useDebounce  from "../hooks/useDebounce.js";
+import usePageTitle from "../hooks/usePageTitle.js";
 import ProductList  from "../Comps/Cart/ProductList.jsx";
 import CartCategory from "../Comps/Cart/CartCategory.jsx";
 import CartFooter   from "../Comps/Cart/CartFooter.jsx";
 import NoPriceModal from "../Comps/Cart/NoPriceModal.jsx";
+import { SkeletonCard } from "../Comps/Skeleton.jsx";
+
+const SORT_OPTIONS = [
+  { value: "added",    label: "סדר הוספה" },
+  { value: "name",     label: "לפי שם" },
+  { value: "category", label: "לפי קטגוריה" },
+  { value: "price",    label: "לפי מחיר" },
+];
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -29,31 +32,25 @@ const CartPage = () => {
   const { products, loading: productsLoading } = useProducts();
   const { compare, loading: compareLoading }   = useCompare();
 
-  const [search, setSearch]   = useState("");
-  const [pending, setPending] = useState(null);
+  const [search, setSearch]           = useState("");
+  const [sortBy, setSortBy]           = useState("added");
+  const [pending, setPending]         = useState(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  // ── הוספת מוצר לסל ────────────────────────────────────
+  usePageTitle(totalItems > 0 ? `סל הקניות (${totalItems})` : "סל הקניות");
+
+  const debouncedSearch = useDebounce(search, 280);
+
+  // ── הוספת מוצר לסל ─────────────────────────────────────
   const handleAddProduct = (product) => {
     if (product.price === 0) { setPending(product); return; }
-    const existing = cart.find(
-      (c) => c.name.toLowerCase() === product.name.toLowerCase()
-    );
-    updateItem(product.name, {
-      qty:      (existing?.qty ?? 0) + 1,
-      price:    product.price,
-      category: product.category,
-    });
+    const existing = cart.find((c) => c.name.toLowerCase() === product.name.toLowerCase());
+    updateItem(product.name, { qty: (existing?.qty ?? 0) + 1, price: product.price, category: product.category });
   };
 
   const handleModalConfirm = (price) => {
-    const existing = cart.find(
-      (c) => c.name.toLowerCase() === pending.name.toLowerCase()
-    );
-    updateItem(pending.name, {
-      qty:      (existing?.qty ?? 0) + 1,
-      price:    price > 0 ? price : 0,
-      category: pending.category,
-    });
+    const existing = cart.find((c) => c.name.toLowerCase() === pending.name.toLowerCase());
+    updateItem(pending.name, { qty: (existing?.qty ?? 0) + 1, price: price > 0 ? price : 0, category: pending.category });
     setPending(null);
   };
 
@@ -67,29 +64,33 @@ const CartPage = () => {
     updateItem(item.name, { qty: item.qty - 1 });
   };
 
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
-
   const handleClearCart = async () => {
     await clearCart();
     setShowClearConfirm(false);
   };
 
-  // ── השוואת מחירים → עובר לדף תוצאות ──────────────────
+  // ── השוואת מחירים ───────────────────────────────────────
   const handleCompare = async () => {
     const data = await compare(cart, null);
-    if (data) {
-      navigate("/compare", { state: { compareData: data } });
-    }
+    if (data) navigate("/compare", { state: { compareData: data } });
   };
 
-  // חלוקת הסל לקטגוריות
+  // ── מיון הסל ────────────────────────────────────────────
+  const sortedCart = useMemo(() => {
+    const sorted = [...cart];
+    if (sortBy === "name")     sorted.sort((a, b) => a.name.localeCompare(b.name, "he"));
+    if (sortBy === "category") sorted.sort((a, b) => (a.category || "").localeCompare(b.category || "", "he"));
+    if (sortBy === "price")    sorted.sort((a, b) => b.price - a.price);
+    return sorted;
+  }, [cart, sortBy]);
+
   const groupedCart = useMemo(() =>
-    cart.reduce((acc, item) => {
+    sortedCart.reduce((acc, item) => {
       const cat = item.category || "כללי";
       if (!acc[cat]) acc[cat] = [];
       acc[cat].push(item);
       return acc;
-    }, {}), [cart]);
+    }, {}), [sortedCart]);
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans pb-24" dir="rtl">
@@ -107,12 +108,10 @@ const CartPage = () => {
 
             {cart.length > 0 && (
               <>
-                {/* כפתור ריקון סל */}
                 <button
                   onClick={() => setShowClearConfirm(true)}
                   className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-500
-                    hover:text-red-600 border border-red-200 hover:border-red-300 hover:bg-red-50
-                    rounded-xl transition"
+                    hover:text-red-600 border border-red-200 hover:border-red-300 hover:bg-red-50 rounded-xl transition"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -121,27 +120,19 @@ const CartPage = () => {
                   רוקן סל
                 </button>
 
-                {/* כפתור השוואת מחירים */}
                 <button
                   onClick={handleCompare}
                   disabled={compareLoading}
                   className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600
-                    disabled:opacity-60 text-white text-sm font-semibold rounded-xl
-                    transition shadow-sm"
+                    disabled:opacity-60 text-white text-sm font-semibold rounded-xl transition shadow-sm"
                 >
                   {compareLoading ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      משווה...
-                    </>
+                    <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />משווה...</>
                   ) : (
-                    <>
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                      השווה מחירים
-                    </>
+                    <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>השווה מחירים</>
                   )}
                 </button>
               </>
@@ -165,9 +156,7 @@ const CartPage = () => {
             />
             {search && (
               <button onClick={() => setSearch("")}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                ✕
-              </button>
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">✕</button>
             )}
           </div>
         </div>
@@ -182,45 +171,41 @@ const CartPage = () => {
             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 px-1">
               מוצרים להוספה
             </h2>
-            {productsLoading ? (
-              <div className="flex justify-center py-10">
-                <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
-              </div>
-            ) : (
-              <ProductList
-                products={products}
-                search={search}
-                cart={cart}
-                onAdd={handleAddProduct}
-              />
-            )}
+            {productsLoading
+              ? <><SkeletonCard rows={4} /><SkeletonCard rows={3} /></>
+              : <ProductList products={products} search={debouncedSearch} cart={cart} onAdd={handleAddProduct} />
+            }
           </section>
 
           {/* פאנל ימין — הסל */}
           <section>
-            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 px-1">
-              הסל שלי
-              {cart.length > 0 && (
-                <span className="mr-2 text-emerald-500 normal-case tracking-normal">
-                  ({totalItems} פריטים)
-                </span>
+            <div className="flex items-center justify-between mb-3 px-1">
+              <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                הסל שלי
+                {cart.length > 0 && (
+                  <span className="mr-2 text-emerald-500 normal-case tracking-normal">({totalItems} פריטים)</span>
+                )}
+              </h2>
+              {cart.length > 1 && (
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="text-xs border border-slate-200 rounded-lg px-2 py-1 bg-white
+                    text-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                >
+                  {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
               )}
-            </h2>
+            </div>
 
-            {cartLoading && (
-              <div className="flex justify-center py-10">
-                <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
-              </div>
-            )}
+            {cartLoading && <><SkeletonCard rows={3} /><SkeletonCard rows={2} /></>}
 
             {!cartLoading && cartError && (
               <div className="bg-red-50 border border-red-100 rounded-2xl p-8 text-center space-y-3">
                 <p className="text-3xl">⚠️</p>
                 <p className="text-red-600 text-sm font-medium">{cartError}</p>
-                <button
-                  onClick={fetchCart}
-                  className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition"
-                >
+                <button onClick={fetchCart}
+                  className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition">
                   נסה שוב
                 </button>
               </div>
@@ -248,14 +233,9 @@ const CartPage = () => {
       </main>
 
       {pending && (
-        <NoPriceModal
-          item={pending}
-          onConfirm={handleModalConfirm}
-          onCancel={() => setPending(null)}
-        />
+        <NoPriceModal item={pending} onConfirm={handleModalConfirm} onCancel={() => setPending(null)} />
       )}
 
-      {/* מודל אישור ריקון סל */}
       {showClearConfirm && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" dir="rtl">
           <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full">
@@ -263,23 +243,16 @@ const CartPage = () => {
               <p className="text-4xl mb-3">🗑️</p>
               <h3 className="font-bold text-slate-800 text-lg">לרוקן את הסל?</h3>
               <p className="text-slate-500 text-sm mt-1">
-                כל הפריטים יוסרו מהסל שלך.<br />
-                המוצרים עצמם נשארים במאגר המערכת.
+                כל הפריטים יוסרו מהסל שלך.<br />המוצרים עצמם נשארים במאגר המערכת.
               </p>
             </div>
             <div className="flex gap-3">
-              <button
-                onClick={() => setShowClearConfirm(false)}
-                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600
-                  hover:bg-slate-50 text-sm font-medium transition"
-              >
+              <button onClick={() => setShowClearConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-medium transition">
                 ביטול
               </button>
-              <button
-                onClick={handleClearCart}
-                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600
-                  text-white text-sm font-semibold transition"
-              >
+              <button onClick={handleClearCart}
+                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition">
                 כן, רוקן
               </button>
             </div>
@@ -288,11 +261,7 @@ const CartPage = () => {
       )}
 
       {!cartLoading && cart.length > 0 && (
-        <CartFooter
-          totalItems={totalItems}
-          totalPrice={totalPrice}
-          missingPrice={missingPrice}
-        />
+        <CartFooter totalItems={totalItems} totalPrice={totalPrice} missingPrice={missingPrice} />
       )}
     </div>
   );

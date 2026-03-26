@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import CameraCapturePanel from "../Comps/Scan/CameraCapturePanel.jsx";
 import { useCameraCapture } from "../hooks/useCameraCapture.js";
 import { useToast } from "../Contexts/ToastContext.jsx";
+import usePageTitle from "../hooks/usePageTitle.js";
 
 const MAX_FILE_MB   = 5;
 const OCR_TIMEOUT_MS = 60_000;
@@ -12,6 +13,7 @@ const DATA_API_URL = import.meta.env.VITE_DATA_API_URL || "http://localhost:8000
 const ScanPage = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
+  usePageTitle("סריקת קבלה");
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);

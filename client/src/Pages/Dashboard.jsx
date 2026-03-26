@@ -5,10 +5,14 @@
 
 import NavCard from "../Comps/Dashboard/NavCard.jsx";
 import { useAuth } from "../hooks/useAuth.js";
+import useCart from "../hooks/useCart.js";
 import PopularProducts from "../Comps/Dashboard/PopularProducts.jsx";
+import usePageTitle from "../hooks/usePageTitle.js";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
+  const { cart, totalItems, updateItem } = useCart();
+  usePageTitle("דף הבית");
 
   // פורמט תאריך עברי
   const today = new Date().toLocaleDateString("he-IL", {
@@ -116,6 +120,7 @@ const Dashboard = () => {
           <NavCard
             to="/cart"
             color="blue"
+            badge={totalItems}
             icon={
               <svg
                 className="w-6 h-6"
@@ -132,12 +137,12 @@ const Dashboard = () => {
               </svg>
             }
             title="סל הקניות"
-            subtitle="צפה ונהל את הסל שלך"
+            subtitle={totalItems > 0 ? `${totalItems} פריטים בסל` : "צפה ונהל את הסל שלך"}
           />
         </div>
 
         {/* טבלת מוצרים פופולריים */}
-        <PopularProducts />
+        <PopularProducts cart={cart} onAddAgain={updateItem} />
       </main>
     </div>
   );
