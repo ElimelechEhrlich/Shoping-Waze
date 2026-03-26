@@ -141,8 +141,10 @@ const useCart = () => {
   };
 
   // ── סיכומים לFooter ────────────────────────────────────
-  const totalItems   = cart.reduce((acc, i) => acc + i.qty, 0);
-  const totalPrice   = cart.reduce((acc, i) => acc + (i.price > 0 ? i.price * i.qty : 0), 0);
+  // safeQty: מגן מפני ערכים לא תקינים שנשמרו ב-DB (float, מחרוזת וכד')
+  const safeQty      = (v) => Math.max(1, Math.round(Number(v) || 1));
+  const totalItems   = cart.reduce((acc, i) => acc + safeQty(i.qty), 0);
+  const totalPrice   = cart.reduce((acc, i) => acc + (i.price > 0 ? i.price * safeQty(i.qty) : 0), 0);
   const missingPrice = cart.some((i) => i.price === 0);
 
   return {

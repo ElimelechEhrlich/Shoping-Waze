@@ -17,6 +17,20 @@ const getCollection = () => getDB().collection("users");
 // URL של ה-AI agent — יעודכן כשחבר הצוות יתן את ה-endpoint
 const AI_AGENT_URL = process.env.AI_AGENT_URL || null;
 
+// מגן מפני ערכים לא תקינים שנשמרו ב-DB (float, string, undefined)
+const sanitizeQty = (v) => Math.max(1, Math.round(Number(v) || 1));
+
+// מנקה את כל הפריטים בסל — מחזיר גם האם שונה משהו
+const sanitizeCart = (cart) => {
+  let changed = false;
+  const clean = (cart || []).map((item) => {
+    const qty = sanitizeQty(item.qty);
+    if (qty !== item.qty) changed = true;
+    return { ...item, qty };
+  });
+  return { clean, changed };
+};
+
 // ── GET /api/cart ─────────────────────────────────────────
 export const getCart = async (req, res) => {
   try {
@@ -24,9 +38,20 @@ export const getCart = async (req, res) => {
       { _id: new ObjectId(req.user._id) },
       { projection: { cart: 1, selectedStore: 1 } }
     );
+
+    const { clean, changed } = sanitizeCart(user.cart);
+
+    // תיקון אוטומטי של נתונים ישנים — כותב בחזרה ל-DB רק אם יש שינוי
+    if (changed) {
+      await getCollection().updateOne(
+        { _id: new ObjectId(req.user._id) },
+        { $set: { cart: clean, updatedAt: new Date() } }
+      );
+    }
+
     res.status(200).json({
       success: true,
-      cart:          user.cart          || [],
+      cart:          clean,
       selectedStore: user.selectedStore || null,
     });
   } catch (err) {
