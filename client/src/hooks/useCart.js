@@ -53,29 +53,10 @@ const useCart = () => {
     if (token) fetchCart();
   }, [token, fetchCart]);
 
-  // ── עדכון כמות ו/או מחיר של פריט ─────────────────────
+  // ── עדכון / הוספת פריט (PATCH upsert) ────────────────
   const updateItem = async (name, fields) => {
     try {
-      const exists = cart.some((c) => c.name.toLowerCase() === name.toLowerCase());
-
-      if (!exists) {
-        const res = await fetch(`${API_URL}/cart`, {
-          method: "POST",
-          headers: authHeaders(),
-          body: JSON.stringify({
-            data: [{ items: [{ name, qty: fields.qty ?? 1, price: fields.price ?? 0, category: fields.category ?? "כללי" }] }],
-          }),
-        });
-        const data = await handleResponse(res);
-        if (!data) return;
-        if (data.success) {
-          setCart(data.cart);
-          showToast(`${name} נוסף לסל`, "success");
-        } else {
-          showToast(data.message || "שגיאה בהוספת פריט לסל", "error");
-        }
-        return;
-      }
+      const isNew = !cart.some((c) => c.name.toLowerCase() === name.toLowerCase());
 
       const res  = await fetch(`${API_URL}/cart/${encodeURIComponent(name)}`, {
         method: "PATCH",
@@ -86,6 +67,7 @@ const useCart = () => {
       if (!data) return;
       if (data.success) {
         setCart(data.cart);
+        if (isNew) showToast(`${name} נוסף לסל`, "success");
       } else {
         showToast(data.message || "שגיאה בעדכון פריט", "error");
       }

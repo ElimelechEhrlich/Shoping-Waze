@@ -226,12 +226,23 @@ export const updateSharedCartItem = async (req, res) => {
     const idx = items.findIndex(
       (i) => i.name.toLowerCase() === name.toLowerCase()
     );
-    if (idx < 0)
-      return res.status(404).json({ success: false, message: "פריט לא נמצא" });
 
-    if (qty !== undefined) items[idx].qty = Math.max(0, Math.round(Number(qty) || 0));
-    if (price !== undefined) items[idx].price = price;
-    if (items[idx].qty <= 0) items.splice(idx, 1);
+    if (idx < 0) {
+      // upsert — create item if it doesn't exist yet
+      const { price: bodyPrice = 0, category: bodyCategory = "כללי" } = req.body;
+      items.push({
+        name,
+        qty:      Math.max(1, Math.round(Number(qty) || 1)),
+        price:    bodyPrice,
+        category: bodyCategory,
+        addedBy:  userId,
+        addedAt:  new Date(),
+      });
+    } else {
+      if (qty   !== undefined) items[idx].qty   = Math.max(0, Math.round(Number(qty) || 0));
+      if (price !== undefined) items[idx].price = price;
+      if (items[idx].qty <= 0) items.splice(idx, 1);
+    }
 
     await col().updateOne(
       { _id: new ObjectId(id) },

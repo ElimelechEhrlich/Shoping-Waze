@@ -77,8 +77,13 @@ const CartPage = () => {
   };
 
   const handleDecrease = (item) => {
-    if (item.qty <= 1) return;
+    if (item.qty <= 1) { removeItem(item.name); return; }
     updateItem(item.name, { qty: item.qty - 1 });
+  };
+
+  const handleSetQty = (item, qty) => {
+    const n = Math.max(1, parseInt(qty, 10) || 1);
+    updateItem(item.name, { qty: n });
   };
 
   const handleClearCart = async () => {
@@ -292,6 +297,7 @@ const CartPage = () => {
                 onIncrease={handleIncrease}
                 onDecrease={handleDecrease}
                 onRemove={removeItem}
+                onSetQty={handleSetQty}
               />
             ))}
           </section>

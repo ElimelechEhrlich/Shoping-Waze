@@ -3,7 +3,7 @@
 // עמוד הסל השיתופי — הוספה / עדכון / מחיקה
 // ─────────────────────────────────────────────────────────
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import useSharedCart from "../hooks/useSharedCart.js";
 import useProducts   from "../hooks/useProducts.js";
@@ -11,6 +11,44 @@ import usePageTitle  from "../hooks/usePageTitle.js";
 import { useAuth }   from "../hooks/useAuth.js";
 import { SkeletonCard } from "../Comps/Skeleton.jsx";
 import HomeButton from "../Comps/HomeButton.jsx";
+
+// ── input כמות עם סנכרון עם שרת ──────────────────────────
+const QtyInput = ({ item, cartId, updateItem, removeItem }) => {
+  const [val, setVal] = useState(String(item.qty));
+  useEffect(() => { setVal(String(item.qty)); }, [item.qty]);
+
+  const commit = () => {
+    const n = Math.max(1, parseInt(val, 10) || 1);
+    setVal(String(n));
+    if (n !== item.qty) updateItem(cartId, item.name, { qty: n });
+  };
+
+  return (
+    <div className="flex items-center gap-1 flex-shrink-0">
+      <button
+        onClick={() => updateItem(cartId, item.name, { qty: item.qty - 1 })}
+        className="w-7 h-7 rounded-lg border border-slate-200 hover:bg-slate-100
+          flex items-center justify-center text-slate-600 transition text-lg leading-none"
+      >−</button>
+      <input
+        type="number"
+        min="1"
+        value={val}
+        onChange={(e) => setVal(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => e.key === "Enter" && commit()}
+        className="w-12 text-center font-semibold text-slate-700 text-sm
+          border border-slate-200 rounded-lg py-1 focus:outline-none
+          focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
+      />
+      <button
+        onClick={() => updateItem(cartId, item.name, { qty: item.qty + 1 })}
+        className="w-7 h-7 rounded-lg border border-slate-200 hover:bg-slate-100
+          flex items-center justify-center text-slate-600 transition text-lg leading-none"
+      >+</button>
+    </div>
+  );
+};
 
 const SharedCartPage = () => {
   const { id } = useParams();
@@ -41,12 +79,12 @@ const SharedCartPage = () => {
     ? currentCart.ownerId?.toString() === user?._id?.toString()
     : false;
 
+  // שימוש ב-PATCH (upsert) במקום POST כדי למנוע הכפלת כמות
   const handleAdd = (product) => {
     const existing = currentCart?.items?.find(
       (i) => i.name.toLowerCase() === product.name.toLowerCase()
     );
-    addItem(id, {
-      name:     product.name,
+    updateItem(id, product.name, {
       qty:      (existing?.qty ?? 0) + 1,
       price:    product.price ?? 0,
       category: product.category ?? "כללי",
@@ -266,21 +304,12 @@ const SharedCartPage = () => {
                     </div>
 
                     {/* כמות */}
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => updateItem(id, item.name, { qty: item.qty - 1 })}
-                        className="w-7 h-7 rounded-lg border border-slate-200 hover:bg-slate-100
-                          flex items-center justify-center text-slate-600 transition text-lg leading-none"
-                      >−</button>
-                      <span className="w-6 text-center font-semibold text-slate-700 text-sm">
-                        {item.qty}
-                      </span>
-                      <button
-                        onClick={() => updateItem(id, item.name, { qty: item.qty + 1 })}
-                        className="w-7 h-7 rounded-lg border border-slate-200 hover:bg-slate-100
-                          flex items-center justify-center text-slate-600 transition text-lg leading-none"
-                      >+</button>
-                    </div>
+                    <QtyInput
+                      item={item}
+                      cartId={id}
+                      updateItem={updateItem}
+                      removeItem={removeItem}
+                    />
 
                     <button
                       onClick={() => removeItem(id, item.name)}

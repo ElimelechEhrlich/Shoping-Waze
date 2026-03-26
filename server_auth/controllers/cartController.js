@@ -128,15 +128,24 @@ export const updateCartItem = async (req, res) => {
       (c) => c.name.toLowerCase() === name.toLowerCase()
     );
 
-    if (idx < 0)
-      return res.status(404).json({ success: false, message: "מוצר לא נמצא" });
+    if (idx < 0) {
+      // upsert — create item if it doesn't exist yet
+      const newQty = Math.max(1, Math.round(Number(qty) || 1));
+      cart.push({
+        name,
+        qty:      newQty,
+        price:    price    ?? 0,
+        category: category || "כללי",
+        addedAt:  new Date(),
+      });
+    } else {
+      if (qty      !== undefined) cart[idx].qty      = Math.max(0, Math.round(Number(qty) || 0));
+      if (price    !== undefined) cart[idx].price    = price;
+      if (category !== undefined) cart[idx].category = category;
 
-    if (qty      !== undefined) cart[idx].qty      = Math.max(0, Math.round(Number(qty) || 0));
-    if (price    !== undefined) cart[idx].price    = price;
-    if (category !== undefined) cart[idx].category = category;
-
-    // כמות 0 → מחיקה
-    if (cart[idx].qty <= 0) cart.splice(idx, 1);
+      // כמות 0 → מחיקה
+      if (cart[idx].qty <= 0) cart.splice(idx, 1);
+    }
 
     await getCollection().updateOne(
       { _id: new ObjectId(req.user._id) },
