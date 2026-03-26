@@ -12,3 +12,17 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+
+  # ── React SPA — Static Site ──────────────────────────────
+  # The `routes` rewrite rule is the critical fix for page-refresh "Not Found":
+  # without it, Render returns 404 for any path that isn't a real file (e.g. /cart).
+  # The rewrite sends every request to index.html so React Router handles routing
+  # entirely on the client side — exactly like the _redirects file intends.
+  - type: static
+    name: client-app-shoping-waze
+    buildCommand: cd client && npm install && npm run build
+    staticPublishPath: ./client/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
