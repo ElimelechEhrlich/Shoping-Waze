@@ -6,7 +6,7 @@
 
 import { useState, useMemo } from "react";
 
-// שמות קטגוריות בעברית
+// Fallback for legacy English keys (data already migrated to Hebrew)
 const CAT_LABELS = {
   vegetables: "ירקות",
   fruits:     "פירות",
@@ -16,11 +16,13 @@ const CAT_LABELS = {
   meat:       "בשר ועוף",
   frozen:     "קפואים",
   cleaning:   "ניקיון",
+  snacks:     "חטיפים",
+  general:    "כללי",
 };
 
 const ProductList = ({ products = [], search, cart, onAdd }) => {
   // ירקות פתוחה כברירת מחדל
-  const [openCats, setOpenCats] = useState({ vegetables: true });
+  const [openCats, setOpenCats] = useState({ "ירקות": true });
 
   const toggleCat = (cat) =>
     setOpenCats((prev) => ({ ...prev, [cat]: !prev[cat] }));
@@ -62,7 +64,7 @@ const ProductList = ({ products = [], search, cart, onAdd }) => {
             className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors"
           >
             <span className="font-semibold text-slate-700 text-sm">
-              {CAT_LABELS[cat] || cat}
+              {CAT_LABELS[cat] ?? cat}
             </span>
             <div className="flex items-center gap-2">
               <span className="text-xs text-slate-400">{items.length} מוצרים</span>

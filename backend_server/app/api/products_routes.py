@@ -152,22 +152,22 @@ def _guess_category(product_name: str) -> str:
 
     # Snacks before vegetables/fruits to avoid false matches on flavor words
     if has_any(snacks):
-        return "snacks"
+        return "חטיפים"
     if has_any(vegetables):
-        return "vegetables"
+        return "ירקות"
     if has_any(fruits):
-        return "fruits"
+        return "פירות"
     if has_any(dairy):
-        return "dairy"
+        return "מוצרי חלב"
     if has_any(bakery):
-        return "bakery"
+        return "מאפים"
     if has_any(dry):
-        return "dry"
+        return "יבשים"
     if has_any(meat):
-        return "meat"
+        return "בשר ועוף"
     if has_any(frozen):
-        return "frozen"
+        return "קפואים"
     if has_any(cleaning):
-        return "cleaning"
-    return "general"
+        return "ניקיון"
+    return "כללי"
 
