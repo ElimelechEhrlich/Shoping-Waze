@@ -34,29 +34,36 @@ const CompareResultsPage = () => {
   if (!compareData) return null;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 space-y-6" dir="rtl">
+    <div dir="rtl">
 
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">תוצאות השוואת מחירים</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            {cheapest ? `הרשת הזולה ביותר: ${cheapest}` : "לא נמצא מידע על הזול ביותר"}
-          </p>
+      {/* ── Page sub-header ────────────────────────────────────────────────
+          Converted from a plain inline div to a sticky bar that stacks below
+          the global AppHeader (top-[60px]). Previously this page had no sticky
+          header, so the page title and navigation vanished on scroll. */}
+      <header className="bg-white border-b border-slate-200 px-4 py-3 sticky top-[60px] z-10">
+        <div className="max-w-4xl mx-auto flex items-center gap-3 flex-wrap">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg font-bold text-slate-900 truncate">תוצאות השוואת מחירים</h1>
+            <p className="text-xs text-slate-400 mt-0.5">
+              {cheapest ? `הרשת הזולה ביותר: ${cheapest}` : "לא נמצא מידע על הזול ביותר"}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button type="button" onClick={() => navigate("/cart")}
+              className="px-3 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-medium transition">
+              חזרה לסל
+            </button>
+            <Link to="/"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200
+                text-slate-600 hover:bg-slate-50 text-sm font-medium transition">
+              <HomeIcon />
+              בית
+            </Link>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button type="button" onClick={() => navigate("/cart")}
-            className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-semibold">
-            חזרה לסל
-          </button>
-          <Link to="/"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200
-              text-slate-600 hover:bg-slate-50 text-sm font-medium transition">
-            <HomeIcon />
-            בית
-          </Link>
-        </div>
-      </div>
+      </header>
+
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
 
       {/* Store cards */}
       <div className="space-y-4">
@@ -136,6 +143,7 @@ const CompareResultsPage = () => {
           );
         })}
       </div>
+      </div> {/* end max-w-4xl content wrapper */}
     </div>
   );
 };

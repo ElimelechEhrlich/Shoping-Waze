@@ -7,10 +7,15 @@
 import { useState } from "react";
 import LoginForm from "../Comps/Auth/LoginForm.jsx";
 import RegisterForm from "../Comps/Auth/RegisterForm.jsx";
+// usePageTitle sets the browser-tab title dynamically.
+// The hook adds the APP_NAME suffix automatically: "כניסה למערכת | Shopping Waze"
+import usePageTitle from "../hooks/usePageTitle.js";
 
 const AuthPage = () => {
   // true = טופס התחברות, false = טופס הרשמה
   const [isLogin, setIsLogin] = useState(true);
+  // Tab title changes dynamically with the active form
+  usePageTitle(isLogin ? "כניסה למערכת" : "הרשמה");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">

@@ -99,27 +99,37 @@ const ReceiptDetailsPage = () => {
   if (!receipt) return null;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 space-y-6" dir="rtl">
+    <div dir="rtl">
 
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">{receipt.store_name || "פרטי קבלה"}</h1>
-          <p className="text-sm text-slate-500 mt-1">{receipt.date || "תאריך לא זוהה"}</p>
+      {/* ── Page sub-header ────────────────────────────────────────────────
+          Converted to a sticky bar (top-[60px]) that stacks below AppHeader.
+          Previously this page had no sticky header — title and nav vanished
+          on scroll. Now both the store name and the navigation buttons stay
+          accessible while the user reviews and edits the receipt items. */}
+      <header className="bg-white border-b border-slate-200 px-4 py-3 sticky top-[60px] z-10">
+        <div className="max-w-4xl mx-auto flex items-center gap-3 flex-wrap">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg font-bold text-slate-900 truncate">
+              {receipt.store_name || "פרטי קבלה"}
+            </h1>
+            <p className="text-xs text-slate-400 mt-0.5">{receipt.date || "תאריך לא זוהה"}</p>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button type="button" onClick={() => navigate("/scan")}
+              className="px-3 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-medium transition">
+              חזרה לסריקה
+            </button>
+            <Link to="/"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200
+                text-slate-600 hover:bg-slate-50 text-sm font-medium transition">
+              <HomeIcon />
+              בית
+            </Link>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button type="button" onClick={() => navigate("/scan")}
-            className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-semibold">
-            חזרה לסריקה
-          </button>
-          <Link to="/"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200
-              text-slate-600 hover:bg-slate-50 text-sm font-medium transition">
-            <HomeIcon />
-            בית
-          </Link>
-        </div>
-      </div>
+      </header>
+
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
 
       {/* hint */}
       <p className="text-xs text-slate-400 bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5">
@@ -217,6 +227,7 @@ const ReceiptDetailsPage = () => {
         {approving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
         {approving ? "מוסיף לסל..." : "אשר והוסף לסל"}
       </button>
+      </div> {/* end max-w-4xl content wrapper */}
     </div>
   );
 };

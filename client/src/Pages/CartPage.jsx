@@ -136,8 +136,11 @@ const CartPage = () => {
   return (
     <div className="min-h-screen bg-slate-100 font-sans pb-28" dir="rtl">
 
-      {/* ── Header ─────────────────────────────────────── */}
-      <header className="bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-30">
+      {/* ── Page sub-header ────────────────────────────────
+          sticky top-[60px] stacks this bar directly below the global AppHeader
+          (AppHeader height ≈ 60 px: py-3.5 × 2 + h-8 content). z-30 keeps it
+          above page content but below the global header's z-50. */}
+      <header className="bg-white border-b border-slate-200 px-4 py-3 sticky top-[60px] z-30">
         <div className="max-w-3xl mx-auto flex items-center gap-2 flex-wrap">
           <HomeButton />
           <h1 className="text-lg font-bold text-slate-900 flex-1">סל הקניות</h1>

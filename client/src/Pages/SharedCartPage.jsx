@@ -109,8 +109,10 @@ const SharedCartPage = () => {
   return (
     <div className="min-h-screen bg-slate-100 font-sans pb-24" dir="rtl">
 
-      {/* ── Header ─────────────────────────────────────── */}
-      <header className="bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-30">
+      {/* ── Page sub-header ────────────────────────────────
+          sticky top-[60px]: stacks below the global AppHeader (≈60 px tall).
+          z-30 keeps it above page content but below AppHeader's z-50. */}
+      <header className="bg-white border-b border-slate-200 px-4 py-3 sticky top-[60px] z-30">
         <div className="max-w-6xl mx-auto space-y-2">
           <div className="flex items-center gap-3">
             <HomeButton />
