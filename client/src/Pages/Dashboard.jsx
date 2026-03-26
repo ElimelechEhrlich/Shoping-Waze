@@ -3,16 +3,20 @@
 // עמוד הבית לאחר התחברות — סגנון מקצועי/עסקי.
 // ─────────────────────────────────────────────────────────
 
+import { useState } from "react";
 import NavCard from "../Comps/Dashboard/NavCard.jsx";
 import { useAuth } from "../hooks/useAuth.js";
 import useCart from "../hooks/useCart.js";
 import PopularProducts from "../Comps/Dashboard/PopularProducts.jsx";
 import usePageTitle from "../hooks/usePageTitle.js";
+import OnboardingModal, { shouldShowOnboarding } from "../Comps/Onboarding/OnboardingModal.jsx";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const { cart, totalItems, updateItem } = useCart();
   usePageTitle("דף הבית");
+
+  const [showOnboarding, setShowOnboarding] = useState(() => shouldShowOnboarding());
 
   // פורמט תאריך עברי
   const today = new Date().toLocaleDateString("he-IL", {
@@ -158,6 +162,10 @@ const Dashboard = () => {
         {/* טבלת מוצרים פופולריים */}
         <PopularProducts cart={cart} onAddAgain={updateItem} />
       </main>
+
+      {showOnboarding && (
+        <OnboardingModal onClose={() => setShowOnboarding(false)} />
+      )}
     </div>
   );
 };
