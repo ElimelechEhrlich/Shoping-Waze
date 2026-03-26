@@ -5,16 +5,17 @@
 // ─────────────────────────────────────────────────────────
 
 import { Router } from "express";
-import { register, login, getMe } from "../controllers/authController.js";
+import { register, login, getMe, updateProfile } from "../controllers/authController.js";
 import { protect } from "../middleware/auth.js";
 
 const router = Router();
 
 // ── Public routes ──────────────────────────────────────
-router.post("/register", register); // POST /api/auth/register
-router.post("/login", login);       // POST /api/auth/login
+router.post("/register", register);       // POST /api/auth/register
+router.post("/login", login);             // POST /api/auth/login
 
 // ── Protected routes (דורשים JWT תקין) ────────────────
-router.get("/me", protect, getMe);  // GET  /api/auth/me
+router.get("/me",  protect, getMe);       // GET  /api/auth/me
+router.put("/me",  protect, updateProfile); // PUT  /api/auth/me  (עדכון פרופיל)
 
 export default router;

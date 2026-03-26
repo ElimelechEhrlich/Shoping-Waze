@@ -34,6 +34,7 @@ import ReceiptDetailsPage from "./Pages/ReceiptDetailsPage.jsx";
 import SharedCartListPage from "./Pages/SharedCartListPage.jsx";
 import SharedCartPage     from "./Pages/SharedCartPage.jsx";
 import ScanHistoryPage    from "./Pages/ScanHistoryPage.jsx";
+import ProfilePage        from "./Pages/ProfilePage.jsx";
 import NotFoundPage       from "./Pages/NotFoundPage.jsx";
 
 // ── Route guards ──────────────────────────────────────────────────────────────
@@ -82,7 +83,8 @@ export default function App() {
             <Route path="/details"         element={<ReceiptDetailsPage />} />
             <Route path="/shared-carts"    element={<SharedCartListPage />} />
             <Route path="/shared-cart/:id" element={<SharedCartPage />} />
-            <Route path="/history"         element={<ScanHistoryPage />} />
+                <Route path="/history"         element={<ScanHistoryPage />} />
+                <Route path="/profile"         element={<ProfilePage />} />
 
             {/* Catch-all: authenticated users who hit an unknown URL see a 404
                 page instead of being silently bounced to the dashboard. */}

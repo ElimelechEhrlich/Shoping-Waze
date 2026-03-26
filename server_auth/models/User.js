@@ -112,3 +112,25 @@ export const findById = async (id) => {
 export const comparePassword = async (plainPassword, hashedPassword) => {
   return bcrypt.compare(plainPassword, hashedPassword);
 };
+
+/**
+ * מעדכן שדות פרופיל של משתמש (שם, צבע אווטר).
+ * מחזיר את המשתמש המעודכן ללא סיסמה.
+ *
+ * @param {string} id          - מחרוזת ObjectId
+ * @param {{ name?: string, avatarColor?: string }} fields
+ * @returns {Promise<Object|null>}
+ */
+export const updateUserProfile = async (id, fields) => {
+  const allowed = {};
+  if (fields.name)        allowed.name        = fields.name.trim();
+  if (fields.avatarColor) allowed.avatarColor = fields.avatarColor;
+  allowed.updatedAt = new Date();
+
+  const result = await getCollection().findOneAndUpdate(
+    { _id: new ObjectId(id) },
+    { $set: allowed },
+    { returnDocument: "after", projection: { password: 0 } }
+  );
+  return result ?? null;
+};

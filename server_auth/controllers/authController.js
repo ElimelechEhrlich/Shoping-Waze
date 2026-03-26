@@ -10,6 +10,7 @@ import {
   findByEmail,
   findById,
   comparePassword,
+  updateUserProfile,
 } from "../models/User.js";
 
 // ── עזר פנימי ─────────────────────────────────────────────
@@ -104,4 +105,26 @@ export const login = async (req, res) => {
  */
 export const getMe = async (req, res) => {
   res.status(200).json({ success: true, user: req.user });
+};
+
+/**
+ * PUT /api/auth/me
+ * מעדכן פרופיל המשתמש המחובר (שם, צבע אווטר).
+ */
+export const updateProfile = async (req, res) => {
+  try {
+    const { name, avatarColor } = req.body;
+
+    if (name !== undefined && name.trim().length < 2)
+      return res.status(400).json({ success: false, message: "שם חייב להכיל לפחות 2 תווים" });
+
+    const updated = await updateUserProfile(req.user._id.toString(), { name, avatarColor });
+    if (!updated)
+      return res.status(404).json({ success: false, message: "משתמש לא נמצא" });
+
+    res.status(200).json({ success: true, user: updated });
+  } catch (error) {
+    console.error("UpdateProfile error:", error);
+    res.status(500).json({ success: false, message: "שגיאת שרת" });
+  }
 };

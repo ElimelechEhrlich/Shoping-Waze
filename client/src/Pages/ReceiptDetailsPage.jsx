@@ -136,9 +136,10 @@ const ReceiptDetailsPage = () => {
         ✏️ ניתן לערוך שם, כמות ומחיר לפני אישור — לתיקון שגיאות של הסריקה
       </p>
 
-      {/* Editable table */}
+      {/* Editable table — overflow-x-auto מונע גלישה אופקית במובייל */}
       <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-        <table className="w-full text-right">
+        <div className="overflow-x-auto">
+        <table className="w-full text-right min-w-[460px]">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
               <th className="px-4 py-3 text-sm font-semibold text-slate-600">מוצר</th>
@@ -208,6 +209,7 @@ const ReceiptDetailsPage = () => {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Total */}

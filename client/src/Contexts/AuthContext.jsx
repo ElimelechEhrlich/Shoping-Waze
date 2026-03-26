@@ -87,8 +87,28 @@ export const AuthProvider = ({ children }) => {
     saveSession(data.token, data.user);
   };
 
+  /**
+   * עדכון פרופיל המשתמש (שם, צבע אווטר).
+   * מעדכן גם את ה-state המקומי.
+   * @throws {Error} עם הודעה מהשרת בכישלון
+   */
+  const updateProfile = async ({ name, avatarColor }) => {
+    const res = await fetch(`${API_URL}/auth/me`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ name, avatarColor }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+    setUser(data.user);
+    return data.user;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );
