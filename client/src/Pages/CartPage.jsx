@@ -98,6 +98,36 @@ const CartPage = () => {
     updateItem(item.name, { qty: n });
   };
 
+  // ── שינוי שם מוצר ───────────────────────────────────────
+  // מחפש את הפריט הישן, יוצר פריט חדש עם השם החדש, ומוחק את הישן.
+  // אם השם החדש כבר קיים בסל — מאחד (מחבר כמויות) כדי למנוע כפילות.
+  const handleRenameItem = async (oldName, newName) => {
+    const original = cart.find((c) => c.name === oldName);
+    if (!original) return;
+
+    const duplicate = cart.find(
+      (c) => c.name.toLowerCase() === newName.toLowerCase() && c.name !== oldName
+    );
+
+    if (duplicate) {
+      // מיזוג עם פריט קיים — מחבר כמויות
+      await updateItem(duplicate.name, {
+        qty: duplicate.qty + original.qty,
+        price: duplicate.price || original.price,
+        category: duplicate.category || original.category,
+      });
+    } else {
+      // יצירת פריט חדש עם השם המעודכן
+      await updateItem(newName, {
+        qty: original.qty,
+        price: original.price,
+        category: original.category,
+      });
+    }
+    // מחיקת הפריט הישן
+    await removeItem(oldName);
+  };
+
   const handleClearCart = async () => {
     await clearCart();
     setShowClearConfirm(false);
@@ -356,6 +386,7 @@ const CartPage = () => {
               onDecrease={handleDecrease}
               onRemove={removeItem}
               onSetQty={handleSetQty}
+              onRename={handleRenameItem}
             />
           ))}
         </div>
