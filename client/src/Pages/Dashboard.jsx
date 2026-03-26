@@ -15,6 +15,7 @@ import useSharedCart   from "../hooks/useSharedCart.js";
 import usePageTitle    from "../hooks/usePageTitle.js";
 import PopularProducts from "../Comps/Dashboard/PopularProducts.jsx";
 import OnboardingModal, { shouldShowOnboarding } from "../Comps/Onboarding/OnboardingModal.jsx";
+import SharePanel from "../Comps/SharePanel.jsx";
 
 // ── כותרת סעיף ────────────────────────────────────────────
 const SectionLabel = ({ children }) => (
@@ -279,6 +280,30 @@ const Dashboard = () => {
                 </div>
               </div>
             )}
+          </div>
+        </section>
+
+        {/* ══════════════════════════════════════════════════
+            סעיף 5 — שתף את האפליקציה
+        ══════════════════════════════════════════════════ */}
+        <section>
+          <SectionLabel>שתף עם חברים</SectionLabel>
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-5 py-4 flex items-center gap-4">
+            <div className="w-10 h-10 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-slate-800 text-sm">שתף קבלות חכמות עם חברים</p>
+              <p className="text-xs text-slate-400 mt-0.5">שלח לחבר שיוכל לסרוק קבלות ולהשוות מחירים</p>
+            </div>
+            <SharePanel
+              title="קבלות חכמות"
+              text="היי! נסה את קבלות חכמות — סרוק קבלות, נהל סלי קניות ושתף עם חברים 🛒"
+              color="emerald"
+            />
           </div>
         </section>
 
