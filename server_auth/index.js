@@ -12,6 +12,8 @@ import productsRoutes    from "./routes/products.js";
 import cartRoutes        from "./routes/cart.js";
 import sharedCartRoutes  from "./routes/sharedCart.js";
 import historyRoutes     from "./routes/history.js";
+import reportsRoutes     from "./routes/reports.js";
+import { ensureReportIndexes } from "./controllers/reportsController.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -42,6 +44,7 @@ if (fs.existsSync(clientDist)) {
 const start = async () => {
   await connectDB();
   await createIndexes();
+  await ensureReportIndexes();
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 };

@@ -40,6 +40,15 @@ export const AuthProvider = ({ children }) => {
    * בעת טעינה: אם יש token ב-localStorage,
    * בודק מול השרת שהוא עדיין תקין ומביא את פרטי המשתמש.
    */
+  const refreshUser = useCallback(async () => {
+    if (!token) return;
+    const res = await fetch(`${API_URL}/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (data.success) setUser(data.user);
+  }, [token]);
+
   useEffect(() => {
     if (!token) {
       return;
@@ -107,8 +116,38 @@ export const AuthProvider = ({ children }) => {
     return data.user;
   };
 
+  /**
+   * שליחת דיווח / משוב — מעלה את מונה הדיווחים ומחזיר user מעודכן עם trust.
+   */
+  const submitReport = async ({ type, message, context }) => {
+    const res = await fetch(`${API_URL}/reports`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ type, message, context }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+    if (data.user) setUser(data.user);
+    return data.user;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout, updateProfile }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        loading,
+        login,
+        register,
+        logout,
+        updateProfile,
+        refreshUser,
+        submitReport,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

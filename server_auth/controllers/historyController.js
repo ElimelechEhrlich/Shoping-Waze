@@ -4,6 +4,7 @@
 
 import { getDB } from "../db/client.js";
 import { ObjectId } from "mongodb";
+import { incReputation } from "../models/User.js";
 
 const col = () => getDB().collection("scanHistory");
 
@@ -25,6 +26,8 @@ export const addScanHistory = async (req, res) => {
     };
 
     const result = await col().insertOne(entry);
+    // נקודת אמון: אישור קבלה שנשמר בהיסטוריה = תרומה מאומתת לדירוג
+    await incReputation(req.user._id.toString(), "receiptsConfirmed");
     res.status(201).json({ success: true, id: result.insertedId });
   } catch (err) {
     console.error("addScanHistory error:", err);

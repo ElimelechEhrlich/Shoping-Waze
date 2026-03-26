@@ -60,6 +60,8 @@ export const createUser = async ({ name, email, password }) => {
     password:      hashedPassword, // נשמר ב-DB בלבד, לא חוזר ל-client
     cart:          [],             // סל קניות ריק לכל משתמש חדש
     selectedStore: null,           // סופרמרקט — יוגדר בעת הקנייה
+    // מונה לדירוג אמון — ראה utils/trustScore.js
+    reputation:    { receiptsConfirmed: 0, reportsSubmitted: 0 },
     createdAt:     new Date(),
     updatedAt:     new Date(),
   };
@@ -133,4 +135,48 @@ export const updateUserProfile = async (id, fields) => {
     { returnDocument: "after", projection: { password: 0 } }
   );
   return result ?? null;
+};
+
+/**
+ * מגדיל מונה reputation (קבלות מאושרות / דיווחים שנשלחו).
+ * משתמש ב-$inc על נתיב מקונן — MongoDB יוצר את reputation אם חסר.
+ *
+ * @param {string} userId
+ * @param {"receiptsConfirmed" | "reportsSubmitted"} field
+ */
+export const incReputation = async (userId, field) => {
+  const path =
+    field === "reportsSubmitted"
+      ? "reputation.reportsSubmitted"
+      : "reputation.receiptsConfirmed";
+  await getCollection().updateOne(
+    { _id: new ObjectId(userId) },
+    { $inc: { [path]: 1 }, $set: { updatedAt: new Date() } }
+  );
+};
+
+/**
+ * משתמשים שנוצרו לפני שדה reputation — מסנכרן מונה קבלות מספר רשומות ב-scanHistory
+ * (פעם אחת, ב-GET /me).
+ */
+export const bootstrapReputationIfNeeded = async (user) => {
+  if (user?.reputation && typeof user.reputation.receiptsConfirmed === "number") {
+    return user;
+  }
+  const uid = user._id;
+  const histCount = await getDB()
+    .collection("scanHistory")
+    .countDocuments({ userId: uid });
+
+  const rep = {
+    receiptsConfirmed: histCount,
+    reportsSubmitted:  Number(user?.reputation?.reportsSubmitted) || 0,
+  };
+
+  await getCollection().updateOne(
+    { _id: uid },
+    { $set: { reputation: rep, updatedAt: new Date() } }
+  );
+
+  return findById(uid.toString());
 };

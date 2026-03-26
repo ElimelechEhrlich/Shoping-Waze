@@ -11,7 +11,9 @@ import {
   findById,
   comparePassword,
   updateUserProfile,
+  bootstrapReputationIfNeeded,
 } from "../models/User.js";
+import { toPublicUser } from "../utils/trustScore.js";
 
 // ── עזר פנימי ─────────────────────────────────────────────
 
@@ -30,7 +32,7 @@ const signToken = (id) =>
  */
 const sendTokenResponse = (user, statusCode, res) => {
   const token = signToken(user._id);
-  res.status(statusCode).json({ success: true, token, user });
+  res.status(statusCode).json({ success: true, token, user: toPublicUser(user) });
 };
 
 // ── Handlers ──────────────────────────────────────────────
@@ -104,7 +106,8 @@ export const login = async (req, res) => {
  * משמש ל-persist session בצד client.
  */
 export const getMe = async (req, res) => {
-  res.status(200).json({ success: true, user: req.user });
+  const user = await bootstrapReputationIfNeeded(req.user);
+  res.status(200).json({ success: true, user: toPublicUser(user) });
 };
 
 /**
@@ -122,7 +125,7 @@ export const updateProfile = async (req, res) => {
     if (!updated)
       return res.status(404).json({ success: false, message: "משתמש לא נמצא" });
 
-    res.status(200).json({ success: true, user: updated });
+    res.status(200).json({ success: true, user: toPublicUser(updated) });
   } catch (error) {
     console.error("UpdateProfile error:", error);
     res.status(500).json({ success: false, message: "שגיאת שרת" });

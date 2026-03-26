@@ -160,6 +160,15 @@ const NavDrawer = ({ open, onClose }) => {
           </div>
           <p className="font-bold text-white text-base leading-tight">{user?.name}</p>
           <p className="text-emerald-200 text-xs mt-0.5 truncate">{user?.email}</p>
+          {user?.trust && (
+            <p className="text-emerald-100/90 text-[11px] mt-1.5 leading-snug">
+              {user.trust.levelLabel} · ציון {user.trust.score}
+              <span className="opacity-80 mr-1">
+                {" "}
+                ({Array.from({ length: user.trust.stars }).map(() => "★").join("")})
+              </span>
+            </p>
+          )}
         </div>
 
         {/* ── קישורי ניווט ────────────────────────── */}

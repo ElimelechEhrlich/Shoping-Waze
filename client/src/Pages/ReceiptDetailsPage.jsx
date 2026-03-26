@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "../Contexts/ToastContext.jsx";
+import { useAuth } from "../hooks/useAuth.js";
 import usePageTitle from "../hooks/usePageTitle.js";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -26,6 +27,7 @@ const ReceiptDetailsPage = () => {
   const navigate       = useNavigate();
   const { state }      = useLocation();
   const { showToast }  = useToast();
+  const { refreshUser } = useAuth();
   const receipt        = state?.receipt;
 
   usePageTitle(receipt?.store_name ? `קבלה — ${receipt.store_name}` : "פרטי קבלה");
@@ -77,14 +79,19 @@ const ReceiptDetailsPage = () => {
 
       // שמירה להיסטוריה (fire-and-forget — לא חוסם אם נכשל)
       const total = validItems.reduce((s, i) => s + i.price * i.qty, 0);
-      fetch(`${API_URL}/history`, {
-        method: "POST", headers,
-        body: JSON.stringify({
-          storeName: receipt?.store_name || "לא ידוע",
-          items:     validItems,
-          total,
-        }),
-      }).catch(() => {});
+      try {
+        const histRes = await fetch(`${API_URL}/history`, {
+          method: "POST", headers,
+          body: JSON.stringify({
+            storeName: receipt?.store_name || "לא ידוע",
+            items:     validItems,
+            total,
+          }),
+        });
+        if (histRes.ok) await refreshUser(); // מעדכן דירוג אמון אחרי אישור קבלה
+      } catch {
+        /* היסטוריה לא חוסמת את ה-flow */
+      }
 
       showToast(`${validItems.length} פריטים נוספו לסל`, "success");
       navigate("/cart");
