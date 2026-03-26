@@ -36,10 +36,14 @@ const checkBrightness = (file) =>
   });
 
 // ── מיזוג Canvas ─────────────────────────────────────────────
-// טוען את כל התמונות ומשרשר אותן אנכית לתמונה אחת
+// טוען את כל התמונות ומשרשר אותן אנכית ומוציא תמיד JPEG.
+//
+// לפני: קובץ בודד הוחזר כמות שהוא (files[0]).
+//        בעיה: iPhone שולח לפעמים HEIC או קובץ עם type="" שהשרת חוסם.
+// אחרי: כל הקבצים עוברים Canvas → canvas.toBlob("image/jpeg").
+//        כך הפורמט תמיד JPEG, הגדרות ה-MIME תמיד תקינות,
+//        ו-HEIC / JPEG / PNG / WEBP — כולם מנורמלים לפני ההעלאה.
 const mergePhotos = async (files) => {
-  if (files.length === 1) return files[0];
-
   const loadImg = (file) =>
     new Promise((resolve, reject) => {
       const img = new Image();
@@ -71,7 +75,7 @@ const mergePhotos = async (files) => {
     canvas.toBlob(
       (blob) => {
         if (!blob) { reject(new Error("מיזוג נכשל")); return; }
-        resolve(new File([blob], "receipt-combined.jpg", { type: "image/jpeg" }));
+        resolve(new File([blob], "receipt.jpg", { type: "image/jpeg" }));
       },
       "image/jpeg",
       0.92
@@ -209,7 +213,7 @@ const ScanPage = () => {
       if (response.status === 413)
         throw new Error(`הקובץ גדול מדי (מקסימום ${MAX_FILE_MB}MB) — נסה לדחוס את התמונה`);
       if (response.status === 422)
-        throw new Error("פורמט קובץ לא נתמך — השתמש ב-JPG, PNG או WEBP");
+        throw new Error("פורמט קובץ לא נתמך — השתמש ב-JPEG, JPG, PNG, WEBP או HEIC");
       if (response.status >= 500)
         throw new Error("השרת נתקל בבעיה — נסה שוב בעוד מספר שניות");
       if (!response.ok)
@@ -283,7 +287,7 @@ const ScanPage = () => {
           <label className="block w-full border-2 border-dashed border-slate-300 rounded-xl p-5 text-center cursor-pointer hover:bg-slate-50 transition">
             <input
               type="file"
-              accept="image/*"
+              accept="image/*,image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif"
               multiple
               className="hidden"
               onChange={onSelectFiles}
@@ -296,7 +300,7 @@ const ScanPage = () => {
             <span className="text-sm font-medium text-slate-700">
               {hasPhotos ? "הוסף תמונה נוספת" : "בחר תמונה"}
             </span>
-            <p className="text-xs text-slate-400 mt-0.5">PNG / JPG / WEBP</p>
+            <p className="text-xs text-slate-400 mt-0.5">JPG / JPEG / PNG / WEBP / HEIC</p>
           </label>
 
           <button
