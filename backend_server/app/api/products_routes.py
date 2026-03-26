@@ -1,16 +1,26 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query
+from datetime import date
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core.utils import normalize_product_name
 from app.database.session import get_db
 from app.models.price_history import PriceHistory
 from app.models.product import Product
-from app.schemas.products_schema import ProductListResponse, ProductListItem
-
+from app.models.store import Store
+from app.schemas.products_schema import (
+    ProductCreateRequest,
+    ProductCreateResponse,
+    ProductListItem,
+    ProductListResponse,
+)
 
 router = APIRouter(prefix="/products", tags=["products"])
+
+_UNKNOWN_STORE_NAMES: frozenset[str] = frozenset({"unknown", "לא ידוע", "לא מזוהה", ""})
 
 
 @router.get("", response_model=ProductListResponse)
@@ -44,6 +54,74 @@ def list_products(
         for row in rows
     ]
     return ProductListResponse(products=items)
+
+
+@router.post("", response_model=ProductCreateResponse, status_code=status.HTTP_201_CREATED)
+def create_product(
+    body: ProductCreateRequest,
+    db_session: Session = Depends(get_db),
+) -> ProductCreateResponse:
+    canonical = normalize_product_name(body.name)
+    normalized_name = " ".join(body.name.strip().split())
+
+    # Check if product already exists (by canonical name or exact name)
+    existing = None
+    if canonical:
+        existing = db_session.scalar(select(Product).where(Product.canonical_name == canonical))
+    if not existing:
+        existing = db_session.scalar(select(Product).where(Product.name == normalized_name))
+
+    already_existed = existing is not None
+    if already_existed:
+        product = existing
+    else:
+        product = Product(name=normalized_name, canonical_name=canonical, source="manual")
+        db_session.add(product)
+        db_session.flush()
+
+    saved_price = 0.0
+
+    # Save price entry if price + store provided and store is known
+    if body.price is not None and body.price > 0 and body.store_name:
+        store_name_norm = " ".join(body.store_name.strip().split())
+        if store_name_norm.lower() not in _UNKNOWN_STORE_NAMES:
+            store = db_session.scalar(select(Store).where(Store.name == store_name_norm))
+            if not store:
+                store = Store(name=store_name_norm)
+                db_session.add(store)
+                db_session.flush()
+
+            entry_date = body.receipt_date or date.today()
+            price_row = PriceHistory(
+                product_id=product.id,
+                store_id=store.id,
+                unit_price=round(body.price, 4),
+                receipt_date=entry_date,
+            )
+            db_session.add(price_row)
+            saved_price = body.price
+
+    db_session.commit()
+
+    # If no price was saved now, check existing average
+    if saved_price == 0.0:
+        avg = db_session.scalar(
+            select(func.avg(PriceHistory.unit_price)).where(PriceHistory.product_id == product.id)
+        )
+        saved_price = round(float(avg), 2) if avg else 0.0
+
+    msg = "מוצר קיים — מחיר עודכן" if already_existed and body.price else (
+          "מוצר קיים במאגר" if already_existed else "מוצר חדש נוסף למאגר"
+    )
+
+    return ProductCreateResponse(
+        id=product.id,
+        name=product.name,
+        category=_guess_category(product.name),
+        price=saved_price,
+        already_existed=already_existed,
+        message=msg,
+    )
 
 
 def _guess_category(product_name: str) -> str:

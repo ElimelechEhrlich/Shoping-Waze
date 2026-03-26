@@ -1,15 +1,16 @@
 // pages/CartPage.jsx
 import { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import useCart      from "../hooks/useCart.js";
-import useProducts  from "../hooks/useProducts.js";
-import useCompare   from "../hooks/useCompare.js";
-import useDebounce  from "../hooks/useDebounce.js";
-import usePageTitle from "../hooks/usePageTitle.js";
-import ProductList  from "../Comps/Cart/ProductList.jsx";
-import CartCategory from "../Comps/Cart/CartCategory.jsx";
-import CartFooter   from "../Comps/Cart/CartFooter.jsx";
-import NoPriceModal from "../Comps/Cart/NoPriceModal.jsx";
+import useCart        from "../hooks/useCart.js";
+import useProducts    from "../hooks/useProducts.js";
+import useCompare     from "../hooks/useCompare.js";
+import useDebounce    from "../hooks/useDebounce.js";
+import usePageTitle   from "../hooks/usePageTitle.js";
+import ProductList    from "../Comps/Cart/ProductList.jsx";
+import CartCategory   from "../Comps/Cart/CartCategory.jsx";
+import CartFooter     from "../Comps/Cart/CartFooter.jsx";
+import NoPriceModal   from "../Comps/Cart/NoPriceModal.jsx";
+import AddProductModal from "../Comps/Cart/AddProductModal.jsx";
 import { SkeletonCard } from "../Comps/Skeleton.jsx";
 
 const SORT_OPTIONS = [
@@ -35,11 +36,23 @@ const CartPage = () => {
   const [search, setSearch]           = useState("");
   const [sortBy, setSortBy]           = useState("added");
   const [pending, setPending]         = useState(null);
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [showClearConfirm, setShowClearConfirm]   = useState(false);
+  const [showAddProduct, setShowAddProduct]       = useState(false);
+  const [extraProducts, setExtraProducts]         = useState([]);
 
   usePageTitle(totalItems > 0 ? `סל הקניות (${totalItems})` : "סל הקניות");
 
   const debouncedSearch = useDebounce(search, 280);
+
+  // ── מוצר חדש נוצר במאגר ─────────────────────────────────
+  const handleProductCreated = (newProduct) => {
+    setExtraProducts((prev) => {
+      const alreadyIn = prev.some((p) => p.id === newProduct.id) ||
+                        products.some((p) => p.id === newProduct.id);
+      return alreadyIn ? prev : [newProduct, ...prev];
+    });
+    setShowAddProduct(false);
+  };
 
   // ── הוספת מוצר לסל ─────────────────────────────────────
   const handleAddProduct = (product) => {
@@ -168,12 +181,30 @@ const CartPage = () => {
 
           {/* פאנל שמאל — מוצרים */}
           <section>
-            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 px-1">
-              מוצרים להוספה
-            </h2>
+            <div className="flex items-center justify-between mb-3 px-1">
+              <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                מוצרים להוספה
+              </h2>
+              <button
+                onClick={() => setShowAddProduct(true)}
+                className="flex items-center gap-1 text-xs font-semibold text-emerald-600
+                  hover:text-emerald-700 border border-emerald-200 hover:border-emerald-300
+                  hover:bg-emerald-50 px-2.5 py-1.5 rounded-lg transition"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                מוצר חדש
+              </button>
+            </div>
             {productsLoading
               ? <><SkeletonCard rows={4} /><SkeletonCard rows={3} /></>
-              : <ProductList products={products} search={debouncedSearch} cart={cart} onAdd={handleAddProduct} />
+              : <ProductList
+                  products={[...extraProducts, ...products]}
+                  search={debouncedSearch}
+                  cart={cart}
+                  onAdd={handleAddProduct}
+                />
             }
           </section>
 
@@ -231,6 +262,13 @@ const CartPage = () => {
           </section>
         </div>
       </main>
+
+      {showAddProduct && (
+        <AddProductModal
+          onClose={() => setShowAddProduct(false)}
+          onCreated={handleProductCreated}
+        />
+      )}
 
       {pending && (
         <NoPriceModal item={pending} onConfirm={handleModalConfirm} onCancel={() => setPending(null)} />
