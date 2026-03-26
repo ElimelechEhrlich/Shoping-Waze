@@ -97,11 +97,17 @@ export const useCameraCapture = () => {
     }
   }, [stopCamera]);
 
+  // צילום + סגירת מצלמה (מצב בודד)
   const capturePhoto = useCallback(async (videoElement) => {
     const file = await createReceiptFileFromVideo(videoElement);
     closeCamera();
     return file;
   }, [closeCamera]);
+
+  // צילום ללא סגירת מצלמה (מצב רב-תמונות)
+  const capturePhotoKeepOpen = useCallback(async (videoElement) => {
+    return createReceiptFileFromVideo(videoElement);
+  }, []);
 
   useEffect(() => stopCamera, [stopCamera]);
 
@@ -113,5 +119,6 @@ export const useCameraCapture = () => {
     openCamera,
     closeCamera,
     capturePhoto,
+    capturePhotoKeepOpen,
   };
 };

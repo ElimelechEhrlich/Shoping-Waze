@@ -26,6 +26,7 @@ vi.mock("../../hooks/useCameraCapture.js", () => ({
     openCamera: openCameraMock,
     closeCamera: closeCameraMock,
     capturePhoto: capturePhotoMock,
+    capturePhotoKeepOpen: vi.fn(),
   }),
 }));
 

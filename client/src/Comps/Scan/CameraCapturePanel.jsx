@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
-const CameraCapturePanel = ({ stream, onCapture, onCancel }) => {
+// multiMode=true: כפתור "צלם עוד" שומר מצלמה פתוחה, capturedCount מציג כמה צולמו
+const CameraCapturePanel = ({ stream, onCapture, onCaptureKeepOpen, onCancel, capturedCount = 0 }) => {
   const videoRef = useRef(null);
   const [videoReady, setVideoReady] = useState(false);
+  const multiMode = Boolean(onCaptureKeepOpen);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -18,9 +20,18 @@ const CameraCapturePanel = ({ stream, onCapture, onCancel }) => {
     <div className="bg-slate-950 text-white rounded-xl p-4 space-y-3" dir="rtl">
       {/* Instruction */}
       <div className="text-center space-y-0.5">
-        <p className="text-sm font-semibold text-white">כוונו את הקבלה אל המסגרת</p>
+        <p className="text-sm font-semibold text-white">
+          כוונו את הקבלה אל המסגרת
+          {multiMode && capturedCount > 0 && (
+            <span className="mr-2 bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+              {capturedCount} צולמו
+            </span>
+          )}
+        </p>
         <p className="text-xs text-slate-400">
-          החזיקו את הטלפון ישר מעל הקבלה · מרחק 15–25 ס״מ
+          {multiMode
+            ? `צלמו חלק אחד של הקבלה בכל פעם · הם יאוחדו אוטומטית`
+            : `החזיקו את הטלפון ישר מעל הקבלה · מרחק 15–25 ס״מ`}
         </p>
       </div>
 
@@ -80,23 +91,57 @@ const CameraCapturePanel = ({ stream, onCapture, onCancel }) => {
 
       {/* Buttons */}
       <div className="flex gap-3">
-        <button
-          type="button"
-          onClick={() => onCapture(videoRef.current)}
-          disabled={!videoReady}
-          className="flex-1 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600
-            disabled:opacity-40 text-white font-semibold text-sm transition"
-        >
-          📷 &nbsp;צלם עכשיו
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-5 py-2.5 rounded-lg border border-slate-500 text-slate-100
-            hover:bg-slate-800 font-semibold text-sm transition"
-        >
-          ביטול
-        </button>
+        {multiMode ? (
+          <>
+            <button
+              type="button"
+              onClick={() => onCaptureKeepOpen(videoRef.current)}
+              disabled={!videoReady}
+              className="flex-1 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600
+                disabled:opacity-40 text-white font-semibold text-sm transition"
+            >
+              📷 &nbsp;{capturedCount === 0 ? "צלם חלק ראשון" : "צלם חלק הבא"}
+            </button>
+            {capturedCount > 0 && (
+              <button
+                type="button"
+                onClick={onCancel}
+                className="px-4 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600
+                  text-white font-semibold text-sm transition"
+              >
+                סיימתי ✓
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-4 py-2.5 rounded-lg border border-slate-500 text-slate-100
+                hover:bg-slate-800 font-semibold text-sm transition"
+            >
+              ביטול
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => onCapture(videoRef.current)}
+              disabled={!videoReady}
+              className="flex-1 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600
+                disabled:opacity-40 text-white font-semibold text-sm transition"
+            >
+              📷 &nbsp;צלם עכשיו
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-5 py-2.5 rounded-lg border border-slate-500 text-slate-100
+                hover:bg-slate-800 font-semibold text-sm transition"
+            >
+              ביטול
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
