@@ -71,6 +71,8 @@ const useCart = () => {
         if (data.success) {
           setCart(data.cart);
           showToast(`${name} נוסף לסל`, "success");
+        } else {
+          showToast(data.message || "שגיאה בהוספת פריט לסל", "error");
         }
         return;
       }
@@ -82,7 +84,11 @@ const useCart = () => {
       });
       const data = await handleResponse(res);
       if (!data) return;
-      if (data.success) setCart(data.cart);
+      if (data.success) {
+        setCart(data.cart);
+      } else {
+        showToast(data.message || "שגיאה בעדכון פריט", "error");
+      }
     } catch (err) {
       showToast(err.message || "שגיאה בעדכון פריט", "error");
     }

@@ -130,6 +130,8 @@ const useSharedCart = () => {
       if (data.success) {
         setCurrentCart((prev) => prev ? { ...prev, items: data.items } : prev);
         showToast(`${item.name} נוסף לסל`, "success");
+      } else {
+        showToast(data.message || "שגיאה בהוספת פריט — בדוק שאתה חבר בסל", "error");
       }
     } catch (err) {
       showToast(err.message || "שגיאה בהוספת פריט", "error");
@@ -145,8 +147,11 @@ const useSharedCart = () => {
       );
       const data = await handle(res);
       if (!data) return;
-      if (data.success)
+      if (data.success) {
         setCurrentCart((prev) => prev ? { ...prev, items: data.items } : prev);
+      } else {
+        showToast(data.message || "שגיאה בעדכון פריט", "error");
+      }
     } catch (err) {
       showToast(err.message || "שגיאה בעדכון פריט", "error");
     }

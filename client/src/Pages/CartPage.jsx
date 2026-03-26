@@ -7,6 +7,7 @@ import useCompare     from "../hooks/useCompare.js";
 import useDebounce    from "../hooks/useDebounce.js";
 import usePageTitle   from "../hooks/usePageTitle.js";
 import { exportCartCSV } from "../utils/exportCart.js";
+import HomeButton    from "../Comps/HomeButton.jsx";
 import ProductList    from "../Comps/Cart/ProductList.jsx";
 import CartCategory   from "../Comps/Cart/CartCategory.jsx";
 import CartFooter     from "../Comps/Cart/CartFooter.jsx";
@@ -122,11 +123,7 @@ const CartPage = () => {
       <header className="bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-30">
         <div className="max-w-6xl mx-auto space-y-3">
           <div className="flex items-center gap-3">
-            <Link to="/" className="text-slate-400 hover:text-slate-600 transition">
-              <svg className="w-5 h-5 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
+            <HomeButton />
             <h1 className="text-lg font-bold text-slate-900 flex-1">סל הקניות</h1>
 
             {cart.length > 0 && (

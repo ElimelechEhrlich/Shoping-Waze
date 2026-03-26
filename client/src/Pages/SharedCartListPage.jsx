@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import useSharedCart from "../hooks/useSharedCart.js";
 import { useAuth } from "../hooks/useAuth.js";
 import usePageTitle from "../hooks/usePageTitle.js";
+import HomeButton from "../Comps/HomeButton.jsx";
 
 const SharedCartListPage = () => {
   usePageTitle("סלים משותפים");
@@ -60,11 +61,7 @@ const SharedCartListPage = () => {
       {/* ── Header ─────────────────────────────────────── */}
       <header className="bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <Link to="/" className="text-slate-400 hover:text-slate-600 transition">
-            <svg className="w-5 h-5 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
+          <HomeButton />
           <h1 className="text-lg font-bold text-slate-900 flex-1">סלים משותפים</h1>
         </div>
       </header>
