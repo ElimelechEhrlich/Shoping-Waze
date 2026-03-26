@@ -14,10 +14,10 @@ import AddProductModal from "../Comps/Cart/AddProductModal.jsx";
 import { SkeletonCard } from "../Comps/Skeleton.jsx";
 
 const SORT_OPTIONS = [
-  { value: "added",    label: "סדר הוספה" },
-  { value: "name",     label: "לפי שם" },
+  { value: "added",    label: "ברירת מחדל" },
+  { value: "name",     label: "א–ת לפי שם" },
   { value: "category", label: "לפי קטגוריה" },
-  { value: "price",    label: "לפי מחיר" },
+  { value: "price",    label: "יקר → זול" },
 ];
 
 const CartPage = () => {

@@ -1,11 +1,13 @@
 // App.jsx
 import { Routes, Route, Navigate } from "react-router-dom";
-import AuthPage from "./Pages/AuthPage.jsx";
-import Dashboard from "./Pages/Dashboard.jsx";
-import CartPage from "./Pages/CartPage.jsx";
-import CompareResultsPage from "./Pages/CompareResultsPage.jsx";
-import ScanPage from "./Pages/ScanPage.jsx";
-import ReceiptDetailsPage from "./Pages/ReceiptDetailsPage.jsx";
+import AuthPage             from "./Pages/AuthPage.jsx";
+import Dashboard             from "./Pages/Dashboard.jsx";
+import CartPage              from "./Pages/CartPage.jsx";
+import CompareResultsPage    from "./Pages/CompareResultsPage.jsx";
+import ScanPage              from "./Pages/ScanPage.jsx";
+import ReceiptDetailsPage    from "./Pages/ReceiptDetailsPage.jsx";
+import SharedCartListPage    from "./Pages/SharedCartListPage.jsx";
+import SharedCartPage        from "./Pages/SharedCartPage.jsx";
 import { AuthProvider } from "./Contexts/AuthContext.jsx";
 import { ToastProvider } from "./Contexts/ToastContext.jsx";
 import { useAuth } from "./hooks/useAuth.js";
@@ -36,7 +38,9 @@ export default function App() {
           <Route path="/cart"   element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
           <Route path="/compare" element={<ProtectedRoute><CompareResultsPage /></ProtectedRoute>} />
           <Route path="/scan" element={<ProtectedRoute><ScanPage /></ProtectedRoute>} />
-          <Route path="/details" element={<ProtectedRoute><ReceiptDetailsPage /></ProtectedRoute>} />
+          <Route path="/details"          element={<ProtectedRoute><ReceiptDetailsPage /></ProtectedRoute>} />
+          <Route path="/shared-carts"    element={<ProtectedRoute><SharedCartListPage /></ProtectedRoute>} />
+          <Route path="/shared-cart/:id" element={<ProtectedRoute><SharedCartPage /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </ToastProvider>

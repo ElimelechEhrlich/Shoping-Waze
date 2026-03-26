@@ -52,6 +52,8 @@ export const addToCart = async (req, res) => {
     );
     const currentCart = user.cart || [];
 
+    const safeQty = (v) => Math.max(1, Math.round(Number(v) || 1));
+
     // מיזוג — אם קיים מחבר כמויות, אחרת מוסיף
     const updatedCart = [...currentCart];
     for (const item of incomingItems) {
@@ -59,13 +61,13 @@ export const addToCart = async (req, res) => {
         (c) => c.name.toLowerCase() === item.name.toLowerCase()
       );
       if (idx >= 0) {
-        updatedCart[idx].qty   += item.qty;
+        updatedCart[idx].qty   += safeQty(item.qty);
         // עדכון מחיר רק אם הגיע מחיר חדש תקין
         if (item.price > 0) updatedCart[idx].price = item.price;
       } else {
         updatedCart.push({
           name:     item.name,
-          qty:      item.qty,
+          qty:      safeQty(item.qty),
           price:    item.price    ?? 0,
           category: item.category || "כללי",
           addedAt:  new Date(),
@@ -104,7 +106,7 @@ export const updateCartItem = async (req, res) => {
     if (idx < 0)
       return res.status(404).json({ success: false, message: "מוצר לא נמצא" });
 
-    if (qty      !== undefined) cart[idx].qty      = qty;
+    if (qty      !== undefined) cart[idx].qty      = Math.max(0, Math.round(Number(qty) || 0));
     if (price    !== undefined) cart[idx].price    = price;
     if (category !== undefined) cart[idx].category = category;
 

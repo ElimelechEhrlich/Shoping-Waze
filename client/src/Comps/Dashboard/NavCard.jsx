@@ -12,6 +12,11 @@ const colorMap = {
     text:  "text-blue-600",
     hover: "hover:bg-blue-50 hover:border-blue-200",
   },
+  purple: {
+    light: "bg-purple-50",
+    text:  "text-purple-600",
+    hover: "hover:bg-purple-50 hover:border-purple-200",
+  },
 };
 
 const NavCard = ({ to, color, icon, title, subtitle, badge }) => {
