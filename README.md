@@ -1,100 +1,104 @@
-# My Waze — Smart Grocery Receipt Scanner
+# Shopping Waze — מערכת קניות חכמה
 
-A smart web application for grocery shopping management. Upload a receipt image (or capture one directly with the camera), and the system automatically extracts products and prices using Google Gemini AI. Then compare your shopping basket across different store branches to find the best prices.
+אפליקציה לניהול קניות חכם: סרוק קבלה, צבור מאגר מחירים, השווה בין רשתות — והתחסך בכל קנייה.
 
 ---
 
-## Features
+## תכונות מרכזיות
 
-| Feature | Description |
+| תכונה | תיאור |
 |---|---|
-| **Receipt Scanning** | Upload an image or capture directly from the camera |
-| **AI-based OCR** | Automatic extraction of products and prices from Hebrew receipts using Gemini |
-| **Cart Management** | Add, edit, and delete products in the cart |
-| **Price Comparison** | Compare the basket against all stores in the database |
-| **Price History** | Store product prices over time per branch |
-| **Popular Products** | Display frequently used products on the dashboard |
-| **User Authentication** | Registration, login, secure JWT sessions |
+| **סריקת קבלות** | העלאת תמונה או צילום ישיר מהמצלמה |
+| **OCR עברי (Gemini AI)** | חילוץ אוטומטי של מוצרים ומחירים מקבלות |
+| **מאגר מוצרים ומחירים** | כל קבלה מזינה את מאגר MySQL הכללי — לטובת כלל המשתמשים |
+| **ניהול עגלת קניות** | הוספה, עדכון, מחיקה ורוקון הסל |
+| **השוואת מחירים** | השוואת הסל בין כל הרשתות הידועות במסד הנתונים |
+| **מוצרים פופולריים** | דשבורד עם המוצרים שנרכשו הכי הרבה (לפי היסטוריית הסל) |
+| **אימות משתמשים** | הרשמה, התחברות וניהול session עם JWT |
 
 ---
 
-## Architecture
+## ארכיטקטורה
 
-The application is split into three independent services:
+האפליקציה מורכבת משלושה שירותים עצמאיים:
 
 ```
-┌─────────────────────────────────────────────────────┐
-│               Browser (React)                        │
-│          Vite + React 19 + Tailwind CSS 4            │
-└────────────┬─────────────────────┬───────────────────┘
-             │                     │
-             ▼                     ▼
-┌────────────────────┐   ┌─────────────────────────────┐
-│  server_auth       │   │  backend_server              │
-│  Node.js + Express │   │  Python + FastAPI            │
-│  MongoDB           │   │  MySQL + Gemini AI           │
-│  PORT: 5000        │   │  PORT: 8000                  │
-└────────────────────┘   └─────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│                  דפדפן (React)                        │
+│          Vite + React 19 + Tailwind CSS 4             │
+│                PORT: 5173                             │
+└─────────────┬────────────────────┬────────────────────┘
+              │                    │
+              ▼                    ▼
+┌─────────────────────┐  ┌──────────────────────────────┐
+│  server_auth        │  │  backend_server               │
+│  Node.js + Express  │  │  Python + FastAPI             │
+│  MongoDB            │  │  MySQL 8 + Google Gemini AI   │
+│  PORT: 5000         │  │  PORT: 8000                   │
+└─────────────────────┘  └──────────────────────────────┘
 ```
 
-| Layer | Technology | Responsibility |
+| שכבה | טכנולוגיה | אחריות |
 |---|---|---|
-| **Frontend** | React 19, Vite 6, Tailwind CSS 4, React Router 7 | User interface |
-| **Auth Server** | Node.js, Express 4, MongoDB, JWT, bcryptjs | Users, login, cart, popular products |
-| **Backend** | Python 3.11, FastAPI, SQLAlchemy 2, MySQL 8, Gemini AI | Receipt OCR, price comparison, product catalog |
+| **Frontend** | React 19, Vite, Tailwind CSS 4, React Router 7 | ממשק משתמש, ניהול state |
+| **Auth Server** | Node.js, Express 4, MongoDB, JWT, bcryptjs | משתמשים, הרשמה/כניסה, עגלה, מוצרים פופולריים |
+| **Backend Server** | Python 3.11, FastAPI, SQLAlchemy 2, MySQL 8, Gemini AI | OCR קבלות, מאגר מחירים, השוואה בין רשתות |
 
 ---
 
-## Folder Structure
+## מבנה תיקיות
 
 ```
-my_waze/
-├── client/                        # Frontend (React + Vite)
+Shoping-Waze/
+├── client/                         # Frontend (React + Vite)
 │   ├── src/
-│   │   ├── Pages/                 # Auth, Dashboard, Cart, Scan, Details, Compare
-│   │   ├── Comps/                 # Components: Auth, Cart, Dashboard, Scan
-│   │   ├── hooks/                 # useAuth, useCart, useCompare, useCameraCapture
-│   │   ├── Contexts/              # AuthContext
-│   │   └── test/                  # setupTests.js
+│   │   ├── Pages/                  # AuthPage, Dashboard, CartPage, ScanPage,
+│   │   │                           #   ReceiptDetailsPage, CompareResultsPage
+│   │   ├── Comps/                  # Auth, Cart, Dashboard, Scan
+│   │   ├── hooks/                  # useAuth, useCart, useCompare,
+│   │   │                           #   useCameraCapture, useProducts, usePopularProducts
+│   │   ├── Contexts/               # AuthContext (JWT + session)
+│   │   └── Pages/__tests__/        # Vitest tests
 │   ├── .env.example
 │   └── vite.config.js
 │
-├── server_auth/                   # Auth server (Node.js + Express)
-│   ├── controllers/               # authController, cartController, productsController
-│   ├── models/                    # User (MongoDB)
-│   ├── routes/                    # auth, cart, products
-│   ├── middleware/                # auth.js (JWT protect)
-│   ├── db/                        # MongoDB client
+├── server_auth/                    # Auth + Cart server (Node.js + Express)
+│   ├── controllers/                # authController, cartController, productsController
+│   ├── models/                     # User (MongoDB schema)
+│   ├── routes/                     # auth, cart, products
+│   ├── middleware/                 # auth.js (JWT protect)
+│   ├── db/                         # MongoDB client
 │   └── .env.example
 │
-└── backend_server/                # Data server (Python + FastAPI)
+└── backend_server/                 # Data + AI server (Python + FastAPI)
     ├── app/
-    │   ├── api/                   # receipt_routes, basket_routes, products_routes
-    │   ├── services/              # OCRService (async), ReceiptService, BasketService
-    │   ├── models/                # Product, Store, PriceHistory (SQLAlchemy)
-    │   ├── schemas/               # Pydantic schemas
-    │   └── core/                  # config, constants, enums, utils
-    ├── migrations/                # Alembic migrations
+    │   ├── api/                    # receipt_routes, basket_routes, products_routes
+    │   ├── services/               # OCRService, ReceiptService, BasketService
+    │   ├── models/                 # Product, Store, PriceHistory (SQLAlchemy ORM)
+    │   ├── schemas/                # Pydantic schemas
+    │   └── core/                   # config, constants, enums, utils
+    ├── migrations/                 # Alembic migrations
+    ├── tests/                      # pytest tests
     ├── dockerfile
-    ├── docker-compose.yml
+    ├── docker-compose.yml          # MySQL 8 service
     └── .env.example
 ```
 
 ---
 
-## Local Setup
+## הגדרת סביבה מקומית
 
-### Prerequisites
+### דרישות מקדימות
 
 - Node.js 18+
 - Python 3.11+
-- MongoDB running locally (or Atlas)
-- MySQL 8 running locally (or via Docker)
-- Google Gemini API key
+- MongoDB פעיל (מקומי או Atlas)
+- MySQL 8 פעיל (מקומי או דרך Docker)
+- מפתח API של Google Gemini
 
 ---
 
-### 1. Frontend (client)
+### 1. Frontend (`client`)
 
 ```bash
 cd client
@@ -103,9 +107,9 @@ npm install
 npm run dev
 ```
 
-Runs at: `http://localhost:5173`
+כתובת: `http://localhost:5173`
 
-**Environment variables:**
+**משתני סביבה:**
 ```env
 VITE_API_URL=http://localhost:5000/api
 VITE_DATA_API_URL=http://localhost:8000
@@ -113,7 +117,7 @@ VITE_DATA_API_URL=http://localhost:8000
 
 ---
 
-### 2. Auth Server (server_auth)
+### 2. Auth Server (`server_auth`)
 
 ```bash
 cd server_auth
@@ -122,12 +126,12 @@ npm install
 node index.js
 ```
 
-Runs at: `http://localhost:5000`
+כתובת: `http://localhost:5000`
 
-**Environment variables:**
+**משתני סביבה:**
 ```env
 MONGO_URI=mongodb://localhost:27017
-DB_NAME=my_waze
+DB_NAME=shopping_waze
 JWT_SECRET=your_jwt_secret
 JWT_EXPIRES_IN=7d
 PORT=5000
@@ -136,25 +140,32 @@ CLIENT_URL=http://localhost:5173
 
 ---
 
-### 3. Backend Server (backend_server)
+### 3. Backend Server (`backend_server`)
 
-**With Docker (recommended for MySQL):**
+**הרצת MySQL עם Docker (מומלץ):**
 ```bash
 cd backend_server
 docker-compose up -d
+```
+
+**הרצת שרת Python:**
+```bash
 cp .env.example .env
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-Migrations run automatically on startup via Alembic. To run them manually:
+מיגרציות Alembic רצות **אוטומטית** בעת הפעלה. להרצה ידנית:
 ```bash
 alembic upgrade head
 ```
 
-**Environment variables:**
+כתובת: `http://localhost:8000`  
+תיעוד API אינטראקטיבי: `http://localhost:8000/docs`
+
+**משתני סביבה:**
 ```env
-SQLALCHEMY_DATABASE_URL=mysql+pymysql://user:password@localhost:3306/grocery_app
+SQLALCHEMY_DATABASE_URL=mysql+pymysql://user:password@localhost:3306/shopping_waze
 GEMINI_API_KEY=your_gemini_api_key
 GEMINI_MODEL_NAME=gemini-2.0-flash
 CORS_ALLOW_ORIGINS=http://localhost:5173
@@ -162,59 +173,101 @@ CREATE_TABLES_ON_STARTUP=false
 LOG_LEVEL=INFO
 ```
 
-Runs at: `http://localhost:8000`
-API docs: `http://localhost:8000/docs`
-
-> **Note on GEMINI_MODEL_NAME:** Use a stable model such as `gemini-2.0-flash`. Preview models (e.g. `gemini-*-preview`) have very restrictive rate limits on the free tier (2–5 RPM) which will cause OCR failures on repeated scans.
+> **הערה על מודל Gemini:** השתמש במודל יציב כגון `gemini-2.0-flash`. מודלי Preview מוגבלים ל-2–5 בקשות לדקה בחשבון חינמי, מה שגורם לכשלים בסריקות חוזרות.
 
 ---
 
-## API Endpoints
+## נקודות API
 
 ### Backend (FastAPI) — `http://localhost:8000`
 
-| Method | Path | Description |
+| Method | Path | תיאור |
 |---|---|---|
-| `POST` | `/receipts/upload` | Upload receipt image for OCR extraction |
-| `POST` | `/basket/compare` | Compare shopping basket across stores |
-| `GET` | `/products` | List products with optional search (`?q=`) |
+| `POST` | `/receipts/upload` | העלאת תמונת קבלה → OCR → שמירה ל-MySQL |
+| `POST` | `/basket/compare` | השוואת עגלה בין כל הרשתות הידועות |
+| `GET` | `/products` | רשימת מוצרים עם מחיר ממוצע (חיפוש: `?q=`) |
 
-### Auth Server (Express) — `http://localhost:5000/api`
-
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| `GET` | `/health` | — | Health check |
-| `POST` | `/auth/register` | — | Register user |
-| `POST` | `/auth/login` | — | Login |
-| `GET` | `/auth/me` | JWT | Current user info |
-| `GET` | `/products` | JWT | Product list |
-| `GET` | `/products/popular` | JWT | Popular products |
-| `GET/POST/PATCH/DELETE` | `/cart` | JWT | Cart management |
-| `PUT` | `/cart/store` | JWT | Update selected store |
+**הערה:** סריקת קבלה שומרת מוצרים תמיד למאגר הכללי. מחירים נשמרים רק אם שם הרשת מזוהה (לא `Unknown`).
 
 ---
 
-## Testing
+### Auth Server (Express) — `http://localhost:5000/api`
 
-```bash
-cd client
-npm run test        # Run all tests with Vitest
-npm run lint        # ESLint check
-npm run build       # Verify production build
+| Method | Path | Auth | תיאור |
+|---|---|---|---|
+| `GET` | `/health` | — | בדיקת זמינות שרת |
+| `POST` | `/auth/register` | — | הרשמת משתמש חדש |
+| `POST` | `/auth/login` | — | התחברות + קבלת token |
+| `GET` | `/auth/me` | JWT | פרטי המשתמש הנוכחי |
+| `GET` | `/products` | JWT | רשימת מוצרים (MongoDB) |
+| `GET` | `/products/popular` | JWT | מוצרים פופולריים לפי היסטוריית הסל |
+| `GET` | `/cart` | JWT | שליפת הסל הנוכחי |
+| `POST` | `/cart` | JWT | הוספת פריטים לסל (מיזוג עם קיים) |
+| `PATCH` | `/cart/:name` | JWT | עדכון כמות/מחיר של פריט |
+| `DELETE` | `/cart/:name` | JWT | מחיקת פריט בודד מהסל |
+| `DELETE` | `/cart` | JWT | **רוקון הסל כולו** (לא משפיע על מאגר המוצרים) |
+| `PUT` | `/cart/store` | JWT | עדכון הרשת המועדפת |
+
+---
+
+## זרימת נתונים
+
+```
+משתמש סורק קבלה
+        │
+        ▼
+  ScanPage (React)
+        │ POST /receipts/upload
+        ▼
+  FastAPI + Gemini AI
+        │  ├── חילוץ מוצרים ומחירים
+        │  ├── שמירת מוצרים ל-MySQL (תמיד)
+        │  └── שמירת מחירים ל-MySQL (רק אם הרשת מזוהה)
+        ▼
+  ReceiptDetailsPage (React)
+        │ POST /api/cart
+        ▼
+  MongoDB (עגלת המשתמש)
+
+לאחר מכן, השוואת מחירים:
+  CartPage → POST /basket/compare → FastAPI
+        │  ├── שליפת כל הרשתות הידועות מ-MySQL
+        │  ├── סינון רשתות לא ידועות (Unknown)
+        │  └── חישוב מחיר הסל בכל רשת
+        ▼
+  CompareResultsPage (ממוין מהזול ליקר)
 ```
 
 ---
 
-## Deployment
+## בדיקות
 
-- **Frontend:** Render / Vercel / Netlify — run `npm run build`, deploy `dist/`
-- **Backend (FastAPI):** Render / Railway — `dockerfile` included
-- **Auth Server:** Render / Railway — `node index.js`
-- **MySQL:** PlanetScale / Railway / Render managed DB
-- **MongoDB:** MongoDB Atlas
+```bash
+# Frontend
+cd client
+npm run test        # Vitest — כל הבדיקות
+npm run lint        # ESLint
+npm run build       # בדיקת build לייצור
 
-### Important notes for Render (free tier)
+# Backend
+cd backend_server
+pytest tests/ -v    # 23 בדיקות pytest
+```
 
-- The backend instance spins down after 15 minutes of inactivity. The first request after a sleep period will take 15–30 seconds (cold start).
-- The OCR endpoint calls Gemini synchronously in a background thread (`asyncio.to_thread`) so it does not block the FastAPI event loop while waiting for the AI response.
-- Set `GEMINI_MODEL_NAME` to a stable model (not a preview) to avoid hitting low rate limits on the free Gemini tier.
+---
+
+## פריסה (Deployment)
+
+| רכיב | פלטפורמות מומלצות |
+|---|---|
+| **Frontend** | Vercel / Netlify / Render — `npm run build` → `dist/` |
+| **Backend (FastAPI)** | Render / Railway — `dockerfile` כלול |
+| **Auth Server** | Render / Railway — `node index.js` |
+| **MySQL** | PlanetScale / Railway / Render Managed DB |
+| **MongoDB** | MongoDB Atlas |
+
+### הערות לפריסה על Render (חינמי)
+
+- שירותים חינמיים נכבים לאחר 15 דקות חוסר פעילות — הבקשה הראשונה תיקח 15–30 שניות (cold start).
+- ה-OCR רץ ב-`asyncio.to_thread` ולא חוסם את ה-event loop של FastAPI.
+- יש להגדיר `GEMINI_MODEL_NAME` למודל יציב (לא preview) כדי להימנע מהגבלות rate limit.
