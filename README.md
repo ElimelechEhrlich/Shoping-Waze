@@ -1,26 +1,60 @@
 # Shopping Waze — Smart Grocery Shopping System
 
-A web application for smart grocery management: scan a receipt, build a shared price database, compare prices across supermarket chains — and save money on every shop.
+A full-stack web application for smart grocery management: scan receipts with AI, manage a personal shopping cart, compare prices across supermarket chains, and collaborate with family on a shared cart.
 
 ---
 
 ## Key Features
 
-| Feature | Description |
-|---|---|
-| **Receipt Scanning** | Upload an image or capture directly from the camera |
-| **Hebrew OCR (Gemini AI)** | Automatically extract products and prices from Hebrew receipts |
-| **Shared Price Catalog** | Every scanned receipt feeds the global MySQL catalog — available to all users |
-| **Cart Management** | Add, update, remove items, or clear the entire cart |
-| **Price Comparison** | Compare the cart across all known supermarket chains in the database |
-| **Popular Products** | Dashboard widget showing most-purchased products from cart history |
-| **User Authentication** | Registration, login and secure JWT session management |
+### 🧾 Receipt Scanning
+- Upload a photo from your gallery or capture directly from the camera
+- **Multi-photo mode** — photograph a long receipt in sections; the browser stitches them into one image using Canvas before sending
+- **AI-powered OCR** (Google Gemini) extracts Hebrew product names, quantities and prices automatically
+- **Image brightness check** — warns the user before upload if the photo is too dark
+- **Detailed error messages** — distinct feedback for empty results, dark images, oversized files, server errors and timeouts
+- Edit, add, or remove items before approving the receipt
+
+### 🛒 Cart Management
+- Add products from the global catalog or create new products manually (with optional price and store)
+- Adjust quantities, remove items, or clear the entire cart
+- Sort by default order, name (A–Z), category, or price (high → low)
+- Search with debouncing across all cart items
+- **Cart templates** — save the current cart under a name (e.g. "Weekly Shop") and reload it in one click (stored in `localStorage`)
+- **CSV export** — download the full cart as a spreadsheet-ready CSV file with Hebrew support (BOM)
+- Real-time item count and total price in the sticky footer
+
+### 📊 Price Comparison
+- Compare the entire cart across all known supermarket chains in the database
+- Results sorted cheapest-first; price difference shown for each store
+- Data is built from real scanned receipts — grows over time
+- Unknown or unrecognized store names are filtered out of comparisons and price history
+
+### 👥 Shared Cart
+- Create a shared cart and receive a unique 6-character invite code
+- Share the code — other users join in one step
+- All members can add, update or remove items simultaneously
+- Auto-refresh every 15 seconds; invite code displayed at all times for easy sharing
+- Personal cart is completely unaffected
+
+### 🧾 Scan History
+- Every approved receipt is automatically saved to the user's history
+- Browse past receipts with a full expandable item list and totals
+- Delete individual history entries
+
+### 📱 Dashboard
+- Quick navigation cards: Scan, Cart (with badge showing item count), Shared Cart, Scan History
+- Popular products widget — top items from purchase history with an "add again" button
+- First-visit onboarding modal (7 guided slides, shown once per device)
+
+### 🌐 Global Product Catalog
+- Every scanned receipt feeds the shared MySQL catalog — available to all users
+- Products are always saved; price entries are only stored when the store is recognized
+- Average prices per product are calculated from all historical price entries
+- Any user can manually add a new product (name, optional price, optional store)
 
 ---
 
 ## Architecture
-
-The application consists of three independent services:
 
 ```
 ┌──────────────────────────────────────────────────────┐
@@ -40,9 +74,9 @@ The application consists of three independent services:
 
 | Layer | Technology | Responsibility |
 |---|---|---|
-| **Frontend** | React 19, Vite, Tailwind CSS 4, React Router 7 | UI, state management |
-| **Auth Server** | Node.js, Express 4, MongoDB, JWT, bcryptjs | Users, login/register, cart, popular products |
-| **Backend Server** | Python 3.11, FastAPI, SQLAlchemy 2, MySQL 8, Gemini AI | Receipt OCR, price catalog, cross-store comparison |
+| **Frontend** | React 19, Vite, Tailwind CSS 4, React Router 7 | UI, state, client-side logic |
+| **Auth Server** | Node.js, Express 4, MongoDB, JWT, bcryptjs | Users, cart, shared carts, scan history, popular products |
+| **Backend Server** | Python 3.11, FastAPI, SQLAlchemy 2, MySQL 8, Gemini AI | Receipt OCR, global price catalog, cross-store comparison |
 
 ---
 
@@ -50,37 +84,91 @@ The application consists of three independent services:
 
 ```
 Shoping-Waze/
-├── client/                         # Frontend (React + Vite)
+├── client/                             # Frontend (React + Vite)
 │   ├── src/
-│   │   ├── Pages/                  # AuthPage, Dashboard, CartPage, ScanPage,
-│   │   │                           #   ReceiptDetailsPage, CompareResultsPage
-│   │   ├── Comps/                  # Auth, Cart, Dashboard, Scan components
-│   │   ├── hooks/                  # useAuth, useCart, useCompare,
-│   │   │                           #   useCameraCapture, useProducts, usePopularProducts
-│   │   ├── Contexts/               # AuthContext (JWT + session)
-│   │   └── Pages/__tests__/        # Vitest tests
+│   │   ├── Pages/
+│   │   │   ├── AuthPage.jsx
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── CartPage.jsx
+│   │   │   ├── ScanPage.jsx            # Multi-photo, brightness check
+│   │   │   ├── ReceiptDetailsPage.jsx  # Editable items, saves to history
+│   │   │   ├── CompareResultsPage.jsx  # Price diff per store
+│   │   │   ├── SharedCartListPage.jsx  # List + create + join shared carts
+│   │   │   ├── SharedCartPage.jsx      # Shared cart with live updates
+│   │   │   └── ScanHistoryPage.jsx     # Past receipts
+│   │   ├── Comps/
+│   │   │   ├── Auth/
+│   │   │   ├── Cart/
+│   │   │   │   ├── CartCategory.jsx
+│   │   │   │   ├── CartFooter.jsx
+│   │   │   │   ├── ProductList.jsx
+│   │   │   │   ├── AddProductModal.jsx # Manual product creation
+│   │   │   │   ├── TemplateModal.jsx   # Save/load cart templates
+│   │   │   │   └── NoPriceModal.jsx
+│   │   │   ├── Dashboard/
+│   │   │   │   ├── NavCard.jsx         # Colored navigation cards with badge
+│   │   │   │   └── PopularProducts.jsx
+│   │   │   ├── Onboarding/
+│   │   │   │   └── OnboardingModal.jsx # 7-slide first-visit guide
+│   │   │   ├── Scan/
+│   │   │   │   └── CameraCapturePanel.jsx
+│   │   │   └── Skeleton.jsx
+│   │   ├── hooks/
+│   │   │   ├── useAuth.js
+│   │   │   ├── useCart.js              # Auto-sanitize qty from DB
+│   │   │   ├── useCompare.js
+│   │   │   ├── useProducts.js          # sessionStorage cache
+│   │   │   ├── usePopularProducts.js
+│   │   │   ├── useSharedCart.js        # Full shared cart CRUD
+│   │   │   ├── useTemplates.js         # localStorage templates
+│   │   │   ├── useCameraCapture.js     # capturePhotoKeepOpen for multi-photo
+│   │   │   ├── useDebounce.js
+│   │   │   └── usePageTitle.js
+│   │   ├── Contexts/
+│   │   │   ├── AuthContext.jsx
+│   │   │   └── ToastContext.jsx        # Global toast notifications
+│   │   ├── utils/
+│   │   │   └── exportCart.js           # CSV export with Hebrew BOM
+│   │   └── Pages/__tests__/
 │   ├── .env.example
 │   └── vite.config.js
 │
-├── server_auth/                    # Auth + Cart server (Node.js + Express)
-│   ├── controllers/                # authController, cartController, productsController
-│   ├── models/                     # User (MongoDB schema)
-│   ├── routes/                     # auth, cart, products
-│   ├── middleware/                 # auth.js (JWT protect)
-│   ├── db/                         # MongoDB client
+├── server_auth/                        # Auth + Cart server (Node.js)
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   ├── cartController.js           # qty sanitization on every GET
+│   │   ├── productsController.js
+│   │   ├── sharedCartController.js     # Shared cart with invite codes
+│   │   └── historyController.js        # Scan history CRUD
+│   ├── models/
+│   ├── routes/
+│   │   ├── auth.js
+│   │   ├── cart.js
+│   │   ├── products.js
+│   │   ├── sharedCart.js
+│   │   └── history.js
+│   ├── middleware/auth.js
+│   ├── db/client.js
 │   └── .env.example
 │
-└── backend_server/                 # Data + AI server (Python + FastAPI)
+└── backend_server/                     # Data + AI server (Python + FastAPI)
     ├── app/
-    │   ├── api/                    # receipt_routes, basket_routes, products_routes
-    │   ├── services/               # OCRService, ReceiptService, BasketService
-    │   ├── models/                 # Product, Store, PriceHistory (SQLAlchemy ORM)
-    │   ├── schemas/                # Pydantic schemas
-    │   └── core/                   # config, constants, enums, utils
-    ├── migrations/                 # Alembic migrations
-    ├── tests/                      # pytest tests
+    │   ├── api/
+    │   │   ├── receipt_routes.py
+    │   │   ├── basket_routes.py
+    │   │   └── products_routes.py      # GET list + POST create product
+    │   ├── services/
+    │   │   ├── ocr_service.py
+    │   │   ├── receipt_service.py      # Filters unknown stores
+    │   │   └── basket_service.py       # Filters unknown stores from comparison
+    │   ├── models/                     # Product, Store, PriceHistory (SQLAlchemy)
+    │   ├── schemas/
+    │   │   └── products_schema.py      # ProductCreateRequest/Response
+    │   └── core/
+    ├── migrations/
+    ├── tests/
     ├── dockerfile
-    ├── docker-compose.yml          # MySQL 8 service
+    ├── docker-compose.yml
     └── .env.example
 ```
 
@@ -92,8 +180,8 @@ Shoping-Waze/
 
 - Node.js 18+
 - Python 3.11+
-- MongoDB running locally or via Atlas
-- MySQL 8 running locally or via Docker
+- MongoDB (local or Atlas)
+- MySQL 8 (local or Docker)
 - Google Gemini API key
 
 ---
@@ -142,20 +230,20 @@ CLIENT_URL=http://localhost:5173
 
 ### 3. Backend Server (`backend_server`)
 
-**Start MySQL with Docker (recommended):**
+**Start MySQL with Docker:**
 ```bash
 cd backend_server
 docker-compose up -d
 ```
 
-**Run the Python server:**
+**Run the server:**
 ```bash
 cp .env.example .env
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-Alembic migrations run **automatically** on startup. To run them manually:
+Alembic migrations run **automatically** on startup. To run manually:
 ```bash
 alembic upgrade head
 ```
@@ -173,7 +261,7 @@ CREATE_TABLES_ON_STARTUP=false
 LOG_LEVEL=INFO
 ```
 
-> **Note on Gemini model:** Use a stable model such as `gemini-2.0-flash`. Preview models are limited to 2–5 RPM on the free tier, which causes OCR failures on repeated scans.
+> **Gemini model note:** Use a stable model such as `gemini-2.0-flash`. Preview models are limited to 2–5 RPM on the free tier, causing OCR failures on repeated scans.
 
 ---
 
@@ -183,59 +271,97 @@ LOG_LEVEL=INFO
 
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/receipts/upload` | Upload a receipt image → OCR → save to MySQL |
-| `POST` | `/basket/compare` | Compare the cart across all known store chains |
-| `GET` | `/products` | List products with average price (search: `?q=`) |
+| `POST` | `/receipts/upload` | Upload receipt image → OCR → save to MySQL |
+| `POST` | `/basket/compare` | Compare cart across all known store chains |
+| `GET` | `/products` | List products with average price (`?q=` for search) |
+| `POST` | `/products` | Create a new product manually (with optional price + store) |
 
-> Products are always saved to the global catalog. Prices are only stored when the store name is recognized (not `Unknown`).
+> Products are always saved. Price history entries are only stored when the store name is recognized (non-empty, non-"Unknown").
 
 ---
 
 ### Auth Server (Express) — `http://localhost:5000/api`
 
+#### Authentication
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `GET` | `/health` | — | Server health check |
-| `POST` | `/auth/register` | — | Register a new user |
+| `POST` | `/auth/register` | — | Register new user |
 | `POST` | `/auth/login` | — | Login and receive JWT |
 | `GET` | `/auth/me` | JWT | Current user info |
-| `GET` | `/products` | JWT | Product list (MongoDB) |
-| `GET` | `/products/popular` | JWT | Popular products from cart history |
-| `GET` | `/cart` | JWT | Fetch current cart |
-| `POST` | `/cart` | JWT | Add items to cart (merged with existing) |
+
+#### Personal Cart
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET` | `/cart` | JWT | Fetch cart (auto-sanitizes float qty) |
+| `POST` | `/cart` | JWT | Add / merge items into cart |
 | `PATCH` | `/cart/:name` | JWT | Update item quantity or price |
-| `DELETE` | `/cart/:name` | JWT | Remove a single item from cart |
-| `DELETE` | `/cart` | JWT | **Clear the entire cart** (does not affect the global product catalog) |
-| `PUT` | `/cart/store` | JWT | Update preferred store |
+| `DELETE` | `/cart/:name` | JWT | Remove a single item |
+| `DELETE` | `/cart` | JWT | Clear entire cart |
+
+#### Shared Cart
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `POST` | `/shared-carts` | JWT | Create shared cart (returns invite code) |
+| `GET` | `/shared-carts` | JWT | All shared carts the user belongs to |
+| `POST` | `/shared-carts/join` | JWT | Join via 6-char invite code |
+| `GET` | `/shared-carts/:id` | JWT | Get single shared cart |
+| `POST` | `/shared-carts/:id/items` | JWT | Add item to shared cart |
+| `PATCH` | `/shared-carts/:id/items/:name` | JWT | Update item in shared cart |
+| `DELETE` | `/shared-carts/:id/items/:name` | JWT | Remove item from shared cart |
+| `DELETE` | `/shared-carts/:id/leave` | JWT | Leave shared cart (non-owner) |
+| `DELETE` | `/shared-carts/:id` | JWT | Delete shared cart (owner only) |
+
+#### Scan History
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `POST` | `/history` | JWT | Save approved receipt to history |
+| `GET` | `/history` | JWT | Last 50 scan history entries |
+| `DELETE` | `/history/:id` | JWT | Delete a history entry |
+
+#### Products
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET` | `/products` | JWT | Product list from MongoDB |
+| `GET` | `/products/popular` | JWT | Top products from cart history |
 
 ---
 
 ## Data Flow
 
 ```
-User scans a receipt
-        │
-        ▼
-  ScanPage (React)
+──── Receipt Scanning ────────────────────────────────────────
+
+User takes 1–8 photos
+        │  Browser (Canvas) stitches them into one JPEG
+        │  Brightness check warns if image is too dark
         │  POST /receipts/upload
         ▼
-  FastAPI + Gemini AI
-        │  ├── Extract products and prices from image
-        │  ├── Save products to MySQL (always)
-        │  └── Save prices to MySQL (only if store name is recognized)
+FastAPI + Gemini AI
+        ├── Extract products, quantities, prices
+        ├── Save products to MySQL (always)
+        └── Save prices to MySQL (only if store is recognized)
         ▼
-  ReceiptDetailsPage (React)
-        │  POST /api/cart
+ReceiptDetailsPage — user edits items
+        │  POST /api/cart  (add to personal cart)
+        │  POST /api/history  (save to scan history)
         ▼
-  MongoDB (user's cart)
+MongoDB (user's cart + history)
 
-Price comparison flow:
-  CartPage → POST /basket/compare → FastAPI
-        │  ├── Fetch all known stores from MySQL
-        │  ├── Filter out unknown stores (e.g. "Unknown")
-        │  └── Calculate basket total per store
+──── Price Comparison ────────────────────────────────────────
+
+CartPage → POST /basket/compare → FastAPI
+        ├── Fetch all known stores from MySQL
+        ├── Filter out unknown stores
+        └── Calculate basket total per store
         ▼
-  CompareResultsPage (sorted cheapest first)
+CompareResultsPage (sorted cheapest first + price diffs)
+
+──── Shared Cart ────────────────────────────────────────────
+
+User A creates shared cart → gets invite code (e.g. "AB12CD")
+User B enters code → joins cart
+Both users add/update items → MongoDB sharedCarts collection
+Frontend polls every 15 seconds for live updates
 ```
 
 ---
@@ -243,15 +369,15 @@ Price comparison flow:
 ## Testing
 
 ```bash
-# Frontend
+# Frontend (Vitest)
 cd client
-npm run test        # Vitest — all tests
-npm run lint        # ESLint check
-npm run build       # Verify production build
+npm run test        # unit tests
+npm run lint        # ESLint
+npm run build       # production build check
 
-# Backend
+# Backend (pytest)
 cd backend_server
-pytest tests/ -v    # 23 pytest tests
+pytest tests/ -v    # 23 tests
 ```
 
 ---
@@ -267,7 +393,7 @@ pytest tests/ -v    # 23 pytest tests
 | **MongoDB** | MongoDB Atlas |
 
 ### Notes for Render (free tier)
-
-- Free-tier services spin down after 15 minutes of inactivity. The first request after sleep takes 15–30 seconds (cold start).
-- The OCR endpoint runs Gemini in `asyncio.to_thread` so it does not block the FastAPI event loop.
-- Set `GEMINI_MODEL_NAME` to a stable model (not a preview) to avoid hitting low Gemini free-tier rate limits.
+- Services spin down after 15 minutes of inactivity; first request after sleep takes 15–30 s.
+- OCR runs in `asyncio.to_thread` and does not block the FastAPI event loop.
+- Set `GEMINI_MODEL_NAME` to a stable model to avoid low free-tier rate limits.
+- The `sharedCarts` and `scanHistory` collections are created automatically on first use (MongoDB schemaless).
