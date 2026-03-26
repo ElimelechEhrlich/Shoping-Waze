@@ -7,6 +7,7 @@ import CompareResultsPage from "./Pages/CompareResultsPage.jsx";
 import ScanPage from "./Pages/ScanPage.jsx";
 import ReceiptDetailsPage from "./Pages/ReceiptDetailsPage.jsx";
 import { AuthProvider } from "./Contexts/AuthContext.jsx";
+import { ToastProvider } from "./Contexts/ToastContext.jsx";
 import { useAuth } from "./hooks/useAuth.js";
 
 const ProtectedRoute = ({ children }) => {
@@ -28,6 +29,7 @@ const PublicRoute = ({ children }) => {
 export default function App() {
   return (
     <AuthProvider>
+      <ToastProvider>
         <Routes>
           <Route path="/login" element={<PublicRoute><AuthPage /></PublicRoute>} />
           <Route path="/"       element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -37,6 +39,7 @@ export default function App() {
           <Route path="/details" element={<ProtectedRoute><ReceiptDetailsPage /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+      </ToastProvider>
     </AuthProvider>
   );
 }

@@ -1,5 +1,6 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useToast } from "../Contexts/ToastContext.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -15,9 +16,11 @@ const normalizeItems = (receipt) => {
 };
 
 const ReceiptDetailsPage = () => {
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
   const { state } = useLocation();
+  const { showToast } = useToast();
   const receipt = state?.receipt;
+  const [approving, setApproving] = useState(false);
 
   const items = useMemo(() => normalizeItems(receipt), [receipt]);
   const total = useMemo(
@@ -27,23 +30,30 @@ const ReceiptDetailsPage = () => {
 
   const onApprove = async () => {
     if (!items.length) return;
+    setApproving(true);
+    try {
+      const token   = localStorage.getItem("token") || "";
+      const payload = { data: [{ items }] };
+      const response = await fetch(`${API_URL}/cart`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      });
 
-    const token = localStorage.getItem("token") || "";
-    const payload = { data: [{ items }] };
-    const response = await fetch(`${API_URL}/cart`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
+      if (response.status === 401) {
+        showToast("פג תוקף ההתחברות — נא להתחבר מחדש", "warning");
+        navigate("/login");
+        return;
+      }
+      if (!response.ok) throw new Error("שגיאה בהוספת פריטים לסל");
 
-    if (!response.ok) {
-      throw new Error("failed to add items to cart");
+      showToast(`${items.length} פריטים נוספו לסל`, "success");
+      navigate("/cart");
+    } catch (err) {
+      showToast(err.message || "שגיאה בלתי צפויה — נסה שוב", "error");
+    } finally {
+      setApproving(false);
     }
-
-    navigate("/cart");
   };
 
   if (!receipt) {
@@ -129,10 +139,13 @@ const ReceiptDetailsPage = () => {
       <button
         type="button"
         onClick={onApprove}
-        disabled={!items.length}
-        className="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-semibold"
+        disabled={!items.length || approving}
+        className="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-semibold flex items-center justify-center gap-2"
       >
-        אשר והוסף לסל
+        {approving && (
+          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+        )}
+        {approving ? "מוסיף לסל..." : "אשר והוסף לסל"}
       </button>
     </div>
   );

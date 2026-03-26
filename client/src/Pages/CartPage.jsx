@@ -20,7 +20,8 @@ const CartPage = () => {
   const navigate = useNavigate();
 
   const {
-    cart, loading: cartLoading, error: _cartError,
+    cart, loading: cartLoading, error: cartError,
+    fetchCart,
     updateItem, removeItem, clearCart,
     totalItems, totalPrice, missingPrice,
   } = useCart();
@@ -212,14 +213,27 @@ const CartPage = () => {
               </div>
             )}
 
-            {!cartLoading && cart.length === 0 && (
+            {!cartLoading && cartError && (
+              <div className="bg-red-50 border border-red-100 rounded-2xl p-8 text-center space-y-3">
+                <p className="text-3xl">⚠️</p>
+                <p className="text-red-600 text-sm font-medium">{cartError}</p>
+                <button
+                  onClick={fetchCart}
+                  className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition"
+                >
+                  נסה שוב
+                </button>
+              </div>
+            )}
+
+            {!cartLoading && !cartError && cart.length === 0 && (
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-10 text-center">
                 <p className="text-4xl mb-3">🛒</p>
                 <p className="text-slate-400 text-sm">הסל ריק — הוסף מוצרים מהרשימה</p>
               </div>
             )}
 
-            {!cartLoading && Object.entries(groupedCart).map(([cat, items]) => (
+            {!cartLoading && !cartError && Object.entries(groupedCart).map(([cat, items]) => (
               <CartCategory
                 key={cat}
                 category={cat}

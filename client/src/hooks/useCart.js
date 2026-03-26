@@ -1,140 +1,153 @@
 // hooks/useCart.js
-// ─────────────────────────────────────────────────────────
-// ניהול כל לוגיקת הסל: fetch, עדכון, הוספה, מחיקה, סופרמרקט.
-// ─────────────────────────────────────────────────────────
-
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "./useAuth.js";
+import { useToast } from "../Contexts/ToastContext.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const useCart = () => {
-  const { token } = useAuth();
+  const { token, logout } = useAuth();
+  const { showToast } = useToast();
+
   const [cart, setCart]                   = useState([]);
   const [selectedStore, setSelectedStore] = useState(null);
   const [loading, setLoading]             = useState(true);
   const [error, setError]                 = useState(null);
 
+  const authHeaders = useCallback(() => ({
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  }), [token]);
+
+  // ── טיפול ב-401 ─────────────────────────────────────────
+  const handleResponse = useCallback(async (res) => {
+    if (res.status === 401) {
+      showToast("פג תוקף ההתחברות — נא להתחבר מחדש", "warning");
+      logout();
+      return null;
+    }
+    return res.json();
+  }, [logout, showToast]);
+
   // ── שליפת הסל מהשרת ────────────────────────────────────
   const fetchCart = useCallback(async () => {
-    const authHeaders = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-
     try {
       setLoading(true);
-      const res  = await fetch(`${API_URL}/cart`, { headers: authHeaders });
-      const data = await res.json();
+      setError(null);
+      const res  = await fetch(`${API_URL}/cart`, { headers: authHeaders() });
+      const data = await handleResponse(res);
+      if (!data) return;
       if (!data.success) throw new Error(data.message);
       setCart(data.cart);
       setSelectedStore(data.selectedStore);
     } catch (err) {
-      setError(err.message);
+      const msg = err.message || "שגיאה בטעינת הסל";
+      setError(msg);
+      showToast(msg, "error");
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, authHeaders, handleResponse, showToast]);
 
   useEffect(() => {
     if (token) fetchCart();
   }, [token, fetchCart]);
 
   // ── עדכון כמות ו/או מחיר של פריט ─────────────────────
-  // אם הפריט לא קיים בסל — השרת יוסיף אותו (addToCart מטפל בזה)
   const updateItem = async (name, fields) => {
-    const authHeaders = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
+    try {
+      const exists = cart.some((c) => c.name.toLowerCase() === name.toLowerCase());
 
-    // אם הפריט לא קיים בסל — שולחים POST להוספה
-    const exists = cart.some((c) => c.name.toLowerCase() === name.toLowerCase());
+      if (!exists) {
+        const res = await fetch(`${API_URL}/cart`, {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({
+            data: [{ items: [{ name, qty: fields.qty ?? 1, price: fields.price ?? 0, category: fields.category ?? "כללי" }] }],
+          }),
+        });
+        const data = await handleResponse(res);
+        if (!data) return;
+        if (data.success) {
+          setCart(data.cart);
+          showToast(`${name} נוסף לסל`, "success");
+        }
+        return;
+      }
 
-    if (!exists) {
-      // הוספה דרך POST /api/cart עם מבנה JSON של הצוות
-      const res = await fetch(`${API_URL}/cart`, {
-        method: "POST",
-        headers: authHeaders,
-        body: JSON.stringify({
-          data: [{
-            items: [{
-              name:     name,
-              qty:      fields.qty ?? 1,
-              price:    fields.price ?? 0,
-              category: fields.category ?? "כללי",
-            }],
-          }],
-        }),
+      const res  = await fetch(`${API_URL}/cart/${encodeURIComponent(name)}`, {
+        method: "PATCH",
+        headers: authHeaders(),
+        body: JSON.stringify(fields),
       });
-      const data = await res.json();
+      const data = await handleResponse(res);
+      if (!data) return;
       if (data.success) setCart(data.cart);
-      return;
+    } catch (err) {
+      showToast(err.message || "שגיאה בעדכון פריט", "error");
     }
-
-    // עדכון פריט קיים
-    const res  = await fetch(`${API_URL}/cart/${encodeURIComponent(name)}`, {
-      method: "PATCH",
-      headers: authHeaders,
-      body: JSON.stringify(fields),
-    });
-    const data = await res.json();
-    if (data.success) setCart(data.cart);
   };
 
   // ── מחיקת פריט ────────────────────────────────────────
   const removeItem = async (name) => {
-    const authHeaders = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-
-    const res  = await fetch(`${API_URL}/cart/${encodeURIComponent(name)}`, {
-      method: "DELETE",
-      headers: authHeaders,
-    });
-    const data = await res.json();
-    if (data.success) setCart(data.cart);
+    try {
+      const res  = await fetch(`${API_URL}/cart/${encodeURIComponent(name)}`, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
+      const data = await handleResponse(res);
+      if (!data) return;
+      if (data.success) {
+        setCart(data.cart);
+        showToast(`${name} הוסר מהסל`, "info");
+      }
+    } catch (err) {
+      showToast(err.message || "שגיאה במחיקת פריט", "error");
+    }
   };
 
   // ── ריקון הסל כולו ────────────────────────────────────
   const clearCart = async () => {
-    const authHeaders = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-
-    const res  = await fetch(`${API_URL}/cart`, {
-      method: "DELETE",
-      headers: authHeaders,
-    });
-    const data = await res.json();
-    if (data.success) setCart([]);
+    try {
+      const res  = await fetch(`${API_URL}/cart`, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
+      const data = await handleResponse(res);
+      if (!data) return;
+      if (data.success) {
+        setCart([]);
+        showToast("הסל רוקן בהצלחה", "success");
+      }
+    } catch (err) {
+      showToast(err.message || "שגיאה בריקון הסל", "error");
+    }
   };
 
   // ── שמירת סופרמרקט ────────────────────────────────────
   const saveStore = async (store) => {
-    const authHeaders = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-
-    const res  = await fetch(`${API_URL}/cart/store`, {
-      method: "PUT",
-      headers: authHeaders,
-      body: JSON.stringify({ store }),
-    });
-    const data = await res.json();
-    if (data.success) setSelectedStore(data.selectedStore);
+    try {
+      const res  = await fetch(`${API_URL}/cart/store`, {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify({ store }),
+      });
+      const data = await handleResponse(res);
+      if (!data) return;
+      if (data.success) setSelectedStore(data.selectedStore);
+    } catch (err) {
+      showToast(err.message || "שגיאה בשמירת הרשת", "error");
+    }
   };
 
   // ── סיכומים לFooter ────────────────────────────────────
-  const totalItems  = cart.reduce((acc, i) => acc + i.qty, 0);
-  const totalPrice  = cart.reduce((acc, i) => acc + (i.price > 0 ? i.price * i.qty : 0), 0);
+  const totalItems   = cart.reduce((acc, i) => acc + i.qty, 0);
+  const totalPrice   = cart.reduce((acc, i) => acc + (i.price > 0 ? i.price * i.qty : 0), 0);
   const missingPrice = cart.some((i) => i.price === 0);
 
   return {
     cart, selectedStore, loading, error,
+    fetchCart,
     updateItem, removeItem, saveStore, clearCart,
     totalItems, totalPrice, missingPrice,
   };

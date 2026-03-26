@@ -2,6 +2,7 @@ import { MemoryRouter } from "react-router-dom";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ScanPage from "../ScanPage.jsx";
+import { ToastProvider } from "../../Contexts/ToastContext.jsx";
 
 const navigateMock = vi.fn();
 const openCameraMock = vi.fn();
@@ -41,23 +42,23 @@ describe("ScanPage", () => {
     });
   });
 
-  it("calls openCamera when camera button is clicked", () => {
+  const renderPage = () =>
     render(
       <MemoryRouter>
-        <ScanPage />
+        <ToastProvider>
+          <ScanPage />
+        </ToastProvider>
       </MemoryRouter>,
     );
 
+  it("calls openCamera when camera button is clicked", () => {
+    renderPage();
     fireEvent.click(screen.getByRole("button", { name: /צלם קבלה/i }));
     expect(openCameraMock).toHaveBeenCalledTimes(1);
   });
 
   it("enables scan button after selecting a file", async () => {
-    render(
-      <MemoryRouter>
-        <ScanPage />
-      </MemoryRouter>,
-    );
+    renderPage();
 
     const fileInput = document.querySelector('input[type="file"]');
     const file = new File(["receipt"], "receipt.jpg", { type: "image/jpeg" });

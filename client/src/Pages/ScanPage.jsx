@@ -2,11 +2,16 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import CameraCapturePanel from "../Comps/Scan/CameraCapturePanel.jsx";
 import { useCameraCapture } from "../hooks/useCameraCapture.js";
+import { useToast } from "../Contexts/ToastContext.jsx";
+
+const MAX_FILE_MB   = 5;
+const OCR_TIMEOUT_MS = 60_000;
 
 const DATA_API_URL = import.meta.env.VITE_DATA_API_URL || "http://localhost:8000";
 
 const ScanPage = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -31,6 +36,12 @@ const ScanPage = () => {
 
   const applyReceiptFile = (nextFile) => {
     if (!nextFile) return;
+
+    if (nextFile.size > MAX_FILE_MB * 1024 * 1024) {
+      showToast(`הקובץ גדול מדי — מקסימום ${MAX_FILE_MB}MB`, "warning");
+      return;
+    }
+
     setPreview((previousPreview) => {
       if (previousPreview) URL.revokeObjectURL(previousPreview);
       return URL.createObjectURL(nextFile);
@@ -67,30 +78,39 @@ const ScanPage = () => {
     setLoading(true);
     setError("");
 
+    const controller = new AbortController();
+    const timeoutId  = setTimeout(() => controller.abort(), OCR_TIMEOUT_MS);
+
     const formData = new FormData();
     formData.append("file", file);
 
     try {
       const response = await fetch(`${DATA_API_URL}/receipts/upload`, {
         method: "POST",
-        // headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` },
+        signal: controller.signal,
         body: formData,
       });
 
+      if (response.status === 413) {
+        throw new Error(`הקובץ גדול מדי — מקסימום ${MAX_FILE_MB}MB`);
+      }
       if (!response.ok) {
-        throw new Error("upload failed");
+        throw new Error("העלאת הקבלה נכשלה — בדוק שהשרת פעיל");
       }
 
       const data = await response.json();
-      if (!data?.receipt) {
-        throw new Error("invalid receipt response");
-      }
+      if (!data?.receipt) throw new Error("תגובה לא תקינה מהשרת");
 
       navigate("/details", { state: { receipt: data.receipt } });
-    } catch {
-
-      setError("סריקה אוטומטית לא זמינה כרגע בשרת הזה. אפשר לעבור לסל ולנהל ידנית.");
+    } catch (err) {
+      const isTimeout = err.name === "AbortError";
+      const msg = isTimeout
+        ? "הסריקה לקחה יותר מדי זמן — נסה שוב"
+        : err.message || "סריקה לא זמינה כרגע";
+      setError(msg);
+      showToast(msg, "error");
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   };
