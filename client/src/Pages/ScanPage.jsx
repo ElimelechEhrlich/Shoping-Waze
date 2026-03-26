@@ -5,11 +5,35 @@ import { useCameraCapture } from "../hooks/useCameraCapture.js";
 import { useToast } from "../Contexts/ToastContext.jsx";
 import usePageTitle from "../hooks/usePageTitle.js";
 
-const MAX_FILE_MB    = 5;
-const MAX_PHOTOS     = 8;
-const OCR_TIMEOUT_MS = 60_000;
+const MAX_FILE_MB     = 5;
+const MAX_PHOTOS      = 8;
+const OCR_TIMEOUT_MS  = 60_000;
+const MIN_BRIGHTNESS  = 55;   // 0–255 — מתחת לזה = תמונה חשוכה מדי
 
 const DATA_API_URL = import.meta.env.VITE_DATA_API_URL || "http://localhost:8000";
+
+// ── בדיקת בהירות תמונה (Canvas, client-side) ─────────────────
+const checkBrightness = (file) =>
+  new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const W = Math.min(img.naturalWidth,  200);
+      const H = Math.min(img.naturalHeight, 200);
+      const canvas = document.createElement("canvas");
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, W, H);
+      const { data } = ctx.getImageData(0, 0, W, H);
+      let sum = 0;
+      for (let i = 0; i < data.length; i += 4)
+        sum += (data[i] + data[i + 1] + data[i + 2]) / 3;
+      resolve(sum / (data.length / 4));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(128); };
+    img.src = url;
+  });
 
 // ── מיזוג Canvas ─────────────────────────────────────────────
 // טוען את כל התמונות ומשרשר אותן אנכית לתמונה אחת
@@ -159,9 +183,20 @@ const ScanPage = () => {
     const timeoutId  = setTimeout(() => controller.abort(), OCR_TIMEOUT_MS);
 
     try {
-      const files   = photoList.map((p) => p.file);
-      const merged  = await mergePhotos(files);
+      const files = photoList.map((p) => p.file);
 
+      // בדיקת בהירות לכל תמונה לפני מיזוג
+      for (let i = 0; i < files.length; i++) {
+        const brightness = await checkBrightness(files[i]);
+        if (brightness < MIN_BRIGHTNESS) {
+          showToast(
+            `תמונה ${files.length > 1 ? i + 1 : ""} נראית חשוכה מדי — תאורה טובה תשפר את הסריקה`.trim(),
+            "warning"
+          );
+        }
+      }
+
+      const merged   = await mergePhotos(files);
       const formData = new FormData();
       formData.append("file", merged);
 
@@ -171,17 +206,32 @@ const ScanPage = () => {
         body:   formData,
       });
 
-      if (response.status === 413) throw new Error(`הקובץ גדול מדי — מקסימום ${MAX_FILE_MB}MB`);
-      if (!response.ok)           throw new Error("העלאת הקבלה נכשלה — בדוק שהשרת פעיל");
+      if (response.status === 413)
+        throw new Error(`הקובץ גדול מדי (מקסימום ${MAX_FILE_MB}MB) — נסה לדחוס את התמונה`);
+      if (response.status === 422)
+        throw new Error("פורמט קובץ לא נתמך — השתמש ב-JPG, PNG או WEBP");
+      if (response.status >= 500)
+        throw new Error("השרת נתקל בבעיה — נסה שוב בעוד מספר שניות");
+      if (!response.ok)
+        throw new Error("העלאת הקבלה נכשלה — בדוק שהשרת פעיל");
 
       const data = await response.json();
       if (!data?.receipt) throw new Error("תגובה לא תקינה מהשרת");
+
+      // OCR הצליח אבל לא זוהו פריטים
+      const items = data.receipt?.items ?? [];
+      if (items.length === 0) {
+        const msg = "לא זוהו פריטים בקבלה — נסה תמונה ברורה יותר, ישרה ועם תאורה טובה";
+        setError(msg);
+        showToast(msg, "warning");
+        return;
+      }
 
       navigate("/details", { state: { receipt: data.receipt } });
     } catch (err) {
       const isTimeout = err.name === "AbortError";
       const msg = isTimeout
-        ? "הסריקה לקחה יותר מדי זמן — נסה שוב"
+        ? "הסריקה לקחה יותר מדי זמן — ייתכן שהתמונה גדולה מדי, נסה שוב"
         : err.message || "סריקה לא זמינה כרגע";
       setError(msg);
       showToast(msg, "error");

@@ -8,6 +8,7 @@ import ScanPage              from "./Pages/ScanPage.jsx";
 import ReceiptDetailsPage    from "./Pages/ReceiptDetailsPage.jsx";
 import SharedCartListPage    from "./Pages/SharedCartListPage.jsx";
 import SharedCartPage        from "./Pages/SharedCartPage.jsx";
+import ScanHistoryPage       from "./Pages/ScanHistoryPage.jsx";
 import { AuthProvider } from "./Contexts/AuthContext.jsx";
 import { ToastProvider } from "./Contexts/ToastContext.jsx";
 import { useAuth } from "./hooks/useAuth.js";
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/details"          element={<ProtectedRoute><ReceiptDetailsPage /></ProtectedRoute>} />
           <Route path="/shared-carts"    element={<ProtectedRoute><SharedCartListPage /></ProtectedRoute>} />
           <Route path="/shared-cart/:id" element={<ProtectedRoute><SharedCartPage /></ProtectedRoute>} />
+          <Route path="/history"         element={<ProtectedRoute><ScanHistoryPage /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </ToastProvider>

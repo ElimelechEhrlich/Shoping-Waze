@@ -55,20 +55,31 @@ const ReceiptDetailsPage = () => {
     if (!validItems.length) return;
     setApproving(true);
     try {
-      const token    = localStorage.getItem("token") || "";
-      const payload  = { data: [{ items: validItems }] };
-      const response = await fetch(`${API_URL}/cart`, {
-        method:  "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body:    JSON.stringify(payload),
-      });
+      const token   = localStorage.getItem("token") || "";
+      const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
 
-      if (response.status === 401) {
+      // הוספה לסל
+      const cartRes = await fetch(`${API_URL}/cart`, {
+        method: "POST", headers,
+        body: JSON.stringify({ data: [{ items: validItems }] }),
+      });
+      if (cartRes.status === 401) {
         showToast("פג תוקף ההתחברות — נא להתחבר מחדש", "warning");
         navigate("/login");
         return;
       }
-      if (!response.ok) throw new Error("שגיאה בהוספת פריטים לסל");
+      if (!cartRes.ok) throw new Error("שגיאה בהוספת פריטים לסל");
+
+      // שמירה להיסטוריה (fire-and-forget — לא חוסם אם נכשל)
+      const total = validItems.reduce((s, i) => s + i.price * i.qty, 0);
+      fetch(`${API_URL}/history`, {
+        method: "POST", headers,
+        body: JSON.stringify({
+          storeName: receipt?.store_name || "לא ידוע",
+          items:     validItems,
+          total,
+        }),
+      }).catch(() => {});
 
       showToast(`${validItems.length} פריטים נוספו לסל`, "success");
       navigate("/cart");

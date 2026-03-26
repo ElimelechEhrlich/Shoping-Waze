@@ -6,11 +6,13 @@ import useProducts    from "../hooks/useProducts.js";
 import useCompare     from "../hooks/useCompare.js";
 import useDebounce    from "../hooks/useDebounce.js";
 import usePageTitle   from "../hooks/usePageTitle.js";
+import { exportCartCSV } from "../utils/exportCart.js";
 import ProductList    from "../Comps/Cart/ProductList.jsx";
 import CartCategory   from "../Comps/Cart/CartCategory.jsx";
 import CartFooter     from "../Comps/Cart/CartFooter.jsx";
 import NoPriceModal   from "../Comps/Cart/NoPriceModal.jsx";
 import AddProductModal from "../Comps/Cart/AddProductModal.jsx";
+import TemplateModal  from "../Comps/Cart/TemplateModal.jsx";
 import { SkeletonCard } from "../Comps/Skeleton.jsx";
 
 const SORT_OPTIONS = [
@@ -38,6 +40,7 @@ const CartPage = () => {
   const [pending, setPending]         = useState(null);
   const [showClearConfirm, setShowClearConfirm]   = useState(false);
   const [showAddProduct, setShowAddProduct]       = useState(false);
+  const [showTemplate, setShowTemplate]           = useState(false);
   const [extraProducts, setExtraProducts]         = useState([]);
 
   usePageTitle(totalItems > 0 ? `סל הקניות (${totalItems})` : "סל הקניות");
@@ -82,6 +85,13 @@ const CartPage = () => {
     setShowClearConfirm(false);
   };
 
+  // ── טעינת תבנית לסל ─────────────────────────────────────
+  const handleLoadTemplate = (items) => {
+    items.forEach((item) => {
+      updateItem(item.name, { qty: item.qty, price: item.price, category: item.category });
+    });
+  };
+
   // ── השוואת מחירים ───────────────────────────────────────
   const handleCompare = async () => {
     const data = await compare(cart, null);
@@ -121,6 +131,34 @@ const CartPage = () => {
 
             {cart.length > 0 && (
               <>
+                {/* תבניות */}
+                <button
+                  onClick={() => setShowTemplate(true)}
+                  title="תבניות סל"
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-blue-500
+                    hover:text-blue-700 border border-blue-200 hover:border-blue-300 hover:bg-blue-50 rounded-xl transition"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                  </svg>
+                  תבניות
+                </button>
+
+                {/* ייצוא CSV */}
+                <button
+                  onClick={() => exportCartCSV(cart)}
+                  title="ייצוא לקובץ CSV"
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-500
+                    hover:text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-xl transition"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  ייצוא
+                </button>
+
                 <button
                   onClick={() => setShowClearConfirm(true)}
                   className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-500
@@ -267,6 +305,14 @@ const CartPage = () => {
         <AddProductModal
           onClose={() => setShowAddProduct(false)}
           onCreated={handleProductCreated}
+        />
+      )}
+
+      {showTemplate && (
+        <TemplateModal
+          cart={cart}
+          onLoad={handleLoadTemplate}
+          onClose={() => setShowTemplate(false)}
         />
       )}
 

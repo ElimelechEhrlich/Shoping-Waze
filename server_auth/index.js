@@ -8,6 +8,7 @@ import authRoutes        from "./routes/auth.js";
 import productsRoutes    from "./routes/products.js";
 import cartRoutes        from "./routes/cart.js";
 import sharedCartRoutes  from "./routes/sharedCart.js";
+import historyRoutes     from "./routes/history.js";
 import { config } from "dotenv";
 config()
 const app = express();
@@ -18,6 +19,7 @@ app.use("/api/auth",         authRoutes);
 app.use("/api/products",     productsRoutes);
 app.use("/api/cart",         cartRoutes);
 app.use("/api/shared-carts", sharedCartRoutes);
+app.use("/api/history",     historyRoutes);
 
 app.get("/api/health", (_, res) => res.json({ status: "ok" }));
 
