@@ -210,14 +210,45 @@ const ScanPage = () => {
         body:   formData,
       });
 
-      if (response.status === 413)
-        throw new Error(`הקובץ גדול מדי (מקסימום ${MAX_FILE_MB}MB) — נסה לדחוס את התמונה`);
-      if (response.status === 422)
-        throw new Error("פורמט קובץ לא נתמך — השתמש ב-JPEG, JPG, PNG, WEBP או HEIC");
-      if (response.status >= 500)
-        throw new Error("השרת נתקל בבעיה — נסה שוב בעוד מספר שניות");
-      if (!response.ok)
-        throw new Error("העלאת הקבלה נכשלה — בדוק שהשרת פעיל");
+      if (!response.ok) {
+        let detail = null;
+        try {
+          const j = await response.json();
+          if (typeof j.detail === "string") detail = j.detail;
+          else if (Array.isArray(j.detail))
+            detail = j.detail.map((x) => x?.msg).filter(Boolean).join(" ");
+        } catch {
+          /* לא JSON */
+        }
+
+        if (response.status === 413) {
+          throw new Error(
+            `הקובץ גדול מדי (מקסימום ${MAX_FILE_MB}MB) — נסה לדחוס את התמונה`
+          );
+        }
+        // השרת מחזיר 400 כשה-content-type לא תמונה
+        if (response.status === 400) {
+          const looksLikeTypeRejection =
+            detail?.toLowerCase().includes("image") ||
+            detail?.toLowerCase().includes("only");
+          throw new Error(
+            looksLikeTypeRejection || !detail
+              ? "פורמט קובץ לא נתמך — השתמש ב-JPEG, JPG, PNG, WEBP או HEIC"
+              : detail
+          );
+        }
+        // 422 אצלנו = כשל ב-OCR/פרסור (Gemini), לא "פורמט קובץ"
+        if (response.status === 422) {
+          if (import.meta.env.DEV && detail) console.warn("[receipts/upload]", detail);
+          throw new Error(
+            "לא הצלחנו לנתח את הקבלה. הקובץ והפורמט בסדר, אבל שירות הזיהוי לא החזיר תוצאה תקינה — נסה תמונה חדה, ישרה ומוארת יותר, או נסה שוב בעוד כמה דקות."
+          );
+        }
+        if (response.status >= 500) {
+          throw new Error("השרת נתקל בבעיה — נסה שוב בעוד מספר שניות");
+        }
+        throw new Error(detail || "העלאת הקבלה נכשלה — בדוק שהשרת פעיל");
+      }
 
       const data = await response.json();
       if (!data?.receipt) throw new Error("תגובה לא תקינה מהשרת");
