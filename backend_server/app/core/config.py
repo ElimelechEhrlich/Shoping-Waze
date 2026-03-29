@@ -18,7 +18,10 @@ class Settings:
     log_level: str = os.getenv("LOG_LEVEL", "INFO")
     log_file_path: Path = Path(os.getenv("LOG_FILE_PATH", "logs/app.log"))
     create_tables_on_startup: bool = os.getenv("CREATE_TABLES_ON_STARTUP", "true").lower() == "true"
-    
+    # ב-Render: מיגרציות ארוכות ב-lifespan עיכבו פתיחת פורט → "No open ports detected".
+    # הגדר false והרץ ב-Pre-Deploy: alembic upgrade head (מתוך backend_server).
+    run_alembic_on_startup: bool = os.getenv("RUN_ALEMBIC_ON_STARTUP", "true").lower() == "true"
+
     # התיקון כאן: משתמשים ב-field עם default_factory שמריץ פונקציה אנונימית (lambda)
     cors_allow_origins: list[str] = field(
         default_factory=lambda: [

@@ -29,10 +29,15 @@ services:
 
   # ── FastAPI (backend_server) — סריקת קבלות / השוואת מחירים ─────────
   # חובה: startCommand עם --host 0.0.0.0 ו-$PORT — אחרת Render מדווח "No open ports detected"
+  # מיגרציות ב-Pre-Deploy כדי שלא יעכבו את פתיחת הפורט (timeout של Render)
   - type: web
     name: shoping-waze-backend-api
     env: python
     region: frankfurt
     rootDir: backend_server
     buildCommand: pip install -r requirements.txt
+    preDeployCommand: alembic upgrade head
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: RUN_ALEMBIC_ON_STARTUP
+        value: "false"

@@ -101,7 +101,13 @@ def _run_migrations() -> None:
 async def lifespan(_app: FastAPI):
     # Run migrations first so every column defined in the SQLAlchemy models
     # actually exists in the DB before any request handler touches them.
-    _run_migrations()
+    if settings.run_alembic_on_startup:
+        _run_migrations()
+    else:
+        logger.info(
+            "Skipping Alembic on startup (RUN_ALEMBIC_ON_STARTUP=false). "
+            "Ensure migrations ran (e.g. Render Pre-Deploy: alembic upgrade head)."
+        )
 
     # Fallback: create any tables that Alembic migrations don't cover yet
     # (e.g. a completely fresh DB without an alembic_version table).
