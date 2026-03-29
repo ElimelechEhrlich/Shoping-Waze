@@ -26,3 +26,13 @@ services:
       - type: rewrite
         source: /*
         destination: /index.html
+
+  # ── FastAPI (backend_server) — סריקת קבלות / השוואת מחירים ─────────
+  # חובה: startCommand עם --host 0.0.0.0 ו-$PORT — אחרת Render מדווח "No open ports detected"
+  - type: web
+    name: shoping-waze-backend-api
+    env: python
+    region: frankfurt
+    rootDir: backend_server
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT

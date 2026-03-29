@@ -12,6 +12,13 @@ const MIN_BRIGHTNESS  = 55;   // 0–255 — מתחת לזה = תמונה חשו
 
 const DATA_API_URL = import.meta.env.VITE_DATA_API_URL || "http://localhost:8000";
 
+/** fetch נכשל לפני תשובת HTTP — CORS, שרת לא זמין, localhost בפרודקשן, mixed content וכו׳ */
+const isNetworkFetchFailure = (err) => {
+  if (!err) return false;
+  if (err.name === "TypeError" && String(err.message).toLowerCase().includes("fetch")) return true;
+  return err.message === "Failed to fetch" || err.message === "NetworkError when attempting to fetch resource.";
+};
+
 // ── בדיקת בהירות תמונה (Canvas, client-side) ─────────────────
 const checkBrightness = (file) =>
   new Promise((resolve) => {
@@ -265,11 +272,20 @@ const ScanPage = () => {
       navigate("/details", { state: { receipt: data.receipt } });
     } catch (err) {
       const isTimeout = err.name === "AbortError";
-      const msg = isTimeout
-        ? "הסריקה לקחה יותר מדי זמן — ייתכן שהתמונה גדולה מדי, נסה שוב"
-        : err.message || "סריקה לא זמינה כרגע";
+      let msg;
+      if (isTimeout) {
+        msg = "הסריקה לקחה יותר מדי זמן — ייתכן שהתמונה גדולה מדי, נסה שוב";
+      } else if (isNetworkFetchFailure(err)) {
+        const isLocalhostApi = /localhost|127\.0\.0\.1/.test(DATA_API_URL);
+        msg = isLocalhostApi
+          ? `לא ניתן להתחבר לשרת הסריקה. הכתובת המוגדרת היא ${DATA_API_URL} — בפרודקשן (למשל Render) צריך להגדיר בבנייה את VITE_DATA_API_URL לכתובת ה-HTTPS של שירות ה-Python, ואז לבצע Deploy מחדש לאתר הסטטי.`
+          : `לא ניתן להתחבר לשרת הסריקה (${DATA_API_URL}). ודא שהשירות רץ, שהכתובת נכונה, ושדף מאובטח (HTTPS) לא מנסה לפנות ל-API ב-HTTP בלבד.`;
+        if (import.meta.env.DEV) console.warn("[scan] network error →", DATA_API_URL, err);
+      } else {
+        msg = err.message || "סריקה לא זמינה כרגע";
+      }
       setError(msg);
-      showToast(msg, "error");
+      showToast(isNetworkFetchFailure(err) ? "לא ניתן להתחבר לשרת הסריקה — בדוק כתובת API והפעלת השרת" : msg, "error");
     } finally {
       clearTimeout(timeoutId);
       setLoading(false);
