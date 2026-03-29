@@ -7,6 +7,7 @@
 
 import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth.js";
+import GoogleSignInButton from "./GoogleSignInButton.jsx";
 
 /**
  * @param {{ onSwitch: () => void }} props
@@ -42,6 +43,19 @@ const LoginForm = ({ onSwitch }) => {
     <div className="w-full">
       <h2 className="text-2xl font-bold text-gray-800 mb-1">ברוך הבא</h2>
       <p className="text-sm text-gray-500 mb-6">התחבר לחשבון שלך</p>
+
+      <GoogleSignInButton />
+
+      {import.meta.env.VITE_GOOGLE_CLIENT_ID ? (
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center" aria-hidden>
+            <div className="w-full border-t border-gray-200" />
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="bg-white px-3 text-gray-400">או עם אימייל</span>
+          </div>
+        </div>
+      ) : null}
 
       <form onSubmit={handleSubmit} className="space-y-4" dir="rtl">
         <div>

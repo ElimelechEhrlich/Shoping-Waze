@@ -27,6 +27,7 @@ app.use("/api/products",     productsRoutes);
 app.use("/api/cart",         cartRoutes);
 app.use("/api/shared-carts", sharedCartRoutes);
 app.use("/api/history",      historyRoutes);
+app.use("/api/reports",      reportsRoutes);
 
 app.get("/api/health", (_, res) => res.json({ status: "ok" }));
 

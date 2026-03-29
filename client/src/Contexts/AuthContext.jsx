@@ -97,6 +97,20 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
+   * התחברות עם Google — credential הוא ה-JWT (id token) שחוזר מ-GoogleLogin.
+   */
+  const loginWithGoogle = async (credential) => {
+    const res = await fetch(`${API_URL}/auth/google`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ credential }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+    saveSession(data.token, data.user);
+  };
+
+  /**
    * עדכון פרופיל המשתמש (שם, צבע אווטר).
    * מעדכן גם את ה-state המקומי.
    * @throws {Error} עם הודעה מהשרת בכישלון
@@ -141,6 +155,7 @@ export const AuthProvider = ({ children }) => {
         token,
         loading,
         login,
+        loginWithGoogle,
         register,
         logout,
         updateProfile,

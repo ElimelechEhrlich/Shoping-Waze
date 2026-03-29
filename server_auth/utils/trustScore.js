@@ -54,6 +54,6 @@ export function computeTrust(user) {
  */
 export function toPublicUser(user) {
   if (!user) return null;
-  const { password: _p, ...rest } = user;
+  const { password: _p, googleSub: _g, ...rest } = user;
   return { ...rest, trust: computeTrust(rest) };
 }

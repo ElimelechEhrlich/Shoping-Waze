@@ -8,7 +8,8 @@
 //   _id           : ObjectId (נוצר אוטומטית)
 //   name          : string
 //   email         : string (unique, lowercase)
-//   password      : string (bcrypt hash — לעולם לא חוזר ל-client)
+//   password      : string | null (bcrypt hash; null = התחברות רק דרך Google)
+//   googleSub     : string | undefined (מזהה ייחודי מ-Google — sparse unique)
 //   cart          : CartItem[]  (סל קניות)
 //   selectedStore : string | null  (סופרמרקט שנבחר לסל)
 //   createdAt     : Date
@@ -41,6 +42,7 @@ const getCollection = () => getDB().collection(COLLECTION);
  */
 export const createIndexes = async () => {
   await getCollection().createIndex({ email: 1 }, { unique: true });
+  await getCollection().createIndex({ googleSub: 1 }, { unique: true, sparse: true });
 };
 
 /**
@@ -113,6 +115,61 @@ export const findById = async (id) => {
  */
 export const comparePassword = async (plainPassword, hashedPassword) => {
   return bcrypt.compare(plainPassword, hashedPassword);
+};
+
+/**
+ * יוצר או מעדכן משתמש לאחר אימות JWT של Google.
+ * אם כבר קיים לפי אימייל (הרשמה רגילה) — מקשר googleSub לאותו חשבון.
+ *
+ * @returns {Promise<{ user: Object, error?: "google_email_conflict" }>}
+ */
+export const upsertUserFromGoogle = async ({ googleSub, email, name }) => {
+  const normalizedEmail = email.toLowerCase().trim();
+
+  const bySub = await getCollection().findOne(
+    { googleSub },
+    { projection: { password: 0 } }
+  );
+  if (bySub) return { user: bySub };
+
+  const byEmail = await getCollection().findOne(
+    { email: normalizedEmail },
+    { projection: { password: 1, googleSub: 1 } }
+  );
+
+  if (byEmail) {
+    if (byEmail.googleSub && byEmail.googleSub !== googleSub) {
+      return { error: "google_email_conflict" };
+    }
+    if (!byEmail.googleSub) {
+      await getCollection().updateOne(
+        { _id: byEmail._id },
+        { $set: { googleSub, updatedAt: new Date() } }
+      );
+    }
+    const linked = await findById(byEmail._id.toString());
+    return { user: linked };
+  }
+
+  const displayName =
+    (name && String(name).trim().length >= 2 && String(name).trim()) ||
+    normalizedEmail.split("@")[0];
+
+  const newUser = {
+    name: displayName,
+    email: normalizedEmail,
+    googleSub,
+    password: null,
+    cart: [],
+    selectedStore: null,
+    reputation: { receiptsConfirmed: 0, reportsSubmitted: 0 },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  const result = await getCollection().insertOne(newUser);
+  const { password: _removed, ...withoutPassword } = newUser;
+  return { user: { ...withoutPassword, _id: result.insertedId } };
 };
 
 /**

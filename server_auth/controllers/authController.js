@@ -5,13 +5,14 @@
 // ─────────────────────────────────────────────────────────
 
 import jwt from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
 import {
   createUser,
   findByEmail,
-  findById,
   comparePassword,
   updateUserProfile,
   bootstrapReputationIfNeeded,
+  upsertUserFromGoogle,
 } from "../models/User.js";
 import { toPublicUser } from "../utils/trustScore.js";
 
@@ -87,7 +88,7 @@ export const login = async (req, res) => {
     const user = await findByEmail(email, true);
 
     // שגיאה גנרית — לא מגלים למשתמש מה שגוי (אימייל או סיסמה)
-    if (!user || !(await comparePassword(password, user.password)))
+    if (!user || !user.password || !(await comparePassword(password, user.password)))
       return res.status(401).json({ success: false, message: "אימייל או סיסמה שגויים" });
 
     // מסירים את ה-hash לפני שליחה ל-client
@@ -97,6 +98,65 @@ export const login = async (req, res) => {
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ success: false, message: "שגיאת שרת" });
+  }
+};
+
+/**
+ * POST /api/auth/google
+ * body: { credential } — JWT (id token) מה-Sign in with Google בצד לקוח.
+ */
+export const googleAuth = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential || typeof credential !== "string") {
+      return res.status(400).json({ success: false, message: "חסר אסימון Google" });
+    }
+
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      return res.status(503).json({
+        success: false,
+        message: "התחברות Google לא מוגדרת בשרת",
+      });
+    }
+
+    const oAuthClient = new OAuth2Client(clientId);
+    const ticket = await oAuthClient.verifyIdToken({
+      idToken: credential,
+      audience: clientId,
+    });
+    const payload = ticket.getPayload();
+
+    if (!payload?.sub || !payload.email) {
+      return res.status(401).json({ success: false, message: "לא ניתן לאמת את חשבון Google" });
+    }
+
+    if (payload.email_verified !== true) {
+      return res.status(401).json({ success: false, message: "יש לאמת את האימייל בחשבון Google" });
+    }
+
+    const { user, error } = await upsertUserFromGoogle({
+      googleSub: payload.sub,
+      email: payload.email,
+      name: payload.name || "",
+    });
+
+    if (error === "google_email_conflict") {
+      return res.status(409).json({
+        success: false,
+        message: "האימייל כבר משויך לחשבון Google אחר",
+      });
+    }
+
+    if (!user) {
+      return res.status(500).json({ success: false, message: "שגיאת שרת" });
+    }
+
+    sendTokenResponse(user, 200, res);
+  } catch (err) {
+    console.error("Google auth error:", err);
+    res.status(401).json({ success: false, message: "אימות Google נכשל" });
   }
 };
 
