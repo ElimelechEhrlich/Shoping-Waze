@@ -6,75 +6,67 @@
 import { useState } from "react";
 import { markOnboardingDone } from "./onboardingStorage.js";
 
-// ── תוכן השקופיות ─────────────────────────────────────────
 const SLIDES = [
   {
-    emoji: "🛒",
-    title: "ברוכים הבאים לקבלות חכמות!",
+    title: "ברוכים הבאים",
     points: [
-      "מערכת חכמה לניהול קניות וחיסכון בכסף",
-      "סרוק קבלות, נהל סל קניות ומצא את הסופר הזול ביותר",
-      "שתף סל עם בני משפחה וחברים בזמן אמת",
-      "כל ההיסטוריה שלך שמורה ונגישה תמיד",
+      "מערכת לניהול קניות וחיסכון בכסף",
+      "סריקת קבלות, ניהול סל והשוואת מחירים",
+      "סלים משותפים בזמן אמת עם המשפחה",
+      "היסטוריה מלאה שמורה תמיד בחשבון",
     ],
   },
   {
-    emoji: "📷",
-    title: "סריקת קבלה חכמה",
+    title: "סריקת קבלה",
     points: [
-      "צלם קבלה ישירות מהמצלמה או העלה תמונה מהגלריה",
-      "קבלה ארוכה? צלם כמה חלקים — המערכת תאחד אותם לתמונה אחת",
-      "ה-AI מזהה אוטומטית פריטים, כמויות ומחירים בעברית",
-      "ערוך, הוסף או מחק פריטים לפני אישור הקבלה",
+      "צילום מהמצלמה או העלאה מהגלריה",
+      "קבלה ארוכה: כמה חלקים מתאחדים אוטומטית",
+      "זיהוי פריטים, כמויות ומחירים בעברית",
+      "עריכה והוספת פריטים לפני אישור",
     ],
   },
   {
-    emoji: "🛍️",
-    title: "ניהול סל קניות",
+    title: "ניהול סל",
     points: [
-      "הוסף מוצרים לסל מתוך המאגר הכללי — או צור מוצר חדש ידנית",
-      "מיין לפי שם, קטגוריה או מחיר",
-      "שמור תבניות — 'סל שבועי', 'קניות לשבת' — וטען בלחיצה",
-      "ייצא את הסל לקובץ CSV לפני היציאה לקנות",
+      "הוספה מהקטלוג או יצירת מוצר חדש ידנית",
+      "מיון לפי שם, קטגוריה או מחיר",
+      "שמירת תבניות וטעינה בלחיצה",
+      "ייצוא הסל ל-CSV לפני יציאה לקניות",
     ],
   },
   {
-    emoji: "📊",
     title: "השוואת מחירים",
     points: [
-      "לחץ 'השווה מחירים' וראה באיזה סופר הסל הכי זול",
-      "המערכת מציגה את ההפרש בין הרשתות בבירור",
-      "הנתונים מגיעים ממאגר מחירים שנבנה מקבלות אמיתיות",
-      "אפשר להוסיף מוצרים ידנית עם מחיר ורשת לשיפור ההשוואה",
+      "השוואה של תוכן הסל מול רשתות סופרמרקט",
+      "תצוגה ברורה של ההפרש בין הרשתות",
+      "הנתונים מבוססים על מאגר מקבלות אמיתיות",
+      "הוספה ידנית של מחירים לשיפור ההשוואה",
     ],
   },
   {
-    emoji: "👥",
     title: "סל משותף",
     points: [
-      "צור סל משותף וקבל קוד הזמנה ייחודי של 6 תווים",
-      "שלח את הקוד לבני משפחה — הם מצטרפים בלחיצה אחת",
-      "כולם יכולים להוסיף ולעדכן פריטים בו-זמנית",
-      "הסל האישי שלך נשאר ללא שינוי",
+      "יצירת סל וקוד הזמנה של שישה תווים",
+      "הצטרפות בלחיצה אחת עם הקוד",
+      "עדכונים מקבילים מכל המשתתפים",
+      "הסל האישי שלך נשאר נפרד",
     ],
   },
   {
-    emoji: "🧾",
     title: "היסטוריה וכלים",
     points: [
-      "כל קבלה שאישרת נשמרת אוטומטית בהיסטוריה",
-      "עיין בקבלות עבר עם פירוט מלא של הפריטים",
-      "המוצרים הפופולריים שלך מוצגים בדף הבית",
-      "הוסף מוצרים פופולריים חזרה לסל בלחיצה אחת",
+      "כל קבלה שאושרה נשמרת אוטומטית",
+      "צפייה בקבלות עבר עם פירוט מלא",
+      "מוצרים פופולריים בדף הבית",
+      "החזרת מוצרים נפוצים לסל בלחיצה",
     ],
   },
   {
-    emoji: "🚀",
-    title: "מוכן להתחיל?",
+    title: "מוכן להתחיל",
     points: [
-      "סרוק את הקבלה מהסופר האחרון שלך",
-      "בנה סל קניות ובדוק איפה הכי זול",
-      "שתף עם המשפחה וחסכו ביחד",
+      "סריקה של הקבלה האחרונה",
+      "בניית סל ובדיקת המחיר הזול",
+      "שיתוף עם המשפחה וחיסכון משותף",
     ],
     isLast: true,
   },
@@ -105,30 +97,30 @@ const OnboardingModal = ({ onClose }) => {
     >
       <div className="bg-white rounded-sm shadow-md w-full max-w-md overflow-hidden animate-fade-in">
 
-        {/* ── כותרת צבעונית ────────────────────────── */}
-        <div className="bg-zinc-900 px-6 py-8 text-white text-center relative border-b border-zinc-800">
-          {/* כפתור סגירה */}
+        {/* ── כותרת ──────────────────────────────────── */}
+        <div className="px-6 pt-6 pb-5 relative border-b border-zinc-200">
           <button
             onClick={handleClose}
             className="absolute top-3 left-3 w-7 h-7 flex items-center justify-center
-              rounded-sm bg-zinc-800 hover:bg-zinc-700 text-white text-sm transition"
+              rounded-sm text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 text-sm transition"
+            aria-label="סגור"
           >
             ✕
           </button>
 
-          <div className="text-6xl mb-3 select-none">{slide.emoji}</div>
-          <h2 className="text-xl font-bold leading-tight">{slide.title}</h2>
+          <p className="text-[11px] font-medium text-zinc-500 tracking-widest uppercase mb-1">
+            שלב {step + 1} מתוך {SLIDES.length}
+          </p>
+          <h2 className="text-lg font-semibold text-zinc-900 leading-snug">{slide.title}</h2>
 
-          {/* מחוון שלבים */}
-          <div className="flex justify-center gap-1.5 mt-4">
+          <div className="flex gap-1 mt-4">
             {SLIDES.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setStep(i)}
-                className={`rounded-sm transition-all duration-200 ${
-                  i === step
-                    ? "w-5 h-1.5 bg-white"
-                    : "w-2 h-1.5 bg-white/35 hover:bg-white/55"
+                aria-label={`שלב ${i + 1}`}
+                className={`flex-1 h-1 rounded-sm transition-colors ${
+                  i <= step ? "bg-zinc-900" : "bg-zinc-200 hover:bg-zinc-300"
                 }`}
               />
             ))}
@@ -175,7 +167,7 @@ const OnboardingModal = ({ onClose }) => {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                בואו נתחיל!
+                בואו נתחיל
               </>
             ) : (
               <>

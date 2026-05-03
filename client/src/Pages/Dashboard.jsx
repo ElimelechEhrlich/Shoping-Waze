@@ -35,20 +35,20 @@ const ActionCard = ({ to, onClick, icon, title, subtitle, badge, size = "normal"
   };
 
   const inner = (
-    <div className={`group relative flex items-center gap-4
-      ${size === "large" ? "p-6" : "p-4"}
-      bg-white rounded-md border border-zinc-200 shadow-sm
-      transition-all duration-200 cursor-pointer ${c.hover}`}
+    <div className={`group relative flex items-center gap-3
+      ${size === "large" ? "px-5 py-4" : "px-4 py-3"}
+      bg-white rounded-sm border border-zinc-200
+      transition-colors cursor-pointer ${c.hover}`}
     >
-      <div className={`${c.bg} ${c.text} ${size === "large" ? "p-4" : "p-3"} rounded-sm flex-shrink-0`}>
+      <div className={`${c.bg} ${c.text} ${size === "large" ? "p-2.5" : "p-2"} rounded-sm flex-shrink-0`}>
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <p className={`font-bold text-zinc-900 ${size === "large" ? "text-lg" : "text-base"} truncate`}>
+        <p className={`font-semibold text-zinc-900 ${size === "large" ? "text-base" : "text-sm"} truncate`}>
           {title}
         </p>
         {subtitle && (
-          <p className="text-zinc-500 text-sm mt-0.5 truncate">{subtitle}</p>
+          <p className="text-zinc-500 text-xs mt-0.5 truncate">{subtitle}</p>
         )}
       </div>
       {badge > 0 && (
@@ -123,7 +123,7 @@ const Dashboard = () => {
         <div>
           <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">{today}</p>
           <h1 className="text-2xl font-bold text-zinc-900">
-            שלום, {user?.name?.split(" ")[0]} 👋
+            שלום, {user?.name?.split(" ")[0]}
           </h1>
         </div>
 
@@ -136,7 +136,7 @@ const Dashboard = () => {
             to="/scan"
             size="large"
             icon={
-              <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                   d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}

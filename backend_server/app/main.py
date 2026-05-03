@@ -111,9 +111,34 @@ async def lifespan(_app: FastAPI):
 
     # Fallback: create any tables that Alembic migrations don't cover yet
     # (e.g. a completely fresh DB without an alembic_version table).
+    # Wrapped in a small retry+swallow so a transient SSL/cold-start failure
+    # against the managed Postgres doesn't take the whole app down on boot.
     if settings.create_tables_on_startup:
-        Base.metadata.create_all(bind=engine)
-        logger.info("Database tables checked/created on startup.")
+        import time  # noqa: PLC0415
+
+        last_exc: Exception | None = None
+        for attempt in range(1, 6):
+            try:
+                Base.metadata.create_all(bind=engine)
+                logger.info("Database tables checked/created on startup.")
+                last_exc = None
+                break
+            except Exception as exc:  # noqa: BLE001
+                last_exc = exc
+                logger.warning(
+                    "create_all attempt %s/5 failed (%s); retrying in %ss…",
+                    attempt,
+                    exc.__class__.__name__,
+                    attempt * 2,
+                )
+                time.sleep(attempt * 2)
+
+        if last_exc is not None:
+            logger.exception(
+                "create_all failed after retries — continuing startup; "
+                "endpoints will reconnect on demand.",
+                exc_info=last_exc,
+            )
 
     logger.info("Application startup completed.")
 
