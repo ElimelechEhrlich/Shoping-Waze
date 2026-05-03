@@ -1,6 +1,5 @@
-import { createContext, useCallback, useContext, useState } from "react";
-
-export const ToastContext = createContext(null);
+import { useCallback, useState } from "react";
+import { ToastContext } from "./toastContext.js";
 
 let _nextId = 1;
 
@@ -26,16 +25,8 @@ export const ToastProvider = ({ children }) => {
   );
 };
 
-export const useToast = () => {
-  const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error("useToast must be used within ToastProvider");
-  return ctx;
-};
-
-// ── Component ─────────────────────────────────────────────
-
 const STYLES = {
-  success: "bg-emerald-600 text-white",
+  success: "bg-zinc-900 text-white",
   error:   "bg-red-500 text-white",
   warning: "bg-amber-500 text-white",
   info:    "bg-slate-700 text-white",
@@ -74,7 +65,7 @@ const ToastContainer = ({ toasts, onDismiss }) => (
     {toasts.map((t) => (
       <div
         key={t.id}
-        className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg
+        className={`flex items-center gap-3 px-4 py-3 rounded-sm shadow-lg
           text-sm font-medium pointer-events-auto animate-fade-in
           ${STYLES[t.type] || STYLES.info}`}
         dir="rtl"

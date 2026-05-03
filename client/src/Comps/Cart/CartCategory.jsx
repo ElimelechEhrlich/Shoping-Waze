@@ -9,7 +9,7 @@
 //   ביטול: Escape → חזרה לשם המקורי ללא שמירה.
 // ─────────────────────────────────────────────────────────
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 
 const formatPrice = (p) =>
   new Intl.NumberFormat("he-IL", {
@@ -33,12 +33,6 @@ const CartItem = ({ item, isLast, onIncrease, onDecrease, onRemove, onSetQty, on
   const [editing,  setEditing]  = useState(false);
   const [editName, setEditName] = useState(item.name);
   const nameInputRef = useRef(null);
-
-  // סנכרון כמות מבחוץ (לחיצת +/-)
-  useEffect(() => { setVal(String(item.qty)); }, [item.qty]);
-
-  // סנכרון שם מבחוץ (לאחר onRename מהשרת)
-  useEffect(() => { setEditName(item.name); }, [item.name]);
 
   // ── אישור כמות ──────────────────────────────────────────
   const commitQty = () => {
@@ -94,7 +88,7 @@ const CartItem = ({ item, isLast, onIncrease, onDecrease, onRemove, onSetQty, on
               if (e.key === "Escape") cancelEdit();
             }}
             className="w-full text-sm font-medium text-slate-800
-              border border-emerald-400 rounded-lg px-2 py-0.5
+              border border-emerald-400 rounded-sm px-2 py-0.5
               focus:outline-none focus:ring-2 focus:ring-emerald-300"
             aria-label="ערוך שם מוצר"
           />
@@ -128,7 +122,7 @@ const CartItem = ({ item, isLast, onIncrease, onDecrease, onRemove, onSetQty, on
       <div className="flex items-center gap-1 flex-shrink-0">
         <button
           onClick={() => onDecrease(item)}
-          className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200
+          className="w-7 h-7 rounded-sm bg-slate-100 hover:bg-slate-200
             text-slate-600 font-bold text-sm flex items-center justify-center transition"
           aria-label="הפחת כמות"
         >
@@ -143,14 +137,14 @@ const CartItem = ({ item, isLast, onIncrease, onDecrease, onRemove, onSetQty, on
           onBlur={commitQty}
           onKeyDown={(e) => e.key === "Enter" && commitQty()}
           className="w-12 text-center font-semibold text-slate-800 text-sm
-            border border-slate-200 rounded-lg py-1 focus:outline-none
+            border border-slate-200 rounded-sm py-1 focus:outline-none
             focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
           aria-label={`כמות ${item.name}`}
         />
 
         <button
           onClick={() => onIncrease(item)}
-          className="w-7 h-7 rounded-lg bg-emerald-100 hover:bg-emerald-200
+          className="w-7 h-7 rounded-sm bg-emerald-100 hover:bg-emerald-200
             text-emerald-700 font-bold text-sm flex items-center justify-center transition"
           aria-label="הוסף כמות"
         >
@@ -172,7 +166,7 @@ const CartItem = ({ item, isLast, onIncrease, onDecrease, onRemove, onSetQty, on
       {/* ── מחיקה ───────────────────────────────────────── */}
       <button
         onClick={() => onRemove(item.name)}
-        className="w-7 h-7 rounded-lg hover:bg-red-50 text-slate-300
+        className="w-7 h-7 rounded-sm hover:bg-red-50 text-slate-300
           hover:text-red-400 flex items-center justify-center transition flex-shrink-0"
         aria-label={`הסר ${item.name}`}
       >
@@ -197,10 +191,10 @@ const CartCategory = ({ category, items, onIncrease, onDecrease, onRemove, onSet
       <span className="text-xs text-slate-400">{items.length} פריטים</span>
     </div>
 
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-md border border-zinc-200 shadow-sm overflow-hidden">
       {items.map((item, idx) => (
         <CartItem
-          key={item.name}
+          key={`${item.name}-${item.qty}`}
           item={item}
           isLast={idx === items.length - 1}
           onIncrease={onIncrease}

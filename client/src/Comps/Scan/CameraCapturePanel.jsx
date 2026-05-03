@@ -17,13 +17,13 @@ const CameraCapturePanel = ({ stream, onCapture, onCaptureKeepOpen, onCancel, ca
   }, [stream]);
 
   return (
-    <div className="bg-slate-950 text-white rounded-xl p-4 space-y-3" dir="rtl">
+    <div className="bg-slate-950 text-white rounded-sm p-4 space-y-3" dir="rtl">
       {/* Instruction */}
       <div className="text-center space-y-0.5">
         <p className="text-sm font-semibold text-white">
           כוונו את הקבלה אל המסגרת
           {multiMode && capturedCount > 0 && (
-            <span className="mr-2 bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+            <span className="mr-2 bg-zinc-800 text-white text-xs font-bold px-2 py-0.5 rounded-sm">
               {capturedCount} צולמו
             </span>
           )}
@@ -37,7 +37,7 @@ const CameraCapturePanel = ({ stream, onCapture, onCaptureKeepOpen, onCancel, ca
 
       {/* Camera viewport — 6:9 portrait */}
       <div
-        className="relative rounded-lg overflow-hidden bg-black border border-slate-700 mx-auto w-full"
+        className="relative rounded-sm overflow-hidden bg-black border border-slate-700 mx-auto w-full"
         style={{ aspectRatio: "6/9", maxWidth: "340px" }}
       >
         <video
@@ -97,7 +97,7 @@ const CameraCapturePanel = ({ stream, onCapture, onCaptureKeepOpen, onCancel, ca
               type="button"
               onClick={() => onCaptureKeepOpen(videoRef.current)}
               disabled={!videoReady}
-              className="flex-1 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600
+              className="flex-1 py-2.5 rounded-sm bg-zinc-900 hover:bg-zinc-800
                 disabled:opacity-40 text-white font-semibold text-sm transition"
             >
               📷 &nbsp;{capturedCount === 0 ? "צלם חלק ראשון" : "צלם חלק הבא"}
@@ -106,7 +106,7 @@ const CameraCapturePanel = ({ stream, onCapture, onCaptureKeepOpen, onCancel, ca
               <button
                 type="button"
                 onClick={onCancel}
-                className="px-4 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600
+                className="px-4 py-2.5 rounded-sm bg-zinc-900 hover:bg-zinc-800
                   text-white font-semibold text-sm transition"
               >
                 סיימתי ✓
@@ -115,7 +115,7 @@ const CameraCapturePanel = ({ stream, onCapture, onCaptureKeepOpen, onCancel, ca
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2.5 rounded-lg border border-slate-500 text-slate-100
+              className="px-4 py-2.5 rounded-sm border border-slate-500 text-slate-100
                 hover:bg-slate-800 font-semibold text-sm transition"
             >
               ביטול
@@ -127,7 +127,7 @@ const CameraCapturePanel = ({ stream, onCapture, onCaptureKeepOpen, onCancel, ca
               type="button"
               onClick={() => onCapture(videoRef.current)}
               disabled={!videoReady}
-              className="flex-1 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600
+              className="flex-1 py-2.5 rounded-sm bg-zinc-900 hover:bg-zinc-800
                 disabled:opacity-40 text-white font-semibold text-sm transition"
             >
               📷 &nbsp;צלם עכשיו
@@ -135,7 +135,7 @@ const CameraCapturePanel = ({ stream, onCapture, onCaptureKeepOpen, onCancel, ca
             <button
               type="button"
               onClick={onCancel}
-              className="px-5 py-2.5 rounded-lg border border-slate-500 text-slate-100
+              className="px-5 py-2.5 rounded-sm border border-slate-500 text-slate-100
                 hover:bg-slate-800 font-semibold text-sm transition"
             >
               ביטול

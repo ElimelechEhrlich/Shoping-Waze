@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.js";
-import { useToast } from "../Contexts/ToastContext.jsx";
+import { useToast } from "../Contexts/useToast.js";
 import usePageTitle from "../hooks/usePageTitle.js";
 import HomeButton from "../Comps/HomeButton.jsx";
 
@@ -24,22 +24,30 @@ const ScanHistoryPage = () => {
   const [loading,  setLoading]  = useState(true);
   const [expanded, setExpanded] = useState(null);
 
-  const fetchHistory = useCallback(async () => {
+  const fetchHistory = useCallback(async (signal) => {
     try {
-      setLoading(true);
-      const res  = await fetch(`${API_URL}/history`, {
+      if (!signal?.aborted) setLoading(true);
+      const res = await fetch(`${API_URL}/history`, {
         headers: { Authorization: `Bearer ${token}` },
+        ...(signal && { signal }),
       });
+      if (signal?.aborted) return;
       const data = await res.json();
+      if (signal?.aborted) return;
       if (data.success) setHistory(data.history);
     } catch {
+      if (signal?.aborted) return;
       showToast("שגיאה בטעינת ההיסטוריה", "error");
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   }, [token, showToast]);
 
-  useEffect(() => { fetchHistory(); }, [fetchHistory]);
+  useEffect(() => {
+    const ac = new AbortController();
+    fetchHistory(ac.signal);
+    return () => ac.abort();
+  }, [fetchHistory]);
 
   const handleDelete = async (id) => {
     try {
@@ -55,7 +63,7 @@ const ScanHistoryPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 font-sans" dir="rtl">
+    <div className="min-h-screen bg-zinc-100 font-sans" dir="rtl">
 
       {/* ── Page sub-header ────────────────────────────────
           sticky top-[60px]: stacks below the global AppHeader (≈60 px tall). */}
@@ -72,18 +80,18 @@ const ScanHistoryPage = () => {
         {loading && (
           <div className="space-y-3">
             {[1, 2, 3].map((k) => (
-              <div key={k} className="bg-white rounded-2xl h-20 animate-pulse border border-slate-100" />
+              <div key={k} className="bg-white rounded-md h-20 animate-pulse border border-zinc-200" />
             ))}
           </div>
         )}
 
         {!loading && history.length === 0 && (
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-12 text-center">
+          <div className="bg-white rounded-md border border-zinc-200 shadow-sm p-12 text-center">
             <p className="text-5xl mb-3">🧾</p>
             <p className="text-slate-500 font-medium">אין קבלות בהיסטוריה</p>
             <p className="text-slate-400 text-sm mt-1">קבלות יופיעו כאן לאחר אישורן</p>
             <Link to="/scan"
-              className="inline-block mt-4 px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-600 transition">
+              className="inline-block mt-4 px-4 py-2 rounded-sm bg-zinc-900 text-white text-sm font-semibold hover:bg-zinc-800 transition">
               סרוק קבלה עכשיו
             </Link>
           </div>
@@ -97,14 +105,14 @@ const ScanHistoryPage = () => {
 
           return (
             <div key={entry._id}
-              className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              className="bg-white rounded-md border border-zinc-200 shadow-sm overflow-hidden">
 
               {/* שורה ראשית */}
               <button
                 onClick={() => setExpanded(isOpen ? null : entry._id)}
                 className="w-full text-right px-5 py-4 hover:bg-slate-50 transition flex items-center gap-3"
               >
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-sm bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                       d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -127,10 +135,10 @@ const ScanHistoryPage = () => {
 
               {/* פרטי פריטים */}
               {isOpen && (
-                <div className="border-t border-slate-100 px-5 pb-4">
+                <div className="border-t border-zinc-200 px-5 pb-4">
                   <table className="w-full text-sm mt-3">
                     <thead>
-                      <tr className="text-xs text-slate-400 border-b border-slate-100">
+                      <tr className="text-xs text-slate-400 border-b border-zinc-200">
                         <th className="text-right pb-1.5 font-medium">מוצר</th>
                         <th className="text-center pb-1.5 font-medium w-12">כמות</th>
                         <th className="text-left pb-1.5 font-medium w-20">מחיר</th>

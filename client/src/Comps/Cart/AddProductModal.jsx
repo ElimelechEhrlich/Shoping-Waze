@@ -2,7 +2,7 @@
 // Modal for adding a new product to the global catalog (MySQL).
 // Optionally includes a price + store, and can add to cart immediately.
 import { useState } from "react";
-import { useToast } from "../../Contexts/ToastContext.jsx";
+import { useToast } from "../../Contexts/useToast.js";
 
 const DATA_API_URL = import.meta.env.VITE_DATA_API_URL || "http://localhost:8000";
 
@@ -63,10 +63,10 @@ const AddProductModal = ({ onClose, onCreated }) => {
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" dir="rtl">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
+      <div className="bg-white rounded-md shadow-sm w-full max-w-md">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200">
           <h2 className="text-lg font-bold text-slate-800">הוספת מוצר חדש למאגר</h2>
           <button onClick={onClose}
             className="text-slate-400 hover:text-slate-600 transition"
@@ -90,7 +90,7 @@ const AddProductModal = ({ onClose, onCreated }) => {
               value={name}
               onChange={(e) => { setName(e.target.value); setNameError(""); }}
               placeholder="לדוגמה: חלב תנובה 3%"
-              className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none
+              className={`w-full px-3 py-2.5 rounded-sm border text-sm focus:outline-none
                 focus:ring-2 focus:ring-emerald-400 transition
                 ${nameError ? "border-red-300 bg-red-50" : "border-slate-200 bg-slate-50"}`}
               autoFocus
@@ -99,7 +99,7 @@ const AddProductModal = ({ onClose, onCreated }) => {
           </div>
 
           {/* מחיר + רשת — אופציונלי */}
-          <div className="bg-slate-50 rounded-xl p-4 space-y-3 border border-slate-100">
+          <div className="bg-slate-50 rounded-sm p-4 space-y-3 border border-zinc-200">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
               מחיר ורשת — אופציונלי
             </p>
@@ -114,7 +114,7 @@ const AddProductModal = ({ onClose, onCreated }) => {
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   placeholder="0.00"
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white
+                  className="w-full px-3 py-2 rounded-sm border border-slate-200 bg-white
                     text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 transition"
                 />
               </div>
@@ -123,7 +123,7 @@ const AddProductModal = ({ onClose, onCreated }) => {
                 <select
                   value={storeName}
                   onChange={(e) => setStoreName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white
+                  className="w-full px-3 py-2 rounded-sm border border-slate-200 bg-white
                     text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 transition"
                 >
                   <option value="">בחר רשת</option>
@@ -141,7 +141,7 @@ const AddProductModal = ({ onClose, onCreated }) => {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600
+              className="flex-1 py-2.5 rounded-sm border border-slate-200 text-slate-600
                 hover:bg-slate-50 text-sm font-medium transition"
             >
               ביטול
@@ -149,7 +149,7 @@ const AddProductModal = ({ onClose, onCreated }) => {
             <button
               type="submit"
               disabled={loading || !name.trim()}
-              className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600
+              className="flex-1 py-2.5 rounded-sm bg-zinc-900 hover:bg-zinc-800
                 disabled:opacity-50 text-white text-sm font-semibold flex items-center
                 justify-center gap-2 transition"
             >

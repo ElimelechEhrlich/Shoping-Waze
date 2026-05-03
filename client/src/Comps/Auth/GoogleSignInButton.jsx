@@ -60,7 +60,7 @@ const GoogleSignInButton = () => {
       >
         <div
           className={[
-            "w-full max-w-full rounded-xl border border-gray-200 bg-white shadow-sm",
+            "w-full max-w-full rounded-sm border border-gray-200 bg-white shadow-sm",
             "overflow-hidden flex justify-center items-center min-h-[48px]",
             "transition-opacity duration-200",
             loading ? "opacity-50 pointer-events-none" : "opacity-100",
@@ -83,17 +83,17 @@ const GoogleSignInButton = () => {
 
         {loading && (
           <div
-            className="absolute inset-0 flex items-center justify-center rounded-xl bg-white/70 backdrop-blur-[1px]"
+            className="absolute inset-0 flex items-center justify-center rounded-sm bg-white/70 backdrop-blur-[1px]"
             aria-busy="true"
             aria-live="polite"
           >
-            <span className="text-sm font-medium text-emerald-700">מתחבר…</span>
+            <span className="text-sm font-medium text-zinc-700">מתחבר…</span>
           </div>
         )}
       </div>
 
       {error && !loading && (
-        <p className="text-sm text-red-600 bg-red-50 px-4 py-2.5 rounded-xl mt-3 text-center border border-red-100">
+        <p className="text-sm text-red-600 bg-red-50 px-4 py-2.5 rounded-sm mt-3 text-center border border-red-100">
           {error}
         </p>
       )}

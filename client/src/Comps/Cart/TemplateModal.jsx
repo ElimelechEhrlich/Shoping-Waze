@@ -24,7 +24,7 @@ const TemplateModal = ({ cart, onLoad, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" dir="rtl">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
+      <div className="bg-white rounded-md shadow-sm w-full max-w-sm overflow-hidden">
 
         {/* כותרת */}
         <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-5 py-4 flex items-center justify-between">
@@ -33,14 +33,14 @@ const TemplateModal = ({ cart, onLoad, onClose }) => {
         </div>
 
         {/* טאבים */}
-        <div className="flex border-b border-slate-100">
+        <div className="flex border-b border-zinc-200">
           {[{ id: "save", label: "שמור תבנית" }, { id: "load", label: `טען תבנית (${templates.length})` }].map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
               className={`flex-1 py-2.5 text-sm font-medium transition ${
                 tab === t.id
-                  ? "text-blue-600 border-b-2 border-blue-500"
+                  ? "text-zinc-900 border-b-2 border-zinc-900"
                   : "text-slate-500 hover:text-slate-700"
               }`}
             >
@@ -60,13 +60,13 @@ const TemplateModal = ({ cart, onLoad, onClose }) => {
                 onChange={(e) => setName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSave()}
                 placeholder='למשל: "סל שבועי רגיל"'
-                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm
+                className="w-full border border-slate-200 rounded-sm px-4 py-2.5 text-sm
                   focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
               <button
                 onClick={handleSave}
                 disabled={!name.trim() || saved}
-                className="w-full py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600
+                className="w-full py-2.5 rounded-sm bg-zinc-900 hover:bg-zinc-800
                   disabled:opacity-60 text-white text-sm font-semibold transition"
               >
                 {saved ? "✓ נשמר!" : "שמור תבנית"}
@@ -83,7 +83,7 @@ const TemplateModal = ({ cart, onLoad, onClose }) => {
                 </p>
               ) : templates.map((t) => (
                 <div key={t.id}
-                  className="flex items-center gap-2 bg-slate-50 rounded-xl border border-slate-200 px-3 py-2.5">
+                  className="flex items-center gap-2 bg-slate-50 rounded-sm border border-slate-200 px-3 py-2.5">
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-slate-800 text-sm truncate">{t.name}</p>
                     <p className="text-xs text-slate-400">
@@ -93,15 +93,15 @@ const TemplateModal = ({ cart, onLoad, onClose }) => {
                   </div>
                   <button
                     onClick={() => handleLoad(t)}
-                    className="px-3 py-1.5 text-xs font-semibold bg-blue-500 hover:bg-blue-600
-                      text-white rounded-lg transition flex-shrink-0"
+                    className="px-3 py-1.5 text-xs font-semibold bg-zinc-900 hover:bg-zinc-800
+                      text-white rounded-sm transition flex-shrink-0"
                   >
                     טען
                   </button>
                   <button
                     onClick={() => deleteTemplate(t.id)}
                     className="w-7 h-7 flex items-center justify-center text-red-400
-                      hover:text-red-600 hover:bg-red-50 rounded-lg transition flex-shrink-0"
+                      hover:text-red-600 hover:bg-red-50 rounded-sm transition flex-shrink-0"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}

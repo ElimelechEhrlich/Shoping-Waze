@@ -1,7 +1,7 @@
 // hooks/useCart.js
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "./useAuth.js";
-import { useToast } from "../Contexts/ToastContext.jsx";
+import { useToast } from "../Contexts/useToast.js";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -30,27 +30,36 @@ const useCart = () => {
   }, [logout, showToast]);
 
   // ── שליפת הסל מהשרת ────────────────────────────────────
-  const fetchCart = useCallback(async () => {
+  const fetchCart = useCallback(async (signal) => {
     try {
-      setLoading(true);
+      if (!signal?.aborted) setLoading(true);
       setError(null);
-      const res  = await fetch(`${API_URL}/cart`, { headers: authHeaders() });
+      const res = await fetch(`${API_URL}/cart`, {
+        headers: authHeaders(),
+        ...(signal && { signal }),
+      });
+      if (signal?.aborted) return;
       const data = await handleResponse(res);
+      if (signal?.aborted) return;
       if (!data) return;
       if (!data.success) throw new Error(data.message);
       setCart(data.cart);
       setSelectedStore(data.selectedStore);
     } catch (err) {
+      if (signal?.aborted || err.name === "AbortError") return;
       const msg = err.message || "שגיאה בטעינת הסל";
       setError(msg);
       showToast(msg, "error");
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
-  }, [token, authHeaders, handleResponse, showToast]);
+  }, [authHeaders, handleResponse, showToast]);
 
   useEffect(() => {
-    if (token) fetchCart();
+    if (!token) return;
+    const ac = new AbortController();
+    fetchCart(ac.signal);
+    return () => ac.abort();
   }, [token, fetchCart]);
 
   // ── עדכון / הוספת פריט (PATCH upsert) ────────────────

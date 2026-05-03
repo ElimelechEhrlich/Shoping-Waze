@@ -2,7 +2,7 @@ import { useEffect, useCallback, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import CameraCapturePanel from "../Comps/Scan/CameraCapturePanel.jsx";
 import { useCameraCapture } from "../hooks/useCameraCapture.js";
-import { useToast } from "../Contexts/ToastContext.jsx";
+import { useToast } from "../Contexts/useToast.js";
 import usePageTitle from "../hooks/usePageTitle.js";
 
 const MAX_FILE_MB     = 5;
@@ -313,7 +313,7 @@ const ScanPage = () => {
           </div>
           <Link
             to="/"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200
+            className="flex items-center gap-1.5 px-3 py-2 rounded-sm border border-slate-200
               text-slate-600 hover:bg-slate-50 text-sm font-medium transition flex-shrink-0"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -327,11 +327,11 @@ const ScanPage = () => {
 
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
 
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-5">
+      <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm space-y-5">
 
         {/* ── כפתורי הוספה ───────────────────────────── */}
         <div className="grid sm:grid-cols-2 gap-3">
-          <label className="block w-full border-2 border-dashed border-slate-300 rounded-xl p-5 text-center cursor-pointer hover:bg-slate-50 transition">
+          <label className="block w-full border-2 border-dashed border-slate-300 rounded-sm p-5 text-center cursor-pointer hover:bg-slate-50 transition">
             <input
               type="file"
               accept="image/*,image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif"
@@ -354,7 +354,7 @@ const ScanPage = () => {
             type="button"
             onClick={openCamera}
             disabled={cameraLoading || photoList.length >= MAX_PHOTOS}
-            className="w-full border-2 border-slate-200 rounded-xl p-5 text-center hover:bg-slate-50 transition disabled:opacity-60"
+            className="w-full border-2 border-slate-200 rounded-sm p-5 text-center hover:bg-slate-50 transition disabled:opacity-60"
           >
             <svg className="w-7 h-7 mx-auto text-slate-400 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6}
@@ -399,10 +399,10 @@ const ScanPage = () => {
               {photoList.map((item, idx) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-3 bg-slate-50 rounded-xl border border-slate-200 p-2"
+                  className="flex items-center gap-3 bg-slate-50 rounded-sm border border-slate-200 p-2"
                 >
                   {/* מספר תמונה */}
-                  <div className="w-6 h-6 rounded-full bg-emerald-500 text-white text-xs font-bold
+                  <div className="w-6 h-6 rounded-sm bg-zinc-800 text-white text-xs font-bold
                     flex items-center justify-center flex-shrink-0">
                     {idx + 1}
                   </div>
@@ -411,7 +411,7 @@ const ScanPage = () => {
                   <img
                     src={item.preview}
                     alt={`תמונה ${idx + 1}`}
-                    className="h-16 w-24 object-cover rounded-lg border border-slate-200 flex-shrink-0"
+                    className="h-16 w-24 object-cover rounded-sm border border-slate-200 flex-shrink-0"
                   />
 
                   {/* שם קובץ */}
@@ -450,7 +450,7 @@ const ScanPage = () => {
                   <button
                     type="button"
                     onClick={() => removePhoto(item.id)}
-                    className="w-7 h-7 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50
+                    className="w-7 h-7 rounded-sm text-red-400 hover:text-red-600 hover:bg-red-50
                       flex items-center justify-center transition flex-shrink-0"
                     title="הסר"
                   >
@@ -465,7 +465,7 @@ const ScanPage = () => {
 
             {/* תצוגה מקדימה של הסדר */}
             {photoList.length > 1 && (
-              <div className="rounded-xl overflow-hidden border border-emerald-200 bg-emerald-50 p-3">
+              <div className="rounded-sm overflow-hidden border border-emerald-200 bg-emerald-50 p-3">
                 <p className="text-xs text-emerald-600 font-semibold mb-2 text-center">
                   תצוגה מקדימה — הסדר שיישלח לסריקה
                 </p>
@@ -477,7 +477,7 @@ const ScanPage = () => {
                         alt={`חלק ${idx + 1}`}
                         className="h-20 w-14 object-cover rounded border border-emerald-300"
                       />
-                      <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-emerald-500 text-white
+                      <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-zinc-900 text-white
                         text-[9px] font-bold rounded-full flex items-center justify-center">
                         {idx + 1}
                       </span>
@@ -491,7 +491,7 @@ const ScanPage = () => {
 
         {/* ── שגיאות ─────────────────────────────────── */}
         {(error || cameraError) && (
-          <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+          <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-sm px-3 py-2">
             {error || cameraError}
           </p>
         )}
@@ -502,7 +502,7 @@ const ScanPage = () => {
             type="button"
             onClick={onUpload}
             disabled={!hasPhotos || loading}
-            className="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700
+            className="px-5 py-2.5 rounded-sm bg-zinc-900 hover:bg-zinc-800
               disabled:opacity-50 text-white font-semibold text-sm flex items-center gap-2"
           >
             {loading ? (
@@ -529,7 +529,7 @@ const ScanPage = () => {
                 setPhotoList([]);
                 setError("");
               }}
-              className="px-4 py-2.5 rounded-lg border border-red-200 text-red-500
+              className="px-4 py-2.5 rounded-sm border border-red-200 text-red-500
                 hover:bg-red-50 font-medium text-sm transition"
             >
               נקה הכל
@@ -539,7 +539,7 @@ const ScanPage = () => {
           <button
             type="button"
             onClick={() => navigate("/cart")}
-            className="px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700
+            className="px-5 py-2.5 rounded-sm border border-slate-300 text-slate-700
               hover:bg-slate-50 font-semibold text-sm"
           >
             מעבר לסל

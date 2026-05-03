@@ -23,7 +23,7 @@ const NotFoundPage = () => {
       </p>
       <Link
         to="/"
-        className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600
+        className="px-6 py-2.5 rounded-sm bg-zinc-900 hover:bg-zinc-800
           text-white font-semibold text-sm transition shadow-sm"
       >
         חזרה לדף הבית

@@ -75,11 +75,11 @@ const CompareResultsPage = () => {
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <button type="button" onClick={() => navigate("/cart")}
-              className="px-3 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-medium transition">
+              className="px-3 py-2 rounded-sm border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-medium transition">
               חזרה לסל
             </button>
             <Link to="/"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200
+              className="flex items-center gap-1.5 px-3 py-2 rounded-sm border border-slate-200
                 text-slate-600 hover:bg-slate-50 text-sm font-medium transition">
               <HomeIcon />
               בית
@@ -101,7 +101,7 @@ const CompareResultsPage = () => {
 
           return (
             <div key={store.store}
-              className={`bg-white border rounded-2xl shadow-sm overflow-hidden
+              className={`bg-white border rounded-md shadow-sm overflow-hidden
                 ${isCheapest ? "border-emerald-300 ring-1 ring-emerald-200" : "border-slate-200"}`}>
 
               {/* כותרת רשת — לחיצה פותחת/סוגרת את רשימת המוצרים */}
@@ -113,11 +113,11 @@ const CompareResultsPage = () => {
                 onClick={() => toggleStore(store.store)}
                 className={`w-full px-5 py-4 flex items-center justify-between gap-3 text-start border-b
                   transition-colors hover:brightness-[0.99] active:bg-slate-50/80
-                  ${isCheapest ? "bg-emerald-50 border-emerald-100" : "border-slate-100"}`}
+                  ${isCheapest ? "bg-emerald-50 border-emerald-100" : "border-zinc-200"}`}
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   {isCheapest && (
-                    <span className="text-xs font-bold bg-emerald-500 text-white px-2.5 py-1 rounded-full flex-shrink-0">
+                    <span className="text-xs font-bold bg-zinc-800 text-white px-2.5 py-1 rounded-sm flex-shrink-0">
                       הזול ביותר
                     </span>
                   )}
@@ -155,7 +155,7 @@ const CompareResultsPage = () => {
                   <div className="overflow-x-auto">
                     <table className="w-full text-right">
                       <thead>
-                        <tr className="text-xs text-slate-500 border-b border-slate-100">
+                        <tr className="text-xs text-slate-500 border-b border-zinc-200">
                           <th className="pb-2 font-semibold">מוצר</th>
                           <th className="pb-2 font-semibold">כמות</th>
                           <th className="pb-2 font-semibold">סה״כ</th>

@@ -19,7 +19,7 @@ export const exportCartCSV = (cart, filename = "סל_קניות") => {
 
   // שורת סיכום
   const total = cart.reduce((s, i) => s + (i.price > 0 ? i.price * i.qty : 0), 0);
-  lines.push(`"סה\"כ",,,,${total.toFixed(2)}`);
+  lines.push(`"סה"כ",,,,${total.toFixed(2)}`);
 
   const blob = new Blob([BOM + lines.join("\r\n")], {
     type: "text/csv;charset=utf-8;",

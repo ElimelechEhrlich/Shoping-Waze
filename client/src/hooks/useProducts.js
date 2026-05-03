@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useToast } from "../Contexts/ToastContext.jsx";
+import { useToast } from "../Contexts/useToast.js";
 
 const DATA_API_URL    = import.meta.env.VITE_DATA_API_URL || "http://localhost:8000";
 const CACHE_KEY       = "products_cache";
@@ -32,26 +32,33 @@ export default function useProducts() {
   useEffect(() => {
     if (readCache()) return; // fresh cache — skip fetch
 
+    const ac = new AbortController();
+    const { signal } = ac;
+
     const fetchProducts = async () => {
       try {
-        setLoading(true);
+        if (!signal.aborted) setLoading(true);
         setError(null);
-        const res  = await fetch(`${DATA_API_URL}/products`);
+        const res = await fetch(`${DATA_API_URL}/products`, { signal });
+        if (signal.aborted) return;
         const data = await res.json();
+        if (signal.aborted) return;
         if (!res.ok) throw new Error(data?.detail || "שגיאה בטעינת המוצרים");
         setProducts(data.products || []);
         writeCache(data.products || []);
       } catch (err) {
+        if (signal.aborted || err.name === "AbortError") return;
         const msg = err.message || "שגיאה בטעינת המוצרים";
         setError(msg);
         showToast(msg, "error");
       } finally {
-        setLoading(false);
+        if (!signal.aborted) setLoading(false);
       }
     };
 
     fetchProducts();
-  }, []);
+    return () => ac.abort();
+  }, [showToast]);
 
   return { products, loading, error };
 }

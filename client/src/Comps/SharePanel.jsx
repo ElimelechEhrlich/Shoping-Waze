@@ -60,22 +60,22 @@ const SharePanel = ({ title, text, url, color = "emerald" }) => {
 
   const colors = {
     emerald: {
-      native:  "bg-emerald-500 hover:bg-emerald-600 text-white",
-      wapp:    "bg-green-500  hover:bg-green-600  text-white",
-      email:   "border border-slate-200 text-slate-700 hover:bg-slate-50",
-      copy:    "border border-slate-200 text-slate-700 hover:bg-slate-50",
+      native:  "bg-zinc-900 hover:bg-zinc-800 text-white",
+      wapp:    "bg-green-600  hover:bg-green-700  text-white",
+      email:   "border border-zinc-300 text-zinc-800 hover:bg-zinc-50",
+      copy:    "border border-zinc-300 text-zinc-800 hover:bg-zinc-50",
     },
     blue: {
-      native:  "bg-blue-500   hover:bg-blue-600   text-white",
-      wapp:    "bg-green-500  hover:bg-green-600  text-white",
-      email:   "border border-slate-200 text-slate-700 hover:bg-slate-50",
-      copy:    "border border-slate-200 text-slate-700 hover:bg-slate-50",
+      native:  "bg-zinc-900 hover:bg-zinc-800 text-white",
+      wapp:    "bg-green-600  hover:bg-green-700  text-white",
+      email:   "border border-zinc-300 text-zinc-800 hover:bg-zinc-50",
+      copy:    "border border-zinc-300 text-zinc-800 hover:bg-zinc-50",
     },
     purple: {
-      native:  "bg-purple-500 hover:bg-purple-600 text-white",
-      wapp:    "bg-green-500  hover:bg-green-600  text-white",
-      email:   "border border-slate-200 text-slate-700 hover:bg-slate-50",
-      copy:    "border border-slate-200 text-slate-700 hover:bg-slate-50",
+      native:  "bg-zinc-900 hover:bg-zinc-800 text-white",
+      wapp:    "bg-green-600  hover:bg-green-700  text-white",
+      email:   "border border-zinc-300 text-zinc-800 hover:bg-zinc-50",
+      copy:    "border border-zinc-300 text-zinc-800 hover:bg-zinc-50",
     },
   };
   const c = colors[color] || colors.emerald;
@@ -117,7 +117,7 @@ const SharePanel = ({ title, text, url, color = "emerald" }) => {
     return (
       <button
         onClick={handleNativeShare}
-        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition ${c.native}`}
+        className={`flex items-center gap-2 px-4 py-2.5 rounded-sm text-sm font-semibold transition ${c.native}`}
       >
         <NativeShareIcon />
         שתף
@@ -129,17 +129,17 @@ const SharePanel = ({ title, text, url, color = "emerald" }) => {
   return (
     <div className="flex items-center gap-2 flex-wrap">
       <button onClick={handleWhatsApp}
-        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition ${c.wapp}`}>
+        className={`flex items-center gap-1.5 px-3 py-2 rounded-sm text-sm font-semibold transition ${c.wapp}`}>
         <WhatsAppIcon />
         WhatsApp
       </button>
       <button onClick={handleEmail}
-        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm transition ${c.email}`}>
+        className={`flex items-center gap-1.5 px-3 py-2 rounded-sm text-sm transition ${c.email}`}>
         <EmailIcon />
         מייל
       </button>
       <button onClick={handleCopy}
-        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm transition ${c.copy}`}>
+        className={`flex items-center gap-1.5 px-3 py-2 rounded-sm text-sm transition ${c.copy}`}>
         {copied ? <><CheckIcon />הועתק!</> : <><CopyIcon />העתק קישור</>}
       </button>
     </div>

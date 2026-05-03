@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useToast } from "../Contexts/ToastContext.jsx";
+import { useToast } from "../Contexts/useToast.js";
 import { useAuth } from "../hooks/useAuth.js";
 import usePageTitle from "../hooks/usePageTitle.js";
 
@@ -123,11 +123,11 @@ const ReceiptDetailsPage = () => {
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <button type="button" onClick={() => navigate("/scan")}
-              className="px-3 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-medium transition">
+              className="px-3 py-2 rounded-sm border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-medium transition">
               חזרה לסריקה
             </button>
             <Link to="/"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200
+              className="flex items-center gap-1.5 px-3 py-2 rounded-sm border border-slate-200
                 text-slate-600 hover:bg-slate-50 text-sm font-medium transition">
               <HomeIcon />
               בית
@@ -139,12 +139,12 @@ const ReceiptDetailsPage = () => {
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
 
       {/* hint */}
-      <p className="text-xs text-slate-400 bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5">
+      <p className="text-xs text-slate-400 bg-slate-50 border border-zinc-200 rounded-sm px-4 py-2.5">
         ✏️ ניתן לערוך שם, כמות ומחיר לפני אישור — לתיקון שגיאות של הסריקה
       </p>
 
       {/* Editable table — overflow-x-auto מונע גלישה אופקית במובייל */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-md shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
         <table className="w-full text-right min-w-[460px]">
           <thead className="bg-slate-50 border-b border-slate-200">
@@ -157,14 +157,14 @@ const ReceiptDetailsPage = () => {
           </thead>
           <tbody>
             {items.map((item, index) => (
-              <tr key={index} className="border-b border-slate-100 last:border-b-0 group">
+              <tr key={index} className="border-b border-zinc-200 last:border-b-0 group">
                 <td className="px-3 py-2">
                   <input
                     type="text"
                     value={item.name}
                     onChange={(e) => updateField(index, "name", e.target.value)}
                     className="w-full text-sm text-slate-800 bg-transparent border border-transparent
-                      rounded-lg px-2 py-1 focus:outline-none focus:border-emerald-300 focus:bg-emerald-50
+                      rounded-sm px-2 py-1 focus:outline-none focus:border-emerald-300 focus:bg-emerald-50
                       hover:border-slate-200 transition"
                   />
                 </td>
@@ -176,7 +176,7 @@ const ReceiptDetailsPage = () => {
                     value={item.qty}
                     onChange={(e) => updateField(index, "qty", e.target.value)}
                     className="w-full text-sm text-slate-700 bg-transparent border border-transparent
-                      rounded-lg px-2 py-1 focus:outline-none focus:border-emerald-300 focus:bg-emerald-50
+                      rounded-sm px-2 py-1 focus:outline-none focus:border-emerald-300 focus:bg-emerald-50
                       hover:border-slate-200 transition text-center"
                   />
                 </td>
@@ -188,7 +188,7 @@ const ReceiptDetailsPage = () => {
                     value={item.price}
                     onChange={(e) => updateField(index, "price", e.target.value)}
                     className="w-full text-sm font-semibold text-slate-900 bg-transparent border border-transparent
-                      rounded-lg px-2 py-1 focus:outline-none focus:border-emerald-300 focus:bg-emerald-50
+                      rounded-sm px-2 py-1 focus:outline-none focus:border-emerald-300 focus:bg-emerald-50
                       hover:border-slate-200 transition text-center"
                   />
                 </td>
@@ -220,7 +220,7 @@ const ReceiptDetailsPage = () => {
       </div>
 
       {/* Total */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+      <div className="bg-white border border-slate-200 rounded-md p-4 shadow-sm flex items-center justify-between">
         <p className="text-sm text-slate-500">סה״כ מחושב</p>
         <p className="text-xl font-bold text-emerald-700">₪{total.toFixed(2)}</p>
       </div>
@@ -230,7 +230,7 @@ const ReceiptDetailsPage = () => {
         type="button"
         onClick={onApprove}
         disabled={!items.length || approving}
-        className="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50
+        className="w-full py-3 rounded-sm bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50
           text-white font-semibold flex items-center justify-center gap-2"
       >
         {approving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}

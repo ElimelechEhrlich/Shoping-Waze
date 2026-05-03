@@ -67,8 +67,8 @@ const LoginForm = ({ onSwitch }) => {
             onChange={handleChange}
             placeholder="your@email.com"
             required
-            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50
-              focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent
+            className="w-full px-4 py-2.5 rounded-sm border border-gray-200 bg-gray-50
+              focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-transparent
               text-sm transition"
           />
         </div>
@@ -82,22 +82,22 @@ const LoginForm = ({ onSwitch }) => {
             onChange={handleChange}
             placeholder="••••••"
             required
-            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50
-              focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent
+            className="w-full px-4 py-2.5 rounded-sm border border-gray-200 bg-gray-50
+              focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-transparent
               text-sm transition"
           />
         </div>
 
         {/* הצגת שגיאה מהשרת */}
         {error && (
-          <p className="text-sm text-red-500 bg-red-50 px-4 py-2.5 rounded-xl">{error}</p>
+          <p className="text-sm text-red-500 bg-red-50 px-4 py-2.5 rounded-sm">{error}</p>
         )}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60
-            text-white font-semibold rounded-xl transition text-sm shadow-sm"
+          className="w-full py-2.5 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-60
+            text-white font-semibold rounded-sm transition text-sm shadow-sm"
         >
           {loading ? "מתחבר..." : "התחבר"}
         </button>
@@ -105,7 +105,7 @@ const LoginForm = ({ onSwitch }) => {
 
       <p className="mt-5 text-center text-sm text-gray-500">
         אין לך חשבון?{" "}
-        <button onClick={onSwitch} className="text-emerald-600 font-semibold hover:underline">
+        <button onClick={onSwitch} className="text-zinc-800 font-semibold hover:underline">
           הרשם עכשיו
         </button>
       </p>

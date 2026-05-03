@@ -56,7 +56,7 @@ const ProductList = ({ products = [], search, cart, onAdd }) => {
   return (
     <div className="space-y-2">
       {Object.entries(grouped).map(([cat, items]) => (
-        <div key={cat} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div key={cat} className="bg-white rounded-md border border-zinc-200 shadow-sm overflow-hidden">
 
           {/* כותרת קטגוריה */}
           <button
@@ -102,7 +102,7 @@ const ProductList = ({ products = [], search, cart, onAdd }) => {
 
                     <button
                       onClick={() => onAdd(product)}
-                      className="w-8 h-8 rounded-xl bg-emerald-500 hover:bg-emerald-600
+                      className="w-8 h-8 rounded-sm bg-zinc-900 hover:bg-zinc-800
                         text-white font-bold text-lg flex items-center justify-center
                         transition flex-shrink-0 shadow-sm"
                     >

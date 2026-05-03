@@ -11,7 +11,6 @@ import { Link, useParams } from "react-router-dom";
 import useSharedCart     from "../hooks/useSharedCart.js";
 import useProducts       from "../hooks/useProducts.js";
 import usePageTitle      from "../hooks/usePageTitle.js";
-import { useAuth }       from "../hooks/useAuth.js";
 import { SkeletonCard }  from "../Comps/Skeleton.jsx";
 import HomeButton        from "../Comps/HomeButton.jsx";
 import SharePanel        from "../Comps/SharePanel.jsx";
@@ -19,7 +18,6 @@ import SharePanel        from "../Comps/SharePanel.jsx";
 // ── input כמות ───────────────────────────────────────────
 const QtyInput = ({ item, cartId, updateItem }) => {
   const [val, setVal] = useState(String(item.qty));
-  useEffect(() => { setVal(String(item.qty)); }, [item.qty]);
 
   const commit = () => {
     const n = Math.max(1, parseInt(val, 10) || 1);
@@ -31,22 +29,22 @@ const QtyInput = ({ item, cartId, updateItem }) => {
     <div className="flex items-center gap-1 flex-shrink-0">
       <button
         onClick={() => updateItem(cartId, item.name, { qty: Math.max(1, item.qty - 1) })}
-        className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200
-          flex items-center justify-center text-slate-600 transition text-lg leading-none"
+        className="w-7 h-7 rounded-sm bg-zinc-200 hover:bg-zinc-300
+          flex items-center justify-center text-zinc-700 transition text-lg leading-none"
       >−</button>
       <input
         type="number" min="1" value={val}
         onChange={(e) => setVal(e.target.value)}
         onBlur={commit}
         onKeyDown={(e) => e.key === "Enter" && commit()}
-        className="w-12 text-center font-semibold text-slate-700 text-sm
-          border border-slate-200 rounded-lg py-1 focus:outline-none
-          focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
+        className="w-12 text-center font-semibold text-zinc-800 text-sm
+          border border-zinc-300 rounded-sm py-1 focus:outline-none
+          focus:ring-2 focus:ring-zinc-400 focus:border-transparent"
       />
       <button
         onClick={() => updateItem(cartId, item.name, { qty: item.qty + 1 })}
-        className="w-7 h-7 rounded-lg bg-emerald-100 hover:bg-emerald-200
-          flex items-center justify-center text-emerald-700 transition text-lg leading-none"
+        className="w-7 h-7 rounded-sm bg-zinc-200 hover:bg-zinc-300
+          flex items-center justify-center text-zinc-800 transition text-lg leading-none"
       >+</button>
     </div>
   );
@@ -55,7 +53,6 @@ const QtyInput = ({ item, cartId, updateItem }) => {
 // ── SharedCartPage ────────────────────────────────────────
 const SharedCartPage = () => {
   const { id } = useParams();
-  const { user } = useAuth();
 
   const {
     currentCart, loading,
@@ -85,14 +82,16 @@ const SharedCartPage = () => {
     if (pickerOpen) setTimeout(() => searchRef.current?.focus(), 50);
   }, [pickerOpen]);
 
-  // טעינה ראשונית + polling כל 15 שניות
+  // טעינה ראשונית + polling כל 15 שניות (ביטול fetch ביציאה / החלפת סל)
   useEffect(() => {
-    fetchSharedCart(id);
-    const interval = setInterval(() => fetchSharedCart(id), 15_000);
-    return () => clearInterval(interval);
+    const ac = new AbortController();
+    fetchSharedCart(id, ac.signal);
+    const interval = setInterval(() => fetchSharedCart(id, ac.signal), 15_000);
+    return () => {
+      ac.abort();
+      clearInterval(interval);
+    };
   }, [id, fetchSharedCart]);
-
-  const isOwner = currentCart?.ownerId?.toString() === user?._id?.toString();
 
   // הוספת מוצר (upsert — מונע הכפלה)
   const handleAdd = (product) => {
@@ -124,7 +123,7 @@ const SharedCartPage = () => {
   ) ?? 0;
 
   return (
-    <div className="min-h-screen bg-slate-100 font-sans pb-28" dir="rtl">
+    <div className="min-h-screen bg-zinc-100 font-sans pb-28" dir="rtl">
 
       {/* ── Page sub-header ──────────────────────────────────
           sticky top-[60px]: stacks below the global AppHeader (≈60 px). */}
@@ -134,7 +133,7 @@ const SharedCartPage = () => {
           <div className="flex flex-wrap items-center gap-2">
             <HomeButton />
             <Link to="/shared-carts"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200
+              className="flex items-center gap-1.5 px-3 py-2 rounded-sm border border-slate-200
                 text-slate-600 hover:bg-slate-50 text-sm font-medium transition flex-shrink-0">
               <svg className="w-4 h-4 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -159,8 +158,8 @@ const SharedCartPage = () => {
               <button
                 type="button"
                 onClick={() => setShowInvite((v) => !v)}
-                className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-600
-                  border border-blue-200 hover:bg-blue-50 rounded-xl transition flex-shrink-0
+                className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-zinc-800
+                  border border-zinc-300 hover:bg-zinc-50 rounded-sm transition flex-shrink-0
                   w-full sm:w-auto self-stretch sm:self-center"
               >
                 <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -176,18 +175,18 @@ const SharedCartPage = () => {
         {/* פאנל קוד הזמנה — עם שיתוף מלא */}
         {showInvite && currentCart && (
           <div className="max-w-3xl mx-auto mt-2">
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 space-y-3">
+            <div className="bg-zinc-50 border border-zinc-200 rounded-sm p-4 space-y-3">
               {/* קוד + העתקה */}
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs text-blue-500 mb-1">שלח את הקוד לחבר שרוצה להצטרף:</p>
-                  <span className="font-mono font-bold text-2xl text-blue-700 tracking-[0.3em]">
+                  <p className="text-xs text-zinc-600 mb-1">שלח את הקוד לחבר שרוצה להצטרף:</p>
+                  <span className="font-mono font-bold text-2xl text-zinc-900 tracking-[0.3em]">
                     {currentCart.inviteCode}
                   </span>
                 </div>
                 <button onClick={handleCopy}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-blue-500 hover:bg-blue-600
-                    text-white text-xs font-semibold rounded-xl transition flex-shrink-0">
+                  className="flex items-center gap-1.5 px-3 py-2 bg-zinc-900 hover:bg-zinc-800
+                    text-white text-xs font-semibold rounded-sm transition flex-shrink-0">
                   {copied ? (
                     <><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -202,13 +201,13 @@ const SharedCartPage = () => {
               </div>
 
               {/* שיתוף דרך אפליקציות */}
-              <div className="border-t border-blue-100 pt-3">
-                <p className="text-xs text-blue-400 mb-2">שתף ישירות:</p>
+              <div className="border-t border-zinc-200 pt-3">
+                <p className="text-xs text-zinc-500 mb-2">שתף ישירות:</p>
                 <SharePanel
                   title={`הצטרף לסל "${currentCart.name}"`}
                   text={inviteShareText}
                   url={window.location.origin}
-                  color="blue"
+                  color="emerald"
                 />
               </div>
             </div>
@@ -221,23 +220,23 @@ const SharedCartPage = () => {
         {/* ══════════════════════════════════════════════════
             פאנל הוספת מוצרים — מתקפל (כמו CartPage)
         ══════════════════════════════════════════════════ */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
 
           {/* ── כפתור פתיחה/סגירה ── */}
           <button
             onClick={() => setPickerOpen((v) => !v)}
             className={`w-full flex items-center justify-between px-5 py-4 transition-colors
-              ${pickerOpen ? "bg-emerald-50 border-b border-emerald-100" : "hover:bg-slate-50"}`}
+              ${pickerOpen ? "bg-zinc-50 border-b border-zinc-200" : "hover:bg-zinc-50"}`}
           >
             <div className="flex items-center gap-3">
-              <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors
-                ${pickerOpen ? "bg-emerald-500 text-white" : "bg-emerald-100 text-emerald-600"}`}>
+              <div className={`w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0 transition-colors
+                ${pickerOpen ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-700"}`}>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
               </div>
               <div className="text-right">
-                <p className={`font-semibold text-sm ${pickerOpen ? "text-emerald-700" : "text-slate-800"}`}>
+                <p className={`font-semibold text-sm ${pickerOpen ? "text-zinc-900" : "text-zinc-800"}`}>
                   הוסף מוצרים לסל
                 </p>
                 <p className="text-xs text-slate-400 mt-0.5">
@@ -272,8 +271,8 @@ const SharedCartPage = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="חפש מוצר להוספה..."
-                  className="w-full pr-10 pl-9 py-2.5 rounded-xl border border-slate-200
-                    bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm"
+                  className="w-full pr-10 pl-9 py-2.5 rounded-sm border border-slate-200
+                    bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-400 text-sm"
                 />
                 {search && (
                   <button onClick={() => setSearch("")}
@@ -284,7 +283,7 @@ const SharedCartPage = () => {
               </div>
 
               {/* רשימת מוצרים */}
-              <div className="max-h-80 overflow-y-auto rounded-xl space-y-1.5">
+              <div className="max-h-80 overflow-y-auto rounded-sm space-y-1.5">
                 {productsLoading ? (
                   <><SkeletonCard rows={3} /><SkeletonCard rows={2} /></>
                 ) : filteredProducts.length === 0 ? (
@@ -296,22 +295,22 @@ const SharedCartPage = () => {
                     );
                     return (
                       <div key={p.id}
-                        className="bg-slate-50 hover:bg-white rounded-xl border border-slate-100
+                        className="bg-slate-50 hover:bg-white rounded-sm border border-zinc-200
                           px-4 py-3 flex items-center gap-3 transition-colors">
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-slate-800 text-sm truncate">{p.name}</p>
                           <p className="text-xs text-slate-400">{p.category}</p>
                         </div>
                         {inCart && (
-                          <span className="text-xs font-semibold bg-emerald-100 text-emerald-700
-                            px-2 py-0.5 rounded-full flex-shrink-0">
+                          <span className="text-xs font-semibold bg-zinc-200 text-zinc-800
+                            px-2 py-0.5 rounded-sm flex-shrink-0">
                             {inCart.qty} בסל
                           </span>
                         )}
                         <button
                           onClick={() => handleAdd(p)}
-                          className="w-8 h-8 flex items-center justify-center rounded-lg
-                            bg-emerald-500 hover:bg-emerald-600 text-white transition flex-shrink-0"
+                          className="w-8 h-8 flex items-center justify-center rounded-sm
+                            bg-zinc-900 hover:bg-zinc-800 text-white transition flex-shrink-0"
                           aria-label={`הוסף ${p.name}`}
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -335,7 +334,7 @@ const SharedCartPage = () => {
             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
               הסל המשותף
               {totalItems > 0 && (
-                <span className="mr-2 text-emerald-500 normal-case tracking-normal">
+                <span className="mr-2 text-zinc-700 normal-case tracking-normal">
                   ({totalItems} פריטים)
                 </span>
               )}
@@ -346,7 +345,7 @@ const SharedCartPage = () => {
               <div className="flex items-center gap-0.5">
                 {currentCart.members.slice(0, 4).map((m, i) => (
                   <div key={i} title={m.displayName}
-                    className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600
+                    className="w-6 h-6 rounded-sm bg-zinc-700
                       flex items-center justify-center text-[9px] text-white font-bold ring-1 ring-white">
                     {(m.displayName?.[0] ?? "?").toUpperCase()}
                   </div>
@@ -365,7 +364,7 @@ const SharedCartPage = () => {
 
           {/* ריק */}
           {currentCart && (currentCart.items?.length ?? 0) === 0 && (
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-10 text-center">
+            <div className="bg-white rounded-md border border-zinc-200 shadow-sm p-10 text-center">
               <p className="text-4xl mb-3">🛒</p>
               <p className="text-slate-500 text-sm font-medium mb-1">הסל ריק</p>
               <p className="text-slate-400 text-xs">לחץ על "הוסף מוצרים לסל" למעלה להתחיל</p>
@@ -374,7 +373,7 @@ const SharedCartPage = () => {
 
           {/* פריטים */}
           {currentCart && (currentCart.items?.length ?? 0) > 0 && (
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-md border border-zinc-200 shadow-sm overflow-hidden">
               {currentCart.items.map((item, idx) => (
                 <div key={item.name}
                   className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-3.5 hover:bg-slate-50 transition-colors
@@ -388,7 +387,12 @@ const SharedCartPage = () => {
                     </p>
                   </div>
 
-                  <QtyInput item={item} cartId={id} updateItem={updateItem} />
+                  <QtyInput
+                    key={`${item.name}-${item.qty}`}
+                    item={item}
+                    cartId={id}
+                    updateItem={updateItem}
+                  />
 
                   {/* סה"כ */}
                   <div className="w-14 sm:w-16 text-end flex-shrink-0 tabular-nums">
@@ -404,7 +408,7 @@ const SharedCartPage = () => {
                   <button
                     type="button"
                     onClick={() => removeItem(id, item.name)}
-                    className="w-9 h-9 sm:w-8 sm:h-8 rounded-lg hover:bg-red-50 text-slate-300
+                    className="w-9 h-9 sm:w-8 sm:h-8 rounded-sm hover:bg-red-50 text-slate-300
                       hover:text-red-400 flex items-center justify-center transition flex-shrink-0 touch-manipulation"
                     aria-label={`הסר ${item.name}`}
                   >
@@ -432,7 +436,7 @@ const SharedCartPage = () => {
               <div className="w-px h-8 bg-slate-100" />
               <div className="text-center">
                 <p className="text-xs text-slate-400">סה״כ</p>
-                <p className="font-bold text-emerald-600 text-lg leading-none">
+                <p className="font-bold text-zinc-900 text-lg leading-none">
                   {new Intl.NumberFormat("he-IL", {
                     style: "currency", currency: "ILS", maximumFractionDigits: 2,
                   }).format(totalPrice)}
@@ -441,7 +445,7 @@ const SharedCartPage = () => {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs text-slate-400">מתעדכן כל 15 שניות</span>
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <div className="w-2 h-2 rounded-sm bg-zinc-500 animate-pulse" />
             </div>
           </div>
         </div>

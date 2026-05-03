@@ -19,7 +19,7 @@ const AppLayout = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-100 font-sans">
+    <div className="min-h-screen bg-zinc-100 font-sans text-zinc-900">
       {/* כותרת גלובלית — מעבירה callback לפתיחת הדרוואר */}
       <AppHeader onMenuClick={() => setDrawerOpen(true)} />
 

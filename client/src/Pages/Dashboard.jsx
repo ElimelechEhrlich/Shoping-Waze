@@ -14,52 +14,50 @@ import useCart         from "../hooks/useCart.js";
 import useSharedCart   from "../hooks/useSharedCart.js";
 import usePageTitle    from "../hooks/usePageTitle.js";
 import PopularProducts from "../Comps/Dashboard/PopularProducts.jsx";
-import OnboardingModal, { shouldShowOnboarding } from "../Comps/Onboarding/OnboardingModal.jsx";
+import OnboardingModal from "../Comps/Onboarding/OnboardingModal.jsx";
+import { shouldShowOnboarding } from "../Comps/Onboarding/onboardingStorage.js";
 import SharePanel from "../Comps/SharePanel.jsx";
 
 // ── כותרת סעיף ────────────────────────────────────────────
 const SectionLabel = ({ children }) => (
   <div className="flex items-center gap-2 mb-3">
-    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{children}</span>
-    <div className="flex-1 h-px bg-slate-200" />
+    <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{children}</span>
+    <div className="flex-1 h-px bg-zinc-300" />
   </div>
 );
 
 // ── כרטיס ניווט ───────────────────────────────────────────
-const ActionCard = ({ to, onClick, color = "emerald", icon, title, subtitle, badge, size = "normal" }) => {
-  const colors = {
-    emerald: { bg: "bg-emerald-50", text: "text-emerald-600", hover: "hover:border-emerald-200 hover:bg-emerald-50/60" },
-    blue:    { bg: "bg-blue-50",    text: "text-blue-600",    hover: "hover:border-blue-200 hover:bg-blue-50/60"    },
-    amber:   { bg: "bg-amber-50",   text: "text-amber-600",   hover: "hover:border-amber-200 hover:bg-amber-50/60"  },
-    purple:  { bg: "bg-purple-50",  text: "text-purple-600",  hover: "hover:border-purple-200 hover:bg-purple-50/60"},
-    rose:    { bg: "bg-rose-50",    text: "text-rose-600",    hover: "hover:border-rose-200 hover:bg-rose-50/60"    },
+const ActionCard = ({ to, onClick, icon, title, subtitle, badge, size = "normal" }) => {
+  const c = {
+    bg: "bg-zinc-100",
+    text: "text-zinc-800",
+    hover: "hover:border-zinc-300 hover:bg-zinc-50",
   };
-  const c = colors[color] || colors.emerald;
 
   const inner = (
     <div className={`group relative flex items-center gap-4
       ${size === "large" ? "p-6" : "p-4"}
-      bg-white rounded-2xl border border-slate-100 shadow-sm
+      bg-white rounded-md border border-zinc-200 shadow-sm
       transition-all duration-200 cursor-pointer ${c.hover}`}
     >
-      <div className={`${c.bg} ${c.text} ${size === "large" ? "p-4" : "p-3"} rounded-xl flex-shrink-0`}>
+      <div className={`${c.bg} ${c.text} ${size === "large" ? "p-4" : "p-3"} rounded-sm flex-shrink-0`}>
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <p className={`font-bold text-slate-800 ${size === "large" ? "text-lg" : "text-base"} truncate`}>
+        <p className={`font-bold text-zinc-900 ${size === "large" ? "text-lg" : "text-base"} truncate`}>
           {title}
         </p>
         {subtitle && (
-          <p className="text-slate-400 text-sm mt-0.5 truncate">{subtitle}</p>
+          <p className="text-zinc-500 text-sm mt-0.5 truncate">{subtitle}</p>
         )}
       </div>
       {badge > 0 && (
         <span className="absolute -top-2 -left-2 min-w-[1.4rem] h-[1.4rem] flex items-center justify-center
-          rounded-full bg-emerald-500 text-white text-xs font-bold px-1 shadow">
+          rounded-sm bg-zinc-900 text-white text-xs font-bold px-1 border border-zinc-700">
           {badge > 99 ? "99+" : badge}
         </span>
       )}
-      <svg className="w-5 h-5 text-slate-300 group-hover:text-slate-400 rotate-180 transition-colors flex-shrink-0"
+      <svg className="w-5 h-5 text-zinc-400 group-hover:text-zinc-600 rotate-180 transition-colors flex-shrink-0"
         fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
       </svg>
@@ -88,7 +86,11 @@ const Dashboard = () => {
   const createInputRef = useRef(null);
 
   // טעינת הסלים המשותפים לתצוגת מספר הסלים
-  useEffect(() => { fetchMySharedCarts(); }, [fetchMySharedCarts]);
+  useEffect(() => {
+    const ac = new AbortController();
+    fetchMySharedCarts(ac.signal);
+    return () => ac.abort();
+  }, [fetchMySharedCarts]);
 
   // פוקוס אוטומטי על שדה שם הסל
   useEffect(() => {
@@ -119,8 +121,8 @@ const Dashboard = () => {
 
         {/* ── ברכה ──────────────────────────────────────── */}
         <div>
-          <p className="text-xs text-slate-400 uppercase tracking-widest mb-1">{today}</p>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">{today}</p>
+          <h1 className="text-2xl font-bold text-zinc-900">
             שלום, {user?.name?.split(" ")[0]} 👋
           </h1>
         </div>
@@ -132,7 +134,6 @@ const Dashboard = () => {
           <SectionLabel>סריקת קבלה</SectionLabel>
           <ActionCard
             to="/scan"
-            color="emerald"
             size="large"
             icon={
               <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -157,7 +158,6 @@ const Dashboard = () => {
             {/* סל פרטי */}
             <ActionCard
               to="/cart"
-              color="blue"
               badge={totalItems}
               icon={
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -172,7 +172,6 @@ const Dashboard = () => {
             {/* סלים משותפים */}
             <ActionCard
               to="/shared-carts"
-              color="purple"
               icon={
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
@@ -198,7 +197,6 @@ const Dashboard = () => {
           <SectionLabel>היסטוריית קבלות</SectionLabel>
           <ActionCard
             to="/history"
-            color="amber"
             icon={
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
@@ -216,7 +214,7 @@ const Dashboard = () => {
         <section>
           <SectionLabel>פעולה מהירה</SectionLabel>
 
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-md border border-zinc-200 shadow-sm overflow-hidden">
 
             {/* כפתור פתיחה/סגירה */}
             <button
@@ -224,7 +222,7 @@ const Dashboard = () => {
               className={`w-full flex items-center gap-4 p-4 transition-colors text-right
                 ${createOpen ? "bg-purple-50 border-b border-purple-100" : "hover:bg-slate-50"}`}
             >
-              <div className={`p-3 rounded-xl flex-shrink-0 transition-colors
+              <div className={`p-3 rounded-sm flex-shrink-0 transition-colors
                 ${createOpen ? "bg-purple-500 text-white" : "bg-purple-50 text-purple-600"}`}>
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
@@ -258,13 +256,13 @@ const Dashboard = () => {
                   onChange={(e) => setCartName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleCreate()}
                   placeholder="לדוגמה: קניות שבת עם הורים"
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm
+                  className="w-full border border-slate-200 rounded-sm px-4 py-2.5 text-sm
                     focus:outline-none focus:ring-2 focus:ring-purple-400"
                 />
                 <div className="flex gap-2">
                   <button
                     onClick={() => { setCreateOpen(false); setCartName(""); }}
-                    className="flex-1 py-2 rounded-xl border border-slate-200
+                    className="flex-1 py-2 rounded-sm border border-slate-200
                       text-slate-600 text-sm hover:bg-slate-50 transition"
                   >
                     ביטול
@@ -272,7 +270,7 @@ const Dashboard = () => {
                   <button
                     onClick={handleCreate}
                     disabled={!cartName.trim() || creating}
-                    className="flex-1 py-2 rounded-xl bg-purple-500 hover:bg-purple-600
+                    className="flex-1 py-2 rounded-sm bg-purple-500 hover:bg-purple-600
                       disabled:opacity-60 text-white text-sm font-semibold transition"
                   >
                     {creating ? "יוצר..." : "צור סל"}
@@ -288,8 +286,8 @@ const Dashboard = () => {
         ══════════════════════════════════════════════════ */}
         <section>
           <SectionLabel>שתף עם חברים</SectionLabel>
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-5 py-4 flex items-center gap-4">
-            <div className="w-10 h-10 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center flex-shrink-0">
+          <div className="bg-white rounded-md border border-zinc-200 shadow-sm px-5 py-4 flex items-center gap-4">
+            <div className="w-10 h-10 bg-rose-50 text-rose-500 rounded-sm flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                   d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />

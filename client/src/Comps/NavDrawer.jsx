@@ -86,11 +86,11 @@ const Avatar = ({ name, avatarColor, size = "md" }) => {
     .slice(0, 2)
     .toUpperCase();
 
-  const bg = avatarColor || "bg-emerald-500";
+  const bg = avatarColor || "bg-zinc-700";
   const sz = size === "lg" ? "w-14 h-14 text-xl" : size === "sm" ? "w-8 h-8 text-sm" : "w-10 h-10 text-base";
 
   return (
-    <div className={`${sz} ${bg} rounded-full flex items-center justify-center
+    <div className={`${sz} ${bg} rounded-sm flex items-center justify-center
       font-bold text-white flex-shrink-0 select-none`}>
       {initials}
     </div>
@@ -140,28 +140,28 @@ const NavDrawer = ({ open, onClose }) => {
         aria-modal="true"
         aria-label="תפריט ניווט"
         dir="rtl"
-        className={`fixed top-0 left-0 h-full w-72 max-w-[min(18rem,100vw-1rem)] bg-white z-[70] shadow-2xl
+        className={`fixed top-0 left-0 h-full w-72 max-w-[min(18rem,100vw-1rem)] bg-white z-[70] shadow-md
           flex flex-col transition-transform duration-300 ease-in-out
           ${open ? "translate-x-0" : "-translate-x-full"}`}
       >
 
         {/* ── פס עליון — פרופיל ────────────────────── */}
-        <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 px-5 pt-6 pb-5">
+        <div className="bg-zinc-900 px-5 pt-6 pb-5 border-b border-zinc-800">
           <div className="flex items-start justify-between mb-4">
             <Avatar name={user?.name} avatarColor={user?.avatarColor} size="lg" />
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-lg flex items-center justify-center
-                text-emerald-200 hover:text-white hover:bg-white/10 transition"
+              className="w-8 h-8 rounded-sm flex items-center justify-center
+                text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
               aria-label="סגור תפריט"
             >
               <CloseIcon />
             </button>
           </div>
           <p className="font-bold text-white text-base leading-tight">{user?.name}</p>
-          <p className="text-emerald-200 text-xs mt-0.5 truncate">{user?.email}</p>
+          <p className="text-zinc-400 text-xs mt-0.5 truncate">{user?.email}</p>
           {user?.trust && (
-            <p className="text-emerald-100/90 text-[11px] mt-1.5 leading-snug">
+            <p className="text-zinc-300 text-[11px] mt-1.5 leading-snug">
               {user.trust.levelLabel} · ציון {user.trust.score}
               <span className="opacity-80 mr-1">
                 {" "}
@@ -195,10 +195,10 @@ const NavDrawer = ({ open, onClose }) => {
         </nav>
 
         {/* ── התנתקות ─────────────────────────────── */}
-        <div className="border-t border-slate-100 p-3">
+        <div className="border-t border-zinc-200 p-3">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-sm text-sm font-medium
               text-red-500 hover:bg-red-50 transition-colors"
           >
             <LogoutIcon />

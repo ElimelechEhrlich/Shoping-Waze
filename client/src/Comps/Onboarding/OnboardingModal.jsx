@@ -4,21 +4,13 @@
 // ─────────────────────────────────────────────────────────
 
 import { useState } from "react";
-
-const STORAGE_KEY = "onboarding_done_v2";
-
-export const shouldShowOnboarding = () =>
-  !localStorage.getItem(STORAGE_KEY);
-
-export const markOnboardingDone = () =>
-  localStorage.setItem(STORAGE_KEY, "1");
+import { markOnboardingDone } from "./onboardingStorage.js";
 
 // ── תוכן השקופיות ─────────────────────────────────────────
 const SLIDES = [
   {
     emoji: "🛒",
     title: "ברוכים הבאים לקבלות חכמות!",
-    color: "from-emerald-500 to-teal-600",
     points: [
       "מערכת חכמה לניהול קניות וחיסכון בכסף",
       "סרוק קבלות, נהל סל קניות ומצא את הסופר הזול ביותר",
@@ -29,7 +21,6 @@ const SLIDES = [
   {
     emoji: "📷",
     title: "סריקת קבלה חכמה",
-    color: "from-blue-500 to-indigo-600",
     points: [
       "צלם קבלה ישירות מהמצלמה או העלה תמונה מהגלריה",
       "קבלה ארוכה? צלם כמה חלקים — המערכת תאחד אותם לתמונה אחת",
@@ -40,7 +31,6 @@ const SLIDES = [
   {
     emoji: "🛍️",
     title: "ניהול סל קניות",
-    color: "from-orange-500 to-amber-600",
     points: [
       "הוסף מוצרים לסל מתוך המאגר הכללי — או צור מוצר חדש ידנית",
       "מיין לפי שם, קטגוריה או מחיר",
@@ -51,7 +41,6 @@ const SLIDES = [
   {
     emoji: "📊",
     title: "השוואת מחירים",
-    color: "from-rose-500 to-pink-600",
     points: [
       "לחץ 'השווה מחירים' וראה באיזה סופר הסל הכי זול",
       "המערכת מציגה את ההפרש בין הרשתות בבירור",
@@ -62,7 +51,6 @@ const SLIDES = [
   {
     emoji: "👥",
     title: "סל משותף",
-    color: "from-purple-500 to-violet-600",
     points: [
       "צור סל משותף וקבל קוד הזמנה ייחודי של 6 תווים",
       "שלח את הקוד לבני משפחה — הם מצטרפים בלחיצה אחת",
@@ -73,7 +61,6 @@ const SLIDES = [
   {
     emoji: "🧾",
     title: "היסטוריה וכלים",
-    color: "from-amber-500 to-orange-600",
     points: [
       "כל קבלה שאישרת נשמרת אוטומטית בהיסטוריה",
       "עיין בקבלות עבר עם פירוט מלא של הפריטים",
@@ -84,7 +71,6 @@ const SLIDES = [
   {
     emoji: "🚀",
     title: "מוכן להתחיל?",
-    color: "from-emerald-500 to-cyan-600",
     points: [
       "סרוק את הקבלה מהסופר האחרון שלך",
       "בנה סל קניות ובדוק איפה הכי זול",
@@ -113,19 +99,19 @@ const OnboardingModal = ({ onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
       dir="rtl"
       onClick={(e) => e.target === e.currentTarget && handleClose()}
     >
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
+      <div className="bg-white rounded-sm shadow-md w-full max-w-md overflow-hidden animate-fade-in">
 
         {/* ── כותרת צבעונית ────────────────────────── */}
-        <div className={`bg-gradient-to-br ${slide.color} px-6 py-8 text-white text-center relative`}>
+        <div className="bg-zinc-900 px-6 py-8 text-white text-center relative border-b border-zinc-800">
           {/* כפתור סגירה */}
           <button
             onClick={handleClose}
             className="absolute top-3 left-3 w-7 h-7 flex items-center justify-center
-              rounded-full bg-white/20 hover:bg-white/30 text-white text-sm transition"
+              rounded-sm bg-zinc-800 hover:bg-zinc-700 text-white text-sm transition"
           >
             ✕
           </button>
@@ -139,10 +125,10 @@ const OnboardingModal = ({ onClose }) => {
               <button
                 key={i}
                 onClick={() => setStep(i)}
-                className={`rounded-full transition-all duration-300 ${
+                className={`rounded-sm transition-all duration-200 ${
                   i === step
-                    ? "w-5 h-2 bg-white"
-                    : "w-2 h-2 bg-white/40 hover:bg-white/60"
+                    ? "w-5 h-1.5 bg-white"
+                    : "w-2 h-1.5 bg-white/35 hover:bg-white/55"
                 }`}
               />
             ))}
@@ -154,11 +140,11 @@ const OnboardingModal = ({ onClose }) => {
           <ul className="space-y-3">
             {slide.points.map((point, i) => (
               <li key={i} className="flex items-start gap-3">
-                <span className="mt-0.5 w-5 h-5 rounded-full bg-emerald-100 text-emerald-600
+                <span className="mt-0.5 w-5 h-5 rounded-sm bg-zinc-200 text-zinc-800
                   text-xs font-bold flex items-center justify-center flex-shrink-0">
                   {i + 1}
                 </span>
-                <span className="text-sm text-slate-700 leading-relaxed">{point}</span>
+                <span className="text-sm text-zinc-700 leading-relaxed">{point}</span>
               </li>
             ))}
           </ul>
@@ -169,8 +155,8 @@ const OnboardingModal = ({ onClose }) => {
           {step > 0 && (
             <button
               onClick={prev}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200
-                text-slate-600 hover:bg-slate-50 text-sm font-medium transition"
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-sm border border-zinc-300
+                text-zinc-700 hover:bg-zinc-50 text-sm font-medium transition"
             >
               <svg className="w-4 h-4 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -181,9 +167,8 @@ const OnboardingModal = ({ onClose }) => {
 
           <button
             onClick={next}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl
-              text-white font-semibold text-sm transition bg-gradient-to-r ${slide.color}
-              hover:opacity-90 shadow-sm`}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-sm
+              text-white font-semibold text-sm transition bg-zinc-900 hover:bg-zinc-800 border border-zinc-800"
           >
             {isLast ? (
               <>
@@ -208,7 +193,7 @@ const OnboardingModal = ({ onClose }) => {
           <div className="pb-4 text-center">
             <button
               onClick={handleClose}
-              className="text-xs text-slate-400 hover:text-slate-600 transition underline underline-offset-2"
+              className="text-xs text-zinc-500 hover:text-zinc-800 transition underline underline-offset-2"
             >
               דלג
             </button>

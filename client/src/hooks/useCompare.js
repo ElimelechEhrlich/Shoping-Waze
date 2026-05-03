@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { useToast } from "../Contexts/ToastContext.jsx";
+import { useToast } from "../Contexts/useToast.js";
 
 const DATA_API_URL = import.meta.env.VITE_DATA_API_URL || "http://localhost:8000";
 const COMPARE_TIMEOUT_MS = 45_000;

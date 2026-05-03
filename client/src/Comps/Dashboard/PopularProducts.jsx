@@ -26,7 +26,7 @@ const PopularProductMobileCard = ({ p, rank, inCart, cart, onAddAgain }) => {
 
   return (
     <article
-      className="rounded-xl border border-slate-100 bg-white p-3.5 shadow-sm"
+      className="rounded-sm border border-zinc-200 bg-white p-3.5 shadow-sm"
       dir="rtl"
     >
       <div className="flex gap-3 items-start">
@@ -63,7 +63,7 @@ const PopularProductMobileCard = ({ p, rank, inCart, cart, onAddAgain }) => {
           <button
             type="button"
             onClick={handleAdd}
-            className="shrink-0 w-9 h-9 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white
+            className="shrink-0 w-9 h-9 rounded-sm bg-zinc-900 hover:bg-zinc-800 text-white
               font-bold text-lg leading-none flex items-center justify-center transition shadow-sm"
             title="הוסף שוב לסל"
           >
@@ -107,23 +107,23 @@ const PopularProducts = ({ cart = [], onAddAgain }) => {
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
-                className="rounded-xl border border-slate-100 bg-white p-3.5 shadow-sm animate-pulse"
+                className="rounded-sm border border-zinc-200 bg-white p-3.5 shadow-sm animate-pulse"
               >
                 <div className="flex gap-3">
-                  <div className="h-7 w-7 rounded-lg bg-slate-200 shrink-0" />
+                  <div className="h-7 w-7 rounded-sm bg-slate-200 shrink-0" />
                   <div className="flex-1 space-y-2.5 min-w-0">
-                    <div className="h-4 bg-slate-200 rounded-lg w-[85%]" />
+                    <div className="h-4 bg-slate-200 rounded-sm w-[85%]" />
                     <div className="flex gap-2">
                       <div className="h-6 w-20 bg-slate-200 rounded-full" />
                       <div className="h-4 w-16 bg-slate-200 rounded" />
                     </div>
                   </div>
-                  <div className="h-9 w-9 rounded-xl bg-slate-200 shrink-0" />
+                  <div className="h-9 w-9 rounded-sm bg-slate-200 shrink-0" />
                 </div>
               </div>
             ))}
           </div>
-          <div className="hidden md:block bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="hidden md:block bg-white rounded-md border border-zinc-200 shadow-sm overflow-hidden">
             <table className="w-full text-sm">
               <tbody>
                 {[...Array(5)].map((_, i) => (
@@ -137,14 +137,14 @@ const PopularProducts = ({ cart = [], onAddAgain }) => {
 
       {/* שגיאה */}
       {error && !loading && (
-        <div className="bg-red-50 border border-red-100 rounded-2xl p-5 text-sm text-red-500 text-center">
+        <div className="bg-red-50 border border-red-100 rounded-md p-5 text-sm text-red-500 text-center">
           לא ניתן לטעון את המוצרים: {error}
         </div>
       )}
 
       {/* ריק */}
       {!loading && !error && products.length === 0 && (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-10 text-center">
+        <div className="bg-white rounded-md border border-zinc-200 shadow-sm p-10 text-center">
           <p className="text-3xl mb-3">🛒</p>
           <p className="text-slate-500 text-sm">עדיין אין היסטוריית קניות</p>
           <p className="text-slate-400 text-xs mt-1">סרוק קבלה ראשונה כדי להתחיל</p>
@@ -169,10 +169,10 @@ const PopularProducts = ({ cart = [], onAddAgain }) => {
 
       {/* דסקטופ: טבלה */}
       {!loading && !error && products.length > 0 && (
-        <div className="hidden md:block bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden overflow-x-auto">
+        <div className="hidden md:block bg-white rounded-md border border-zinc-200 shadow-sm overflow-hidden overflow-x-auto">
           <table className="w-full text-sm min-w-[640px]">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50 text-right">
+              <tr className="border-b border-zinc-200 bg-slate-50 text-right">
                 <th className="px-5 py-3 font-semibold text-slate-500 text-xs w-12">#</th>
                 <th className="px-5 py-3 font-semibold text-slate-500 text-xs min-w-[12rem]">מוצר</th>
                 <th className="px-5 py-3 font-semibold text-slate-500 text-xs whitespace-nowrap">
@@ -224,7 +224,7 @@ const PopularProducts = ({ cart = [], onAddAgain }) => {
                         <button
                           type="button"
                           onClick={() => handleAddDesktop(p)}
-                          className="w-7 h-7 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white
+                          className="w-7 h-7 rounded-sm bg-zinc-900 hover:bg-zinc-800 text-white
                             font-bold text-base flex items-center justify-center transition shadow-sm"
                           title="הוסף שוב לסל"
                         >

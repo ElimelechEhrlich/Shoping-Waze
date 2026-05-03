@@ -1,7 +1,7 @@
 // hooks/useSharedCart.js
 import { useState, useCallback } from "react";
 import { useAuth } from "./useAuth.js";
-import { useToast } from "../Contexts/ToastContext.jsx";
+import { useToast } from "../Contexts/useToast.js";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -28,17 +28,23 @@ const useSharedCart = () => {
   }, [logout, showToast]);
 
   // ── שליפת כל הסלים השיתופיים של המשתמש ─────────────────
-  const fetchMySharedCarts = useCallback(async () => {
+  const fetchMySharedCarts = useCallback(async (signal) => {
     try {
-      setLoading(true);
-      const res  = await fetch(`${API_URL}/shared-carts`, { headers: headers() });
+      if (!signal?.aborted) setLoading(true);
+      const res = await fetch(`${API_URL}/shared-carts`, {
+        headers: headers(),
+        ...(signal && { signal }),
+      });
+      if (signal?.aborted) return;
       const data = await handle(res);
+      if (signal?.aborted) return;
       if (!data) return;
       if (data.success) setSharedCarts(data.sharedCarts);
     } catch (err) {
+      if (signal?.aborted || err.name === "AbortError") return;
       showToast(err.message || "שגיאה בטעינת סלים משותפים", "error");
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   }, [headers, handle, showToast]);
 
@@ -102,18 +108,25 @@ const useSharedCart = () => {
   }, [headers, handle, showToast]);
 
   // ── שליפת סל ספציפי ─────────────────────────────────────
-  const fetchSharedCart = useCallback(async (id) => {
+  // signal (אופציונלי): ביטול בקשה ביציאה מהדף / החלפת סל — ללא טוסט וללא setState אחרי abort
+  const fetchSharedCart = useCallback(async (id, signal) => {
     try {
-      setLoading(true);
-      const res  = await fetch(`${API_URL}/shared-carts/${id}`, { headers: headers() });
+      if (!signal?.aborted) setLoading(true);
+      const res = await fetch(`${API_URL}/shared-carts/${id}`, {
+        headers: headers(),
+        ...(signal && { signal }),
+      });
+      if (signal?.aborted) return;
       const data = await handle(res);
+      if (signal?.aborted) return;
       if (!data) return;
       if (data.success) setCurrentCart(data.sharedCart);
       else showToast(data.message, "error");
     } catch (err) {
+      if (signal?.aborted || err.name === "AbortError") return;
       showToast(err.message || "שגיאה בטעינת הסל", "error");
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   }, [headers, handle, showToast]);
 

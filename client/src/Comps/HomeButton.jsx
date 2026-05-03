@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 const HomeButton = () => (
   <Link
     to="/"
-    className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200
+    className="flex items-center gap-1.5 px-3 py-2 rounded-sm border border-slate-200
       text-slate-600 hover:bg-slate-50 text-sm font-medium transition flex-shrink-0"
   >
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

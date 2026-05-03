@@ -17,7 +17,7 @@ const NoPriceModal = ({ item, onConfirm, onCancel }) => {
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6" dir="rtl">
+      <div className="bg-white rounded-md shadow-md w-full max-w-sm p-6" dir="rtl">
         <div className="text-center mb-5">
           <div className="text-4xl mb-2">🏷️</div>
           <h3 className="font-bold text-slate-800 text-lg">מחיר לא ידוע</h3>
@@ -40,7 +40,7 @@ const NoPriceModal = ({ item, onConfirm, onCancel }) => {
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               placeholder="0.00"
-              className="w-full pr-8 pl-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50
+              className="w-full pr-8 pl-4 py-2.5 rounded-sm border border-slate-200 bg-slate-50
                 focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm"
             />
           </div>
@@ -49,14 +49,14 @@ const NoPriceModal = ({ item, onConfirm, onCancel }) => {
         <div className="flex gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600
+            className="flex-1 py-2.5 rounded-sm border border-slate-200 text-slate-600
               text-sm font-medium hover:bg-slate-50 transition"
           >
             ביטול
           </button>
           <button
             onClick={handleConfirm}
-            className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600
+            className="flex-1 py-2.5 rounded-sm bg-zinc-900 hover:bg-zinc-800
               text-white text-sm font-semibold transition"
           >
             {price > 0 ? "הוסף עם מחיר" : "הוסף בלי מחיר"}

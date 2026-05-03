@@ -26,7 +26,11 @@ const SharedCartListPage = () => {
   const [joinCode,   setJoinCode]   = useState("");
   const [busy,       setBusy]       = useState(false);
 
-  useEffect(() => { fetchMySharedCarts(); }, [fetchMySharedCarts]);
+  useEffect(() => {
+    const ac = new AbortController();
+    fetchMySharedCarts(ac.signal);
+    return () => ac.abort();
+  }, [fetchMySharedCarts]);
 
   const handleCreate = async () => {
     if (!cartName.trim()) return;
@@ -57,7 +61,7 @@ const SharedCartListPage = () => {
     || cart.ownerId === user?._id;
 
   return (
-    <div className="min-h-screen bg-slate-100 font-sans" dir="rtl">
+    <div className="min-h-screen bg-zinc-100 font-sans" dir="rtl">
       {/* ── Page sub-header ────────────────────────────────
           sticky top-[60px]: stacks below the global AppHeader (≈60 px tall). */}
       <header className="bg-white border-b border-slate-200 px-4 py-3 sticky top-[60px] z-10">
@@ -72,8 +76,8 @@ const SharedCartListPage = () => {
         <div className="flex gap-3">
           <button
             onClick={() => { setShowCreate(true); setShowJoin(false); }}
-            className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-500 hover:bg-emerald-600
-              text-white font-semibold rounded-xl transition shadow-sm text-sm"
+            className="flex-1 flex items-center justify-center gap-2 py-3 bg-zinc-900 hover:bg-zinc-800
+              text-white font-semibold rounded-sm transition shadow-sm text-sm"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -82,8 +86,8 @@ const SharedCartListPage = () => {
           </button>
           <button
             onClick={() => { setShowJoin(true); setShowCreate(false); }}
-            className="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-500 hover:bg-blue-600
-              text-white font-semibold rounded-xl transition shadow-sm text-sm"
+            className="flex-1 flex items-center justify-center gap-2 py-3 border-2 border-zinc-900
+              text-zinc-900 font-semibold rounded-sm transition text-sm bg-white hover:bg-zinc-900 hover:text-white"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -95,7 +99,7 @@ const SharedCartListPage = () => {
 
         {/* ── פאנל יצירה ──────────────────────────────── */}
         {showCreate && (
-          <div className="bg-white rounded-2xl border border-emerald-100 shadow-sm p-5 space-y-3">
+          <div className="bg-white rounded-md border border-zinc-200 shadow-sm p-5 space-y-3">
             <h2 className="font-bold text-slate-800">שם לסל החדש</h2>
             <input
               autoFocus
@@ -103,18 +107,18 @@ const SharedCartListPage = () => {
               onChange={(e) => setCartName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleCreate()}
               placeholder="למשל: קניות שבת עם רותי"
-              className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm
-                focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              className="w-full border border-zinc-300 rounded-sm px-4 py-2.5 text-sm
+                focus:outline-none focus:ring-2 focus:ring-zinc-400"
             />
             <div className="flex gap-2">
               <button onClick={() => setShowCreate(false)}
-                className="flex-1 py-2 rounded-xl border border-slate-200 text-slate-600 text-sm hover:bg-slate-50 transition">
+                className="flex-1 py-2 rounded-sm border border-slate-200 text-slate-600 text-sm hover:bg-slate-50 transition">
                 ביטול
               </button>
               <button
                 onClick={handleCreate}
                 disabled={!cartName.trim() || busy}
-                className="flex-1 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600
+                className="flex-1 py-2 rounded-sm bg-zinc-900 hover:bg-zinc-800
                   disabled:opacity-60 text-white text-sm font-semibold transition"
               >
                 {busy ? "יוצר..." : "צור סל"}
@@ -125,7 +129,7 @@ const SharedCartListPage = () => {
 
         {/* ── פאנל הצטרפות ────────────────────────────── */}
         {showJoin && (
-          <div className="bg-white rounded-2xl border border-blue-100 shadow-sm p-5 space-y-3">
+          <div className="bg-white rounded-md border border-zinc-200 shadow-sm p-5 space-y-3">
             <h2 className="font-bold text-slate-800">הזן קוד הזמנה</h2>
             <p className="text-xs text-slate-400">קוד של 6 תווים שנשלח אליך מחבר הסל</p>
             <input
@@ -135,18 +139,18 @@ const SharedCartListPage = () => {
               onKeyDown={(e) => e.key === "Enter" && handleJoin()}
               maxLength={6}
               placeholder="ABC123"
-              className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-center
-                tracking-[0.4em] font-mono uppercase focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full border border-zinc-300 rounded-sm px-4 py-2.5 text-sm text-center
+                tracking-[0.4em] font-mono uppercase focus:outline-none focus:ring-2 focus:ring-zinc-400"
             />
             <div className="flex gap-2">
               <button onClick={() => setShowJoin(false)}
-                className="flex-1 py-2 rounded-xl border border-slate-200 text-slate-600 text-sm hover:bg-slate-50 transition">
+                className="flex-1 py-2 rounded-sm border border-slate-200 text-slate-600 text-sm hover:bg-slate-50 transition">
                 ביטול
               </button>
               <button
                 onClick={handleJoin}
                 disabled={joinCode.length !== 6 || busy}
-                className="flex-1 py-2 rounded-xl bg-blue-500 hover:bg-blue-600
+                className="flex-1 py-2 rounded-sm bg-zinc-900 hover:bg-zinc-800
                   disabled:opacity-60 text-white text-sm font-semibold transition"
               >
                 {busy ? "מצטרף..." : "הצטרף"}
@@ -159,13 +163,13 @@ const SharedCartListPage = () => {
         {loading && (
           <div className="space-y-3">
             {[1, 2].map((k) => (
-              <div key={k} className="bg-white rounded-2xl h-20 animate-pulse border border-slate-100" />
+              <div key={k} className="bg-white rounded-md h-20 animate-pulse border border-zinc-200" />
             ))}
           </div>
         )}
 
         {!loading && sharedCarts.length === 0 && (
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-10 text-center">
+          <div className="bg-white rounded-md border border-zinc-200 shadow-sm p-10 text-center">
             <p className="text-4xl mb-3">🛒</p>
             <p className="text-slate-400 text-sm">אין לך סלים משותפים עדיין</p>
             <p className="text-slate-400 text-xs mt-1">צור סל חדש או הצטרף עם קוד</p>
@@ -175,7 +179,7 @@ const SharedCartListPage = () => {
         {!loading && sharedCarts.map((cart) => (
           <div
             key={cart._id}
-            className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden"
+            className="bg-white rounded-md border border-zinc-200 shadow-sm overflow-hidden"
           >
             <button
               onClick={() => navigate(`/shared-cart/${cart._id}`)}
@@ -190,13 +194,13 @@ const SharedCartListPage = () => {
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {cart.members.slice(0, 4).map((m, i) => (
                       <span key={i}
-                        className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">
+                        className="text-[10px] bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-sm">
                         {m.displayName}
                         {m.userId?.toString() === user?._id?.toString() && " (אני)"}
                       </span>
                     ))}
                     {cart.members.length > 4 && (
-                      <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-sm">
                         +{cart.members.length - 4} נוספים
                       </span>
                     )}
@@ -210,11 +214,11 @@ const SharedCartListPage = () => {
             </button>
 
             {/* קוד הזמנה + כפתורי ניהול */}
-            <div className="border-t border-slate-100 px-5 py-3 flex items-center justify-between bg-slate-50">
+            <div className="border-t border-zinc-200 px-5 py-3 flex items-center justify-between bg-slate-50">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-slate-400">קוד הזמנה:</span>
                 <span className="font-mono font-bold text-slate-700 tracking-widest text-sm bg-white
-                  border border-slate-200 px-2 py-0.5 rounded-lg select-all">
+                  border border-slate-200 px-2 py-0.5 rounded-sm select-all">
                   {cart.inviteCode}
                 </span>
               </div>

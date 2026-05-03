@@ -22,6 +22,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider }   from "./Contexts/AuthContext.jsx";
 import { ToastProvider }  from "./Contexts/ToastContext.jsx";
+import ErrorBoundary      from "./Comps/ErrorBoundary.jsx";
 import { useAuth }        from "./hooks/useAuth.js";
 import AppLayout          from "./layouts/AppLayout.jsx";
 
@@ -45,7 +46,7 @@ const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="w-8 h-8 border-4 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+      <div className="w-8 h-8 border-4 border-zinc-300 border-t-transparent rounded-full animate-spin" />
     </div>
   );
   return user ? children : <Navigate to="/login" replace />;
@@ -64,6 +65,7 @@ export default function App() {
   return (
     <AuthProvider>
       <ToastProvider>
+        <ErrorBoundary>
         <Routes>
 
           {/* ── Public route (no global header) ────────────────────────── */}
@@ -92,6 +94,7 @@ export default function App() {
           </Route>
 
         </Routes>
+        </ErrorBoundary>
       </ToastProvider>
     </AuthProvider>
   );
