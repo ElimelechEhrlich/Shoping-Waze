@@ -44,11 +44,17 @@ import NotFoundPage       from "./Pages/NotFoundPage.jsx";
 // Shows a spinner while the auth state is being resolved on first load.
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-8 h-8 border-4 border-zinc-300 border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-zinc-700">
+        <span
+          role="status"
+          aria-label="טוען"
+          className="w-8 h-8 border-[3px] border-current border-t-transparent rounded-full animate-spin"
+        />
+      </div>
+    );
+  }
   return user ? children : <Navigate to="/login" replace />;
 };
 

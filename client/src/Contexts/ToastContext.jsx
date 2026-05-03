@@ -26,10 +26,10 @@ export const ToastProvider = ({ children }) => {
 };
 
 const STYLES = {
-  success: "bg-zinc-900 text-white",
-  error:   "bg-red-500 text-white",
-  warning: "bg-amber-500 text-white",
-  info:    "bg-slate-700 text-white",
+  success: "bg-emerald-700 text-white",
+  error:   "bg-red-700 text-white",
+  warning: "bg-amber-700 text-white",
+  info:    "bg-zinc-900 text-white",
 };
 
 const ICONS = {
@@ -65,7 +65,8 @@ const ToastContainer = ({ toasts, onDismiss }) => (
     {toasts.map((t) => (
       <div
         key={t.id}
-        className={`flex items-center gap-3 px-4 py-3 rounded-sm shadow-lg
+        role={t.type === "error" || t.type === "warning" ? "alert" : "status"}
+        className={`flex items-center gap-3 px-4 py-2.5 rounded-md shadow-md
           text-sm font-medium pointer-events-auto animate-fade-in
           ${STYLES[t.type] || STYLES.info}`}
         dir="rtl"

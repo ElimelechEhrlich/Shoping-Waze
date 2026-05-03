@@ -1,12 +1,17 @@
 // Comps/Cart/AddProductModal.jsx
 // Modal for adding a new product to the global catalog (MySQL).
-// Optionally includes a price + store, and can add to cart immediately.
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "../../Contexts/useToast.js";
+import Button from "../ui/Button.jsx";
 
 const DATA_API_URL = import.meta.env.VITE_DATA_API_URL || "http://localhost:8000";
 
 const KNOWN_STORES = ["שופרסל", "רמי לוי", "ויקטורי", "מגה", "אחר"];
+
+const fieldClass =
+  "w-full px-3 py-2.5 rounded-sm border border-zinc-300 bg-white text-sm " +
+  "focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 " +
+  "transition placeholder:text-zinc-400";
 
 const AddProductModal = ({ onClose, onCreated }) => {
   const { showToast } = useToast();
@@ -16,6 +21,12 @@ const AddProductModal = ({ onClose, onCreated }) => {
   const [storeName, setStoreName] = useState("");
   const [loading, setLoading]     = useState(false);
   const [nameError, setNameError] = useState("");
+
+  useEffect(() => {
+    const handler = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,8 +54,6 @@ const AddProductModal = ({ onClose, onCreated }) => {
       }
 
       showToast(data.message, data.already_existed ? "info" : "success");
-
-      // Bust sessionStorage cache so products list reloads
       sessionStorage.removeItem("products_cache");
 
       onCreated({
@@ -62,100 +71,99 @@ const AddProductModal = ({ onClose, onCreated }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" dir="rtl">
-      <div className="bg-white rounded-md shadow-sm w-full max-w-md">
+    <div
+      className="fixed inset-0 bg-black/40 z-[80] flex items-center justify-center p-4"
+      dir="rtl"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="add-product-title"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="bg-white rounded-md w-full max-w-md animate-fade-in">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200">
-          <h2 className="text-lg font-bold text-slate-800">הוספת מוצר חדש למאגר</h2>
-          <button onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 transition"
-            aria-label="סגור">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200">
+          <h2 id="add-product-title" className="text-base font-semibold text-zinc-900">
+            הוספת מוצר חדש למאגר
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 rounded-sm flex items-center justify-center text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition"
+            aria-label="סגור"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+        <form onSubmit={handleSubmit} className="px-4 py-4 space-y-4">
 
           {/* שם המוצר */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              שם המוצר <span className="text-red-500">*</span>
+            <label htmlFor="prod-name" className="block text-xs font-medium text-zinc-700 mb-1">
+              שם המוצר <span className="text-red-700">*</span>
             </label>
             <input
+              id="prod-name"
               type="text"
               value={name}
               onChange={(e) => { setName(e.target.value); setNameError(""); }}
               placeholder="לדוגמה: חלב תנובה 3%"
-              className={`w-full px-3 py-2.5 rounded-sm border text-sm focus:outline-none
-                focus:ring-2 focus:ring-emerald-400 transition
-                ${nameError ? "border-red-300 bg-red-50" : "border-slate-200 bg-slate-50"}`}
+              className={`${fieldClass} ${nameError ? "border-red-300 bg-red-50/40" : ""}`}
               autoFocus
             />
-            {nameError && <p className="text-xs text-red-500 mt-1">{nameError}</p>}
+            {nameError && <p role="alert" className="text-xs text-red-700 mt-1">{nameError}</p>}
           </div>
 
           {/* מחיר + רשת — אופציונלי */}
-          <div className="bg-slate-50 rounded-sm p-4 space-y-3 border border-zinc-200">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-              מחיר ורשת — אופציונלי
+          <div className="bg-zinc-50 rounded-sm p-3 space-y-3 border border-zinc-200">
+            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">
+              מחיר ורשת (אופציונלי)
             </p>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-slate-600 mb-1">מחיר (₪)</label>
+                <label htmlFor="prod-price" className="block text-xs text-zinc-700 mb-1">מחיר (₪)</label>
                 <input
+                  id="prod-price"
                   type="number"
                   min="0"
                   step="0.01"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   placeholder="0.00"
-                  className="w-full px-3 py-2 rounded-sm border border-slate-200 bg-white
-                    text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 transition"
+                  className={fieldClass}
                 />
               </div>
               <div>
-                <label className="block text-xs text-slate-600 mb-1">רשת</label>
+                <label htmlFor="prod-store" className="block text-xs text-zinc-700 mb-1">רשת</label>
                 <select
+                  id="prod-store"
                   value={storeName}
                   onChange={(e) => setStoreName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-sm border border-slate-200 bg-white
-                    text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 transition"
+                  className={fieldClass}
                 >
                   <option value="">בחר רשת</option>
                   {KNOWN_STORES.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
             </div>
-            <p className="text-xs text-slate-400">
-              מחיר ורשת יתרמו למאגר הנתונים המשותף לכלל המשתמשים
+            <p className="text-[11px] text-zinc-500">
+              מחיר ורשת יתרמו למאגר הנתונים המשותף לכלל המשתמשים.
             </p>
           </div>
 
           {/* Buttons */}
-          <div className="flex gap-3 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-2.5 rounded-sm border border-slate-200 text-slate-600
-                hover:bg-slate-50 text-sm font-medium transition"
-            >
+          <div className="flex gap-2 pt-1">
+            <Button type="button" variant="secondary" size="md" fullWidth onClick={onClose}>
               ביטול
-            </button>
-            <button
-              type="submit"
-              disabled={loading || !name.trim()}
-              className="flex-1 py-2.5 rounded-sm bg-zinc-900 hover:bg-zinc-800
-                disabled:opacity-50 text-white text-sm font-semibold flex items-center
-                justify-center gap-2 transition"
-            >
-              {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+            </Button>
+            <Button type="submit" variant="primary" size="md" fullWidth loading={loading} disabled={!name.trim()}>
               {loading ? "שומר..." : "הוסף למאגר"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

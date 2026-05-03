@@ -7,13 +7,15 @@
 // ─────────────────────────────────────────────────────────
 
 import { useEffect, useState, useRef } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import useSharedCart     from "../hooks/useSharedCart.js";
 import useProducts       from "../hooks/useProducts.js";
 import usePageTitle      from "../hooks/usePageTitle.js";
 import { SkeletonCard }  from "../Comps/Skeleton.jsx";
 import HomeButton        from "../Comps/HomeButton.jsx";
 import SharePanel        from "../Comps/SharePanel.jsx";
+import Button            from "../Comps/ui/Button.jsx";
+import EmptyState        from "../Comps/ui/EmptyState.jsx";
 
 // ── input כמות ───────────────────────────────────────────
 const QtyInput = ({ item, cartId, updateItem }) => {
@@ -127,82 +129,87 @@ const SharedCartPage = () => {
 
       {/* ── Page sub-header ──────────────────────────────────
           sticky top-[60px]: stacks below the global AppHeader (≈60 px). */}
-      <header className="bg-white border-b border-slate-200 px-3 sm:px-4 py-3 sticky top-[60px] z-30">
+      <header className="bg-white border-b border-zinc-200 px-3 sm:px-4 py-3 sticky top-[60px] z-30">
         <div className="max-w-3xl mx-auto space-y-3">
-          {/* שורה 1 — ניווט בלבד (לא דוחסים עם שתף קוד) */}
           <div className="flex flex-wrap items-center gap-2">
             <HomeButton />
-            <Link to="/shared-carts"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-sm border border-slate-200
-                text-slate-600 hover:bg-slate-50 text-sm font-medium transition flex-shrink-0">
-              <svg className="w-4 h-4 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+            <Button
+              to="/shared-carts"
+              variant="secondary"
+              size="md"
+              icon={
+                <svg className="w-4 h-4 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              }
+            >
               סלים משותפים
-            </Link>
+            </Button>
           </div>
 
-          {/* שורה 2 — כותרת + מטא + שתף קוד (במובייל כפתור בשורה נפרדת) */}
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <div className="min-w-0 flex-1">
-              <h1 className="text-base sm:text-lg font-bold text-slate-900 leading-snug break-words">
+              <h1 className="text-base font-semibold text-zinc-900 leading-snug break-words">
                 {currentCart?.name ?? "טוען..."}
               </h1>
               {currentCart && (
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-zinc-500 mt-0.5">
                   {currentCart.members.length} חברים · {totalItems} פריטים
                 </p>
               )}
             </div>
             {currentCart && (
-              <button
-                type="button"
+              <Button
+                variant={showInvite ? "primary" : "secondary"}
+                size="md"
                 onClick={() => setShowInvite((v) => !v)}
-                className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-zinc-800
-                  border border-zinc-300 hover:bg-zinc-50 rounded-sm transition flex-shrink-0
-                  w-full sm:w-auto self-stretch sm:self-center"
+                aria-expanded={showInvite}
+                icon={
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                  </svg>
+                }
               >
-                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                </svg>
-                שתף קוד
-              </button>
+                {showInvite ? "סגור" : "שתף קוד"}
+              </Button>
             )}
           </div>
         </div>
 
-        {/* פאנל קוד הזמנה — עם שיתוף מלא */}
         {showInvite && currentCart && (
-          <div className="max-w-3xl mx-auto mt-2">
-            <div className="bg-zinc-50 border border-zinc-200 rounded-sm p-4 space-y-3">
-              {/* קוד + העתקה */}
-              <div className="flex items-center justify-between gap-3">
+          <div className="max-w-3xl mx-auto mt-3">
+            <div className="bg-zinc-50 border border-zinc-200 rounded-md p-4 space-y-3">
+              <div className="flex items-end justify-between gap-3 flex-wrap">
                 <div>
-                  <p className="text-xs text-zinc-600 mb-1">שלח את הקוד לחבר שרוצה להצטרף:</p>
-                  <span className="font-mono font-bold text-2xl text-zinc-900 tracking-[0.3em]">
+                  <p className="text-[11px] text-zinc-500 uppercase tracking-widest font-semibold mb-1">קוד הזמנה</p>
+                  <span className="font-mono font-bold text-2xl text-zinc-900 tracking-[0.3em] select-all">
                     {currentCart.inviteCode}
                   </span>
                 </div>
-                <button onClick={handleCopy}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-zinc-900 hover:bg-zinc-800
-                    text-white text-xs font-semibold rounded-sm transition flex-shrink-0">
-                  {copied ? (
-                    <><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>הועתק!</>
-                  ) : (
-                    <><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>העתק קוד</>
-                  )}
-                </button>
+                <Button
+                  variant="primary"
+                  size="md"
+                  onClick={handleCopy}
+                  icon={
+                    copied ? (
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    )
+                  }
+                >
+                  {copied ? "הועתק" : "העתק קוד"}
+                </Button>
               </div>
 
-              {/* שיתוף דרך אפליקציות */}
               <div className="border-t border-zinc-200 pt-3">
-                <p className="text-xs text-zinc-500 mb-2">שתף ישירות:</p>
+                <p className="text-[11px] text-zinc-500 uppercase tracking-widest font-semibold mb-2">שתף ישירות</p>
                 <SharePanel
                   title={`הצטרף לסל "${currentCart.name}"`}
                   text={inviteShareText}
@@ -218,14 +225,14 @@ const SharedCartPage = () => {
       <main className="max-w-3xl mx-auto px-4 py-5 space-y-4">
 
         {/* ══════════════════════════════════════════════════
-            פאנל הוספת מוצרים — מתקפל (כמו CartPage)
+            פאנל הוספת מוצרים — מתקפל
         ══════════════════════════════════════════════════ */}
-        <div className="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-md border border-zinc-200 overflow-hidden">
 
-          {/* ── כפתור פתיחה/סגירה ── */}
           <button
             onClick={() => setPickerOpen((v) => !v)}
-            className={`w-full flex items-center justify-between px-5 py-4 transition-colors
+            aria-expanded={pickerOpen}
+            className={`w-full flex items-center justify-between px-4 py-3 transition-colors
               ${pickerOpen ? "bg-zinc-50 border-b border-zinc-200" : "hover:bg-zinc-50"}`}
           >
             <div className="flex items-center gap-3">
@@ -236,31 +243,25 @@ const SharedCartPage = () => {
                 </svg>
               </div>
               <div className="text-right">
-                <p className={`font-semibold text-sm ${pickerOpen ? "text-zinc-900" : "text-zinc-800"}`}>
-                  הוסף מוצרים לסל
-                </p>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="font-semibold text-sm text-zinc-900">הוסף מוצרים לסל</p>
+                <p className="text-xs text-zinc-500 mt-0.5">
                   {productsLoading ? "טוען..." : `${products.length} מוצרים זמינים`}
                 </p>
               </div>
             </div>
 
             <svg
-              className={`w-5 h-5 text-slate-400 transition-transform duration-300
-                ${pickerOpen ? "rotate-180" : ""}`}
+              className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${pickerOpen ? "rotate-180" : ""}`}
               fill="none" viewBox="0 0 24 24" stroke="currentColor"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
 
-          {/* ── תוכן המתקפל ── */}
           {pickerOpen && (
             <div className="px-4 pb-4 pt-3 space-y-3">
-
-              {/* שדה חיפוש */}
               <div className="relative">
-                <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+                <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400"
                   fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z" />
@@ -271,23 +272,27 @@ const SharedCartPage = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="חפש מוצר להוספה..."
-                  className="w-full pr-10 pl-9 py-2.5 rounded-sm border border-slate-200
-                    bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-400 text-sm"
+                  className="w-full pr-10 pl-9 py-2.5 rounded-sm border border-zinc-300
+                    bg-white focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400
+                    text-sm placeholder:text-zinc-400"
                 />
                 {search && (
-                  <button onClick={() => setSearch("")}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                  <button
+                    type="button"
+                    onClick={() => setSearch("")}
+                    aria-label="נקה חיפוש"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700"
+                  >
                     ✕
                   </button>
                 )}
               </div>
 
-              {/* רשימת מוצרים */}
               <div className="max-h-80 overflow-y-auto rounded-sm space-y-1.5">
                 {productsLoading ? (
                   <><SkeletonCard rows={3} /><SkeletonCard rows={2} /></>
                 ) : filteredProducts.length === 0 ? (
-                  <p className="text-center text-slate-400 text-sm py-8">לא נמצאו מוצרים</p>
+                  <p className="text-center text-zinc-500 text-sm py-8">לא נמצאו מוצרים</p>
                 ) : (
                   filteredProducts.slice(0, 50).map((p) => {
                     const inCart = currentCart?.items?.find(
@@ -295,22 +300,23 @@ const SharedCartPage = () => {
                     );
                     return (
                       <div key={p.id}
-                        className="bg-slate-50 hover:bg-white rounded-sm border border-zinc-200
-                          px-4 py-3 flex items-center gap-3 transition-colors">
+                        className="bg-zinc-50 hover:bg-white rounded-sm border border-zinc-200
+                          px-3 py-2 flex items-center gap-3 transition-colors">
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-slate-800 text-sm truncate">{p.name}</p>
-                          <p className="text-xs text-slate-400">{p.category}</p>
+                          <p className="font-medium text-zinc-900 text-sm truncate">{p.name}</p>
+                          <p className="text-xs text-zinc-500">{p.category}</p>
                         </div>
                         {inCart && (
-                          <span className="text-xs font-semibold bg-zinc-200 text-zinc-800
-                            px-2 py-0.5 rounded-sm flex-shrink-0">
+                          <span className="text-[11px] font-medium bg-emerald-50 text-emerald-700
+                            border border-emerald-200 px-2 py-0.5 rounded-sm flex-shrink-0">
                             {inCart.qty} בסל
                           </span>
                         )}
                         <button
                           onClick={() => handleAdd(p)}
-                          className="w-8 h-8 flex items-center justify-center rounded-sm
-                            bg-zinc-900 hover:bg-zinc-800 text-white transition flex-shrink-0"
+                          className="w-9 h-9 flex items-center justify-center rounded-sm
+                            bg-zinc-900 hover:bg-zinc-800 text-white transition flex-shrink-0
+                            focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2"
                           aria-label={`הוסף ${p.name}`}
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -331,57 +337,56 @@ const SharedCartPage = () => {
         ══════════════════════════════════════════════════ */}
         <div>
           <div className="flex items-center justify-between mb-3 px-1">
-            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+            <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">
               הסל המשותף
               {totalItems > 0 && (
-                <span className="mr-2 text-zinc-700 normal-case tracking-normal">
-                  ({totalItems} פריטים)
-                </span>
+                <span className="mr-2 text-zinc-900 normal-case tracking-normal">· {totalItems} פריטים</span>
               )}
             </h2>
 
-            {/* אווטרים */}
             {currentCart && (
               <div className="flex items-center gap-0.5">
                 {currentCart.members.slice(0, 4).map((m, i) => (
                   <div key={i} title={m.displayName}
                     className="w-6 h-6 rounded-sm bg-zinc-700
-                      flex items-center justify-center text-[9px] text-white font-bold ring-1 ring-white">
+                      flex items-center justify-center text-[10px] text-white font-bold ring-1 ring-white">
                     {(m.displayName?.[0] ?? "?").toUpperCase()}
                   </div>
                 ))}
                 {currentCart.members.length > 4 && (
-                  <span className="text-xs text-slate-400 mr-1">+{currentCart.members.length - 4}</span>
+                  <span className="text-xs text-zinc-500 mr-1">+{currentCart.members.length - 4}</span>
                 )}
               </div>
             )}
           </div>
 
-          {/* skeleton */}
           {loading && !currentCart && (
             <><SkeletonCard rows={3} /><SkeletonCard rows={2} /></>
           )}
 
-          {/* ריק */}
           {currentCart && (currentCart.items?.length ?? 0) === 0 && (
-            <div className="bg-white rounded-md border border-zinc-200 shadow-sm p-10 text-center">
-              <p className="text-4xl mb-3">🛒</p>
-              <p className="text-slate-500 text-sm font-medium mb-1">הסל ריק</p>
-              <p className="text-slate-400 text-xs">לחץ על "הוסף מוצרים לסל" למעלה להתחיל</p>
-            </div>
+            <EmptyState
+              icon={
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              }
+              title="הסל המשותף ריק"
+              description='פתחו למעלה את "הוסף מוצרים לסל" כדי להוסיף פריטים. השאר יראו את העדכון בזמן אמת.'
+            />
           )}
 
-          {/* פריטים */}
           {currentCart && (currentCart.items?.length ?? 0) > 0 && (
-            <div className="bg-white rounded-md border border-zinc-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-md border border-zinc-200 overflow-hidden">
               {currentCart.items.map((item, idx) => (
                 <div key={item.name}
-                  className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-3.5 hover:bg-slate-50 transition-colors
-                    ${idx < currentCart.items.length - 1 ? "border-b border-slate-50" : ""}`}>
+                  className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 hover:bg-zinc-50 transition-colors
+                    ${idx < currentCart.items.length - 1 ? "border-b border-zinc-100" : ""}`}>
 
                   <div className="flex-1 min-w-0 ps-0.5">
-                    <p className="font-medium text-slate-800 text-sm line-clamp-2 sm:truncate">{item.name}</p>
-                    <p className="text-xs text-slate-400">
+                    <p className="font-medium text-zinc-900 text-sm line-clamp-2 sm:truncate">{item.name}</p>
+                    <p className="text-xs text-zinc-500">
                       {item.category}
                       {item.price > 0 && ` · ₪${item.price.toFixed(2)} ליחידה`}
                     </p>
@@ -394,22 +399,22 @@ const SharedCartPage = () => {
                     updateItem={updateItem}
                   />
 
-                  {/* סה"כ */}
                   <div className="w-14 sm:w-16 text-end flex-shrink-0 tabular-nums">
                     {item.price > 0 ? (
-                      <span className="text-sm font-semibold text-slate-700">
+                      <span className="text-sm font-semibold text-zinc-900">
                         ₪{(item.price * item.qty).toFixed(2)}
                       </span>
                     ) : (
-                      <span className="text-xs text-slate-300">—</span>
+                      <span className="text-xs text-zinc-400">—</span>
                     )}
                   </div>
 
                   <button
                     type="button"
                     onClick={() => removeItem(id, item.name)}
-                    className="w-9 h-9 sm:w-8 sm:h-8 rounded-sm hover:bg-red-50 text-slate-300
-                      hover:text-red-400 flex items-center justify-center transition flex-shrink-0 touch-manipulation"
+                    className="w-9 h-9 sm:w-8 sm:h-8 rounded-sm text-zinc-400
+                      hover:bg-red-50 hover:text-red-700 flex items-center justify-center
+                      transition flex-shrink-0 touch-manipulation"
                     aria-label={`הסר ${item.name}`}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -424,28 +429,27 @@ const SharedCartPage = () => {
         </div>
       </main>
 
-      {/* ── Footer סיכום ─────────────────────────────────── */}
       {totalItems > 0 && (
-        <div className="fixed bottom-0 right-0 left-0 bg-white border-t border-slate-200 shadow-lg z-40">
+        <div className="fixed bottom-0 right-0 left-0 bg-white/95 backdrop-blur border-t border-zinc-200 z-40">
           <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
             <div className="flex items-center gap-5">
-              <div className="text-center">
-                <p className="text-xs text-slate-400">פריטים</p>
-                <p className="font-bold text-slate-800 text-lg leading-none">{totalItems}</p>
+              <div>
+                <p className="text-[11px] text-zinc-500 uppercase tracking-wider">פריטים</p>
+                <p className="font-bold text-zinc-900 text-base leading-tight">{totalItems}</p>
               </div>
-              <div className="w-px h-8 bg-slate-100" />
-              <div className="text-center">
-                <p className="text-xs text-slate-400">סה״כ</p>
-                <p className="font-bold text-zinc-900 text-lg leading-none">
+              <div className="w-px h-8 bg-zinc-200" />
+              <div>
+                <p className="text-[11px] text-zinc-500 uppercase tracking-wider">סה״כ</p>
+                <p className="font-bold text-zinc-900 text-base leading-tight">
                   {new Intl.NumberFormat("he-IL", {
                     style: "currency", currency: "ILS", maximumFractionDigits: 2,
                   }).format(totalPrice)}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400">מתעדכן כל 15 שניות</span>
-              <div className="w-2 h-2 rounded-sm bg-zinc-500 animate-pulse" />
+            <div className="flex items-center gap-2 text-zinc-500">
+              <span className="text-[11px]">מתעדכן בזמן אמת</span>
+              <div className="w-1.5 h-1.5 rounded-sm bg-emerald-600 animate-pulse" />
             </div>
           </div>
         </div>

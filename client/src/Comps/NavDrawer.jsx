@@ -180,15 +180,15 @@ const NavDrawer = ({ open, onClose }) => {
               end={end}
               onClick={onClose}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-5 py-3.5 text-sm font-medium transition-colors
+                `flex items-center gap-3 px-5 py-3 text-sm font-medium transition-colors
                  border-s-4 ${
                    isActive
-                     ? "bg-emerald-50 text-emerald-700 border-emerald-500"
-                     : "text-slate-700 hover:bg-slate-50 border-transparent hover:border-slate-200"
+                     ? "bg-zinc-100 text-zinc-900 border-zinc-900"
+                     : "text-zinc-700 hover:bg-zinc-50 border-transparent"
                  }`
               }
             >
-              <span className="text-current opacity-70">{icon}</span>
+              <span className="text-current opacity-80">{icon}</span>
               {label}
             </NavLink>
           ))}
@@ -199,7 +199,7 @@ const NavDrawer = ({ open, onClose }) => {
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-sm text-sm font-medium
-              text-red-500 hover:bg-red-50 transition-colors"
+              text-red-700 hover:bg-red-50 transition-colors"
           >
             <LogoutIcon />
             התנתק

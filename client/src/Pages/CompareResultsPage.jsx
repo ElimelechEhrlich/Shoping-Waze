@@ -1,10 +1,12 @@
 import { useMemo, useEffect, useState, useCallback } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import usePageTitle from "../hooks/usePageTitle.js";
+import HomeButton from "../Comps/HomeButton.jsx";
+import Button from "../Comps/ui/Button.jsx";
 
 const ChevronIcon = ({ expanded }) => (
   <svg
-    className={`w-5 h-5 text-slate-500 flex-shrink-0 transition-transform duration-200
+    className={`w-4 h-4 text-zinc-400 flex-shrink-0 transition-transform duration-200
       ${expanded ? "-rotate-180" : ""}`}
     fill="none"
     viewBox="0 0 24 24"
@@ -15,12 +17,15 @@ const ChevronIcon = ({ expanded }) => (
   </svg>
 );
 
-const HomeIcon = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-      d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-  </svg>
-);
+const fmt = (n) =>
+  new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", maximumFractionDigits: 2 }).format(n);
+
+const StatusBadge = ({ item }) => {
+  const base = "inline-flex items-center px-2 py-0.5 rounded-sm text-[11px] font-medium";
+  if (item.estimated) return <span className={`${base} bg-zinc-100 text-zinc-700 border border-zinc-200`}>הערכה</span>;
+  if (item.available) return <span className={`${base} bg-emerald-50 text-emerald-700 border border-emerald-200`}>זמין</span>;
+  return <span className={`${base} bg-amber-50 text-amber-800 border border-amber-200`}>לא זמין</span>;
+};
 
 const CompareResultsPage = () => {
   const navigate = useNavigate();
@@ -31,7 +36,6 @@ const CompareResultsPage = () => {
 
   usePageTitle(cheapest ? `השוואה — הזול: ${cheapest}` : "השוואת מחירים");
 
-  // רענון דף — אין state → חזור לסל
   useEffect(() => {
     if (!compareData) navigate("/cart", { replace: true });
   }, [compareData, navigate]);
@@ -43,7 +47,6 @@ const CompareResultsPage = () => {
 
   const minTotal = storesSorted[0]?.total ?? 0;
 
-  /** מפתחות רשתות פתוחות באקורדיון (ברירת מחדל: סגור — קל לדפדף בין רשתות) */
   const [openStores, setOpenStores] = useState(() => new Set());
 
   const toggleStore = useCallback((storeName) => {
@@ -55,43 +58,30 @@ const CompareResultsPage = () => {
     });
   }, []);
 
-  // ממתין להפניה אוטומטית מה-useEffect למעלה
   if (!compareData) return null;
 
   return (
     <div dir="rtl">
 
-      {/* ── Page sub-header ────────────────────────────────────────────────
-          Converted from a plain inline div to a sticky bar that stacks below
-          the global AppHeader (top-[60px]). Previously this page had no sticky
-          header, so the page title and navigation vanished on scroll. */}
-      <header className="bg-white border-b border-slate-200 px-4 py-3 sticky top-[60px] z-10">
+      <header className="bg-white border-b border-zinc-200 px-4 py-3 sticky top-[60px] z-10">
         <div className="max-w-4xl mx-auto flex items-center gap-3 flex-wrap">
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold text-slate-900 truncate">תוצאות השוואת מחירים</h1>
-            <p className="text-xs text-slate-400 mt-0.5">
-              {cheapest ? `הרשת הזולה ביותר: ${cheapest}` : "לא נמצא מידע על הזול ביותר"}
+            <h1 className="text-base font-semibold text-zinc-900 truncate">השוואת מחירים</h1>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              {cheapest ? <>הזול ביותר: <strong className="text-zinc-900 font-semibold">{cheapest}</strong></> : "לא נמצא מידע על הזול ביותר"}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button type="button" onClick={() => navigate("/cart")}
-              className="px-3 py-2 rounded-sm border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-medium transition">
+            <Button variant="secondary" size="md" onClick={() => navigate("/cart")}>
               חזרה לסל
-            </button>
-            <Link to="/"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-sm border border-slate-200
-                text-slate-600 hover:bg-slate-50 text-sm font-medium transition">
-              <HomeIcon />
-              בית
-            </Link>
+            </Button>
+            <HomeButton />
           </div>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-4xl mx-auto px-4 py-6 space-y-3">
 
-      {/* Store cards */}
-      <div className="space-y-4">
         {storesSorted.map((store, rank) => {
           const isCheapest = store.store === cheapest;
           const diff       = store.total - minTotal;
@@ -101,47 +91,46 @@ const CompareResultsPage = () => {
 
           return (
             <div key={store.store}
-              className={`bg-white border rounded-md shadow-sm overflow-hidden
-                ${isCheapest ? "border-emerald-300 ring-1 ring-emerald-200" : "border-slate-200"}`}>
+              className={`bg-white border rounded-md overflow-hidden
+                ${isCheapest ? "border-emerald-500" : "border-zinc-200"}`}>
 
-              {/* כותרת רשת — לחיצה פותחת/סוגרת את רשימת המוצרים */}
               <button
                 type="button"
                 id={`${panelId}-trigger`}
                 aria-expanded={expanded}
                 aria-controls={panelId}
                 onClick={() => toggleStore(store.store)}
-                className={`w-full px-5 py-4 flex items-center justify-between gap-3 text-start border-b
-                  transition-colors hover:brightness-[0.99] active:bg-slate-50/80
-                  ${isCheapest ? "bg-emerald-50 border-emerald-100" : "border-zinc-200"}`}
+                className={`w-full px-4 py-3 flex items-center justify-between gap-3 text-start
+                  transition-colors hover:bg-zinc-50/60
+                  ${expanded ? "border-b border-zinc-200" : ""}`}
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                  {isCheapest && (
-                    <span className="text-xs font-bold bg-zinc-800 text-white px-2.5 py-1 rounded-sm flex-shrink-0">
+                  {isCheapest ? (
+                    <span className="text-[11px] font-semibold bg-emerald-700 text-white px-2 py-0.5 rounded-sm flex-shrink-0 uppercase tracking-wider">
                       הזול ביותר
                     </span>
-                  )}
-                  {!isCheapest && (
-                    <span className="text-slate-400 text-sm font-medium flex-shrink-0">#{rank + 1}</span>
+                  ) : (
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-sm bg-zinc-100 text-zinc-600 text-[11px] font-semibold flex-shrink-0">
+                      {rank + 1}
+                    </span>
                   )}
                   <div className="min-w-0">
-                    <p className="text-lg font-bold text-slate-900">{store.store}</p>
+                    <p className="text-sm font-semibold text-zinc-900 truncate">{store.store}</p>
                     {itemCount > 0 && (
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        {itemCount} מוצרים
-                        {!expanded && " · לחץ לפתיחה"}
+                      <p className="text-xs text-zinc-500 mt-0.5">
+                        {itemCount} מוצרים{!expanded && " · לחץ לפתיחה"}
                       </p>
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-3 flex-shrink-0">
                   <div className="text-end">
-                    <p className="text-xl font-bold text-emerald-700 tabular-nums">
-                      ₪{(store.total ?? 0).toFixed(2)}
+                    <p className="text-base font-bold text-zinc-900 tabular-nums">
+                      {fmt(store.total ?? 0)}
                     </p>
                     {!isCheapest && diff > 0 && (
-                      <p className="text-xs text-red-500 font-medium mt-0.5">
-                        +₪{diff.toFixed(2)} מהזול ביותר
+                      <p className="text-[11px] text-red-700 font-medium mt-0.5 tabular-nums">
+                        +{fmt(diff)}
                       </p>
                     )}
                   </div>
@@ -149,35 +138,28 @@ const CompareResultsPage = () => {
                 </div>
               </button>
 
-              {/* Items table */}
               {expanded && Array.isArray(store.items) && store.items.length > 0 && (
-                <div id={panelId} role="region" aria-labelledby={`${panelId}-trigger`} className="px-5 py-4">
+                <div id={panelId} role="region" aria-labelledby={`${panelId}-trigger`} className="px-4 py-3 bg-zinc-50/50">
                   <div className="overflow-x-auto">
                     <table className="w-full text-right">
                       <thead>
-                        <tr className="text-xs text-slate-500 border-b border-zinc-200">
+                        <tr className="text-[11px] uppercase tracking-wider text-zinc-500 border-b border-zinc-200">
                           <th className="pb-2 font-semibold">מוצר</th>
-                          <th className="pb-2 font-semibold">כמות</th>
-                          <th className="pb-2 font-semibold">סה״כ</th>
-                          <th className="pb-2 font-semibold">זמינות</th>
+                          <th className="pb-2 font-semibold w-16 text-center">כמות</th>
+                          <th className="pb-2 font-semibold w-24 text-center">סה״כ</th>
+                          <th className="pb-2 font-semibold w-24 text-center">זמינות</th>
                         </tr>
                       </thead>
                       <tbody>
                         {store.items.map((it, idx) => (
-                          <tr key={`${it.name}-${idx}`} className="border-t border-slate-50">
-                            <td className="py-2 text-sm text-slate-800">{it.name}</td>
-                            <td className="py-2 text-sm text-slate-700">{parseFloat(it.qty.toFixed(3))}</td>
-                            <td className="py-2 text-sm font-semibold text-slate-900">
-                              ₪{(it.total ?? 0).toFixed(2)}
+                          <tr key={`${it.name}-${idx}`} className="border-t border-zinc-100">
+                            <td className="py-1.5 text-sm text-zinc-900">{it.name}</td>
+                            <td className="py-1.5 text-sm text-zinc-700 text-center tabular-nums">{parseFloat(it.qty.toFixed(3))}</td>
+                            <td className="py-1.5 text-sm font-semibold text-zinc-900 text-center tabular-nums">
+                              {fmt(it.total ?? 0)}
                             </td>
-                            <td className="py-2 text-sm">
-                              {it.estimated ? (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs">הערכה</span>
-                              ) : it.available ? (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs">זמין</span>
-                              ) : (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs">לא זמין</span>
-                              )}
+                            <td className="py-1.5 text-center">
+                              <StatusBadge item={it} />
                             </td>
                           </tr>
                         ))}
@@ -190,7 +172,6 @@ const CompareResultsPage = () => {
           );
         })}
       </div>
-      </div> {/* end max-w-4xl content wrapper */}
     </div>
   );
 };

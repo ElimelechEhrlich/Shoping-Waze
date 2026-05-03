@@ -1,16 +1,44 @@
 // components/dashboard/PopularProducts.jsx
 import usePopularProducts from "../../hooks/usePopularProducts.js";
 import { SkeletonTableRow } from "../Skeleton.jsx";
+import EmptyState from "../ui/EmptyState.jsx";
 
 const formatPrice = (n) =>
   new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", maximumFractionDigits: 2 }).format(n);
 
-const Medal = ({ rank }) => {
-  if (rank === 1) return <span title="מקום ראשון">🥇</span>;
-  if (rank === 2) return <span title="מקום שני">🥈</span>;
-  if (rank === 3) return <span title="מקום שלישי">🥉</span>;
-  return <span className="text-sm font-semibold text-slate-400">{rank}</span>;
-};
+const RankNumber = ({ rank }) => (
+  <span className={`inline-flex items-center justify-center w-6 h-6 rounded-sm text-[11px] font-semibold
+    ${rank <= 3 ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-600"}`}>
+    {rank}
+  </span>
+);
+
+const InCartBadge = ({ qty }) => (
+  <span className="shrink-0 text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200
+    px-2 py-0.5 rounded-sm whitespace-nowrap">
+    {qty} בסל
+  </span>
+);
+
+const StoreChip = ({ name }) => (
+  <span className="inline-flex items-center bg-zinc-100 text-zinc-700 text-xs px-2 py-0.5 rounded-sm
+    max-w-full truncate">
+    {name}
+  </span>
+);
+
+const AddButton = ({ onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-label="הוסף שוב לסל"
+    className="shrink-0 w-9 h-9 rounded-sm bg-zinc-900 hover:bg-zinc-800 text-white
+      font-bold text-lg leading-none flex items-center justify-center transition
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2"
+  >
+    +
+  </button>
+);
 
 /** כרטיס שורה — מובייל בלבד (md+) מוסתר */
 const PopularProductMobileCard = ({ p, rank, inCart, cart, onAddAgain }) => {
@@ -26,50 +54,34 @@ const PopularProductMobileCard = ({ p, rank, inCart, cart, onAddAgain }) => {
 
   return (
     <article
-      className="rounded-sm border border-zinc-200 bg-white p-3.5 shadow-sm"
+      className="rounded-md border border-zinc-200 bg-white p-3"
       dir="rtl"
     >
       <div className="flex gap-3 items-start">
-        <div className="shrink-0 w-8 text-center text-lg leading-none pt-0.5" aria-hidden>
-          <Medal rank={rank} />
+        <div className="shrink-0 pt-0.5">
+          <RankNumber rank={rank} />
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-            <h3 className="font-semibold text-slate-800 text-[15px] leading-snug break-words">
+            <h3 className="font-semibold text-zinc-900 text-[14px] leading-snug break-words">
               {p.productName}
             </h3>
-            {inCart > 0 && (
-              <span className="shrink-0 text-[11px] font-medium bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full whitespace-nowrap">
-                {inCart} בסל
-              </span>
-            )}
+            {inCart > 0 && <InCartBadge qty={inCart} />}
           </div>
 
-          <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-600">
-            <span className="inline-flex bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-medium max-w-full break-words">
-              {p.store}
-            </span>
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-zinc-600">
+            <StoreChip name={p.store} />
             <span className="whitespace-nowrap">
-              כמות <strong className="text-slate-800">{p.totalQuantity}</strong>
+              כמות <strong className="text-zinc-900">{p.totalQuantity}</strong>
             </span>
-            <span className="whitespace-nowrap font-semibold text-slate-800">
+            <span className="whitespace-nowrap font-semibold text-zinc-900">
               {formatPrice(p.totalPrice)}
             </span>
           </div>
         </div>
 
-        {onAddAgain && (
-          <button
-            type="button"
-            onClick={handleAdd}
-            className="shrink-0 w-9 h-9 rounded-sm bg-zinc-900 hover:bg-zinc-800 text-white
-              font-bold text-lg leading-none flex items-center justify-center transition shadow-sm"
-            title="הוסף שוב לסל"
-          >
-            +
-          </button>
-        )}
+        {onAddAgain && <AddButton onClick={handleAdd} />}
       </div>
     </article>
   );
@@ -93,37 +105,37 @@ const PopularProducts = ({ cart = [], onAddAgain }) => {
 
   return (
     <section>
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-lg font-bold text-slate-800">המוצרים הפופולריים שלך</h2>
-          <p className="text-xs text-slate-400 mt-0.5">מבוסס על היסטוריית הקניות שלך</p>
-        </div>
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">
+          מוצרים פופולריים
+        </span>
+        <div className="flex-1 h-px bg-zinc-200" />
       </div>
 
       {/* טעינה — Skeleton */}
       {loading && (
         <>
-          <div className="md:hidden space-y-3" aria-hidden>
+          <div className="md:hidden space-y-2.5" aria-hidden>
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
-                className="rounded-sm border border-zinc-200 bg-white p-3.5 shadow-sm animate-pulse"
+                className="rounded-md border border-zinc-200 bg-white p-3 animate-pulse"
               >
                 <div className="flex gap-3">
-                  <div className="h-7 w-7 rounded-sm bg-slate-200 shrink-0" />
+                  <div className="h-6 w-6 rounded-sm bg-zinc-200 shrink-0" />
                   <div className="flex-1 space-y-2.5 min-w-0">
-                    <div className="h-4 bg-slate-200 rounded-sm w-[85%]" />
+                    <div className="h-3.5 bg-zinc-200 rounded-sm w-[85%]" />
                     <div className="flex gap-2">
-                      <div className="h-6 w-20 bg-slate-200 rounded-full" />
-                      <div className="h-4 w-16 bg-slate-200 rounded" />
+                      <div className="h-5 w-20 bg-zinc-200 rounded-sm" />
+                      <div className="h-3 w-16 bg-zinc-200 rounded-sm" />
                     </div>
                   </div>
-                  <div className="h-9 w-9 rounded-sm bg-slate-200 shrink-0" />
+                  <div className="h-9 w-9 rounded-sm bg-zinc-200 shrink-0" />
                 </div>
               </div>
             ))}
           </div>
-          <div className="hidden md:block bg-white rounded-md border border-zinc-200 shadow-sm overflow-hidden">
+          <div className="hidden md:block bg-white rounded-md border border-zinc-200 overflow-hidden">
             <table className="w-full text-sm">
               <tbody>
                 {[...Array(5)].map((_, i) => (
@@ -137,23 +149,30 @@ const PopularProducts = ({ cart = [], onAddAgain }) => {
 
       {/* שגיאה */}
       {error && !loading && (
-        <div className="bg-red-50 border border-red-100 rounded-md p-5 text-sm text-red-500 text-center">
+        <div role="alert" className="bg-red-50 border border-red-200 rounded-md p-4 text-sm text-red-700 text-center">
           לא ניתן לטעון את המוצרים: {error}
         </div>
       )}
 
       {/* ריק */}
       {!loading && !error && products.length === 0 && (
-        <div className="bg-white rounded-md border border-zinc-200 shadow-sm p-10 text-center">
-          <p className="text-3xl mb-3">🛒</p>
-          <p className="text-slate-500 text-sm">עדיין אין היסטוריית קניות</p>
-          <p className="text-slate-400 text-xs mt-1">סרוק קבלה ראשונה כדי להתחיל</p>
-        </div>
+        <EmptyState
+          icon={
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          }
+          title="אין עדיין היסטוריית קניות"
+          description="סרוק קבלה ראשונה ונוכל להציג את המוצרים שאתה קונה הכי הרבה."
+          actionLabel="לסריקת קבלה"
+          actionTo="/scan"
+        />
       )}
 
       {/* מובייל: כרטיסים */}
       {!loading && !error && products.length > 0 && (
-        <div className="md:hidden space-y-3">
+        <div className="md:hidden space-y-2.5">
           {products.map((p, i) => (
             <PopularProductMobileCard
               key={`${p.productName}-${p.store}`}
@@ -169,21 +188,15 @@ const PopularProducts = ({ cart = [], onAddAgain }) => {
 
       {/* דסקטופ: טבלה */}
       {!loading && !error && products.length > 0 && (
-        <div className="hidden md:block bg-white rounded-md border border-zinc-200 shadow-sm overflow-hidden overflow-x-auto">
+        <div className="hidden md:block bg-white rounded-md border border-zinc-200 overflow-hidden overflow-x-auto">
           <table className="w-full text-sm min-w-[640px]">
             <thead>
-              <tr className="border-b border-zinc-200 bg-slate-50 text-right">
-                <th className="px-5 py-3 font-semibold text-slate-500 text-xs w-12">#</th>
-                <th className="px-5 py-3 font-semibold text-slate-500 text-xs min-w-[12rem]">מוצר</th>
-                <th className="px-5 py-3 font-semibold text-slate-500 text-xs whitespace-nowrap">
-                  סופרמרקט
-                </th>
-                <th className="px-5 py-3 font-semibold text-slate-500 text-xs text-center whitespace-nowrap">
-                  כמות
-                </th>
-                <th className="px-5 py-3 font-semibold text-slate-500 text-xs text-left whitespace-nowrap">
-                  סה״כ הוצאה
-                </th>
+              <tr className="border-b border-zinc-200 bg-zinc-50 text-right">
+                <th className="px-5 py-3 font-semibold text-zinc-500 text-xs w-12">#</th>
+                <th className="px-5 py-3 font-semibold text-zinc-500 text-xs min-w-[12rem]">מוצר</th>
+                <th className="px-5 py-3 font-semibold text-zinc-500 text-xs whitespace-nowrap">סופרמרקט</th>
+                <th className="px-5 py-3 font-semibold text-zinc-500 text-xs text-center whitespace-nowrap">כמות</th>
+                <th className="px-5 py-3 font-semibold text-zinc-500 text-xs text-left whitespace-nowrap">סה״כ הוצאה</th>
                 <th className="px-3 py-3 w-12" />
               </tr>
             </thead>
@@ -193,44 +206,28 @@ const PopularProducts = ({ cart = [], onAddAgain }) => {
                 return (
                   <tr
                     key={`${p.productName}-${p.store}`}
-                    className="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors"
+                    className="border-b border-zinc-100 last:border-0 hover:bg-zinc-50 transition-colors"
                   >
-                    <td className="px-5 py-3.5 text-center align-top">
-                      <Medal rank={i + 1} />
+                    <td className="px-5 py-3 text-center align-middle">
+                      <RankNumber rank={i + 1} />
                     </td>
-                    <td className="px-5 py-3.5 align-top min-w-0">
+                    <td className="px-5 py-3 align-middle min-w-0">
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                        <span className="font-medium text-slate-800">{p.productName}</span>
-                        {inCart > 0 && (
-                          <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full whitespace-nowrap shrink-0">
-                            {inCart} בסל
-                          </span>
-                        )}
+                        <span className="font-medium text-zinc-900">{p.productName}</span>
+                        {inCart > 0 && <InCartBadge qty={inCart} />}
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 align-top whitespace-nowrap">
-                      <span className="bg-slate-100 text-slate-600 text-xs px-2.5 py-1 rounded-full">
-                        {p.store}
-                      </span>
+                    <td className="px-5 py-3 align-middle whitespace-nowrap">
+                      <StoreChip name={p.store} />
                     </td>
-                    <td className="px-5 py-3.5 text-center font-semibold text-slate-700 align-top whitespace-nowrap">
+                    <td className="px-5 py-3 text-center font-semibold text-zinc-900 align-middle whitespace-nowrap">
                       {p.totalQuantity}
                     </td>
-                    <td className="px-5 py-3.5 text-left font-medium text-slate-700 align-top whitespace-nowrap">
+                    <td className="px-5 py-3 text-left font-medium text-zinc-900 align-middle whitespace-nowrap">
                       {formatPrice(p.totalPrice)}
                     </td>
-                    <td className="px-3 py-3.5 text-center align-top">
-                      {onAddAgain && (
-                        <button
-                          type="button"
-                          onClick={() => handleAddDesktop(p)}
-                          className="w-7 h-7 rounded-sm bg-zinc-900 hover:bg-zinc-800 text-white
-                            font-bold text-base flex items-center justify-center transition shadow-sm"
-                          title="הוסף שוב לסל"
-                        >
-                          +
-                        </button>
-                      )}
+                    <td className="px-3 py-3 text-center align-middle">
+                      {onAddAgain && <AddButton onClick={() => handleAddDesktop(p)} />}
                     </td>
                   </tr>
                 );

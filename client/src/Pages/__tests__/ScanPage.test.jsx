@@ -54,7 +54,7 @@ describe("ScanPage", () => {
 
   it("calls openCamera when camera button is clicked", () => {
     renderPage();
-    fireEvent.click(screen.getByRole("button", { name: /צלם קבלה/i }));
+    fireEvent.click(screen.getByRole("button", { name: /צלם עם המצלמה/i }));
     expect(openCameraMock).toHaveBeenCalledTimes(1);
   });
 

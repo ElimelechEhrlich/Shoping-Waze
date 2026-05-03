@@ -19,6 +19,25 @@
   h1, h2, h3 {
     letter-spacing: -0.015em;
   }
+
+  /* Consistent focus ring across native form controls */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px rgb(161 161 170);
+    border-color: rgb(161 161 170);
+  }
+
+  /* Hide spin buttons on number inputs (we provide +/- explicitly) */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
 }
 
 @keyframes fade-in {

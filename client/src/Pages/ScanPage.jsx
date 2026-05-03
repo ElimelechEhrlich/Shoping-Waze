@@ -1,9 +1,11 @@
 import { useEffect, useCallback, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import CameraCapturePanel from "../Comps/Scan/CameraCapturePanel.jsx";
 import { useCameraCapture } from "../hooks/useCameraCapture.js";
 import { useToast } from "../Contexts/useToast.js";
 import usePageTitle from "../hooks/usePageTitle.js";
+import HomeButton from "../Comps/HomeButton.jsx";
+import Button from "../Comps/ui/Button.jsx";
 
 const MAX_FILE_MB     = 5;
 const MAX_PHOTOS      = 8;
@@ -301,37 +303,27 @@ const ScanPage = () => {
           sticky top-[60px]: appears directly below the global AppHeader (≈60 px).
           Previously this page had no sticky header at all, making the title
           disappear on scroll. Now it stays visible alongside the global bar. */}
-      <header className="bg-white border-b border-slate-200 px-4 py-3 sticky top-[60px] z-10">
+      <header className="bg-white border-b border-zinc-200 px-4 py-3 sticky top-[60px] z-10">
         <div className="max-w-3xl mx-auto flex items-center gap-2">
-          <div className="flex-1">
-            <h1 className="text-lg font-bold text-slate-900">סריקת קבלה</h1>
-            <p className="text-xs text-slate-400 mt-0.5">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base font-semibold text-zinc-900">סריקת קבלה</h1>
+            <p className="text-xs text-zinc-500 mt-0.5">
               {hasPhotos
                 ? `${photoList.length} תמונה${photoList.length > 1 ? " — יאוחדו לסריקה אחת" : ""}`
                 : "צלמו תמונה אחת או כמה חלקים של קבלה ארוכה"}
             </p>
           </div>
-          <Link
-            to="/"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-sm border border-slate-200
-              text-slate-600 hover:bg-slate-50 text-sm font-medium transition flex-shrink-0"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-            בית
-          </Link>
+          <HomeButton />
         </div>
       </header>
 
-      <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
 
-      <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm space-y-5">
+      <div className="bg-white border border-zinc-200 rounded-md p-4 sm:p-5 space-y-5">
 
         {/* ── כפתורי הוספה ───────────────────────────── */}
         <div className="grid sm:grid-cols-2 gap-3">
-          <label className="block w-full border-2 border-dashed border-slate-300 rounded-sm p-5 text-center cursor-pointer hover:bg-slate-50 transition">
+          <label className="group block w-full border border-dashed border-zinc-300 rounded-sm p-5 text-center cursor-pointer hover:border-zinc-400 hover:bg-zinc-50 transition">
             <input
               type="file"
               accept="image/*,image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif"
@@ -340,32 +332,33 @@ const ScanPage = () => {
               onChange={onSelectFiles}
               disabled={photoList.length >= MAX_PHOTOS}
             />
-            <svg className="w-7 h-7 mx-auto text-slate-400 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-6 h-6 mx-auto text-zinc-400 group-hover:text-zinc-700 mb-1.5 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6}
                 d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <span className="text-sm font-medium text-slate-700">
-              {hasPhotos ? "הוסף תמונה נוספת" : "בחר תמונה"}
+            <span className="text-sm font-semibold text-zinc-900">
+              {hasPhotos ? "הוסף תמונה נוספת" : "בחר תמונה מהגלריה"}
             </span>
-            <p className="text-xs text-slate-400 mt-0.5">JPG / JPEG / PNG / WEBP / HEIC</p>
+            <p className="text-xs text-zinc-500 mt-1">JPG · PNG · WEBP · HEIC</p>
           </label>
 
           <button
             type="button"
             onClick={openCamera}
             disabled={cameraLoading || photoList.length >= MAX_PHOTOS}
-            className="w-full border-2 border-slate-200 rounded-sm p-5 text-center hover:bg-slate-50 transition disabled:opacity-60"
+            className="group w-full border border-dashed border-zinc-300 rounded-sm p-5 text-center
+              hover:border-zinc-400 hover:bg-zinc-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg className="w-7 h-7 mx-auto text-slate-400 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-6 h-6 mx-auto text-zinc-400 group-hover:text-zinc-700 mb-1.5 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6}
                 d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <span className="text-sm font-medium text-slate-700">
-              {cameraLoading ? "פותח מצלמה..." : hasPhotos ? "צלם חלק נוסף" : "צלם קבלה"}
+            <span className="text-sm font-semibold text-zinc-900">
+              {cameraLoading ? "פותח מצלמה..." : hasPhotos ? "צלם חלק נוסף" : "צלם עם המצלמה"}
             </span>
-            <p className="text-xs text-slate-400 mt-0.5">
-              {hasPhotos ? "המצלמה תישאר פתוחה לצילומים נוספים" : "פתיחת מצלמה ישירה"}
+            <p className="text-xs text-zinc-500 mt-1">
+              {hasPhotos ? "המצלמה נשארת פתוחה לצילומים נוספים" : "פתיחת מצלמה ישירה"}
             </p>
           </button>
         </div>
@@ -385,12 +378,12 @@ const ScanPage = () => {
         {hasPhotos && (
           <div className="space-y-3">
             <div className="flex items-center justify-between px-1">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                תמונות ({photoList.length}/{MAX_PHOTOS})
+              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">
+                תמונות · {photoList.length}/{MAX_PHOTOS}
               </p>
               {photoList.length > 1 && (
-                <p className="text-xs text-emerald-600 font-medium">
-                  ↑↓ גרור לשינוי סדר — ימין = ראש הקבלה
+                <p className="text-[11px] text-zinc-500">
+                  השתמש בחיצים לסידור — הסדר נקבע מימין לשמאל
                 </p>
               )}
             </div>
@@ -399,38 +392,34 @@ const ScanPage = () => {
               {photoList.map((item, idx) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-3 bg-slate-50 rounded-sm border border-slate-200 p-2"
+                  className="flex items-center gap-3 bg-zinc-50 rounded-sm border border-zinc-200 p-2"
                 >
-                  {/* מספר תמונה */}
-                  <div className="w-6 h-6 rounded-sm bg-zinc-800 text-white text-xs font-bold
+                  <div className="w-6 h-6 rounded-sm bg-zinc-900 text-white text-xs font-bold
                     flex items-center justify-center flex-shrink-0">
                     {idx + 1}
                   </div>
 
-                  {/* תצוגה מקדימה */}
                   <img
                     src={item.preview}
                     alt={`תמונה ${idx + 1}`}
-                    className="h-16 w-24 object-cover rounded-sm border border-slate-200 flex-shrink-0"
+                    className="h-14 w-20 object-cover rounded-sm border border-zinc-200 flex-shrink-0 bg-white"
                   />
 
-                  {/* שם קובץ */}
-                  <p className="flex-1 text-sm text-slate-600 truncate min-w-0">
+                  <p className="flex-1 text-sm text-zinc-700 truncate min-w-0">
                     {item.file.name}
-                    <span className="block text-xs text-slate-400">
+                    <span className="block text-xs text-zinc-500">
                       {(item.file.size / 1024).toFixed(0)} KB
                     </span>
                   </p>
 
-                  {/* כפתורי סדר */}
                   <div className="flex flex-col gap-0.5 flex-shrink-0">
                     <button
                       type="button"
                       onClick={() => movePhoto(item.id, -1)}
                       disabled={idx === 0}
-                      className="w-7 h-6 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-200
-                        disabled:opacity-30 flex items-center justify-center transition text-xs"
-                      title="הזז למעלה"
+                      aria-label="הזז למעלה"
+                      className="w-7 h-6 rounded-sm text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200
+                        disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition text-xs"
                     >
                       ▲
                     </button>
@@ -438,21 +427,20 @@ const ScanPage = () => {
                       type="button"
                       onClick={() => movePhoto(item.id, 1)}
                       disabled={idx === photoList.length - 1}
-                      className="w-7 h-6 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-200
-                        disabled:opacity-30 flex items-center justify-center transition text-xs"
-                      title="הזז למטה"
+                      aria-label="הזז למטה"
+                      className="w-7 h-6 rounded-sm text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200
+                        disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition text-xs"
                     >
                       ▼
                     </button>
                   </div>
 
-                  {/* מחיקה */}
                   <button
                     type="button"
                     onClick={() => removePhoto(item.id)}
-                    className="w-7 h-7 rounded-sm text-red-400 hover:text-red-600 hover:bg-red-50
+                    aria-label="הסר תמונה"
+                    className="w-8 h-8 rounded-sm text-red-600 hover:text-red-700 hover:bg-red-50
                       flex items-center justify-center transition flex-shrink-0"
-                    title="הסר"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -463,22 +451,21 @@ const ScanPage = () => {
               ))}
             </div>
 
-            {/* תצוגה מקדימה של הסדר */}
             {photoList.length > 1 && (
-              <div className="rounded-sm overflow-hidden border border-emerald-200 bg-emerald-50 p-3">
-                <p className="text-xs text-emerald-600 font-semibold mb-2 text-center">
-                  תצוגה מקדימה — הסדר שיישלח לסריקה
+              <div className="rounded-sm border border-zinc-200 bg-zinc-50 p-3">
+                <p className="text-[11px] text-zinc-500 font-semibold mb-2 text-center uppercase tracking-widest">
+                  סדר הסריקה הסופי
                 </p>
-                <div className="flex gap-1 justify-center flex-wrap">
+                <div className="flex gap-1.5 justify-center flex-wrap">
                   {photoList.map((item, idx) => (
                     <div key={item.id} className="relative">
                       <img
                         src={item.preview}
                         alt={`חלק ${idx + 1}`}
-                        className="h-20 w-14 object-cover rounded border border-emerald-300"
+                        className="h-16 w-12 object-cover rounded-sm border border-zinc-300 bg-white"
                       />
-                      <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-zinc-900 text-white
-                        text-[9px] font-bold rounded-full flex items-center justify-center">
+                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-zinc-900 text-white
+                        text-[9px] font-bold rounded-sm flex items-center justify-center">
                         {idx + 1}
                       </span>
                     </div>
@@ -491,59 +478,59 @@ const ScanPage = () => {
 
         {/* ── שגיאות ─────────────────────────────────── */}
         {(error || cameraError) && (
-          <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-sm px-3 py-2">
+          <p
+            role="alert"
+            className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-sm px-3 py-2"
+          >
             {error || cameraError}
           </p>
         )}
 
         {/* ── כפתורי פעולה ───────────────────────────── */}
-        <div className="flex gap-3">
-          <button
+        <div className="flex flex-wrap gap-2">
+          <Button
             type="button"
+            variant="primary"
+            size="lg"
             onClick={onUpload}
-            disabled={!hasPhotos || loading}
-            className="px-5 py-2.5 rounded-sm bg-zinc-900 hover:bg-zinc-800
-              disabled:opacity-50 text-white font-semibold text-sm flex items-center gap-2"
-          >
-            {loading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                {photoList.length > 1 ? "מאחד וסורק..." : "סורק..."}
-              </>
-            ) : (
-              <>
+            disabled={!hasPhotos}
+            loading={loading}
+            icon={
+              !loading && (
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" />
                 </svg>
-                {photoList.length > 1 ? `אחד וסרוק (${photoList.length} תמונות)` : "סרוק קבלה"}
-              </>
-            )}
-          </button>
+              )
+            }
+          >
+            {loading
+              ? (photoList.length > 1 ? "מאחד וסורק..." : "סורק...")
+              : (photoList.length > 1 ? `אחד וסרוק (${photoList.length})` : "סרוק קבלה")}
+          </Button>
 
           {hasPhotos && (
-            <button
-              type="button"
+            <Button
+              variant="danger"
+              size="lg"
               onClick={() => {
                 photoList.forEach((p) => URL.revokeObjectURL(p.preview));
                 setPhotoList([]);
                 setError("");
               }}
-              className="px-4 py-2.5 rounded-sm border border-red-200 text-red-500
-                hover:bg-red-50 font-medium text-sm transition"
             >
               נקה הכל
-            </button>
+            </Button>
           )}
 
-          <button
-            type="button"
+          <Button
+            variant="secondary"
+            size="lg"
             onClick={() => navigate("/cart")}
-            className="px-5 py-2.5 rounded-sm border border-slate-300 text-slate-700
-              hover:bg-slate-50 font-semibold text-sm"
+            className="ms-auto"
           >
             מעבר לסל
-          </button>
+          </Button>
         </div>
       </div>
       </div> {/* end max-w-3xl content wrapper */}

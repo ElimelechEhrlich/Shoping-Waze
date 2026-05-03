@@ -15,6 +15,9 @@ import NoPriceModal   from "../Comps/Cart/NoPriceModal.jsx";
 import AddProductModal from "../Comps/Cart/AddProductModal.jsx";
 import TemplateModal  from "../Comps/Cart/TemplateModal.jsx";
 import { SkeletonCard } from "../Comps/Skeleton.jsx";
+import Button         from "../Comps/ui/Button.jsx";
+import EmptyState     from "../Comps/ui/EmptyState.jsx";
+import ConfirmDialog  from "../Comps/ui/ConfirmDialog.jsx";
 
 const SORT_OPTIONS = [
   { value: "added",    label: "ברירת מחדל" },
@@ -170,66 +173,76 @@ const CartPage = () => {
           sticky top-[60px] stacks this bar directly below the global AppHeader
           (AppHeader height ≈ 60 px: py-3.5 × 2 + h-8 content). z-30 keeps it
           above page content but below the global header's z-50. */}
-      <header className="bg-white border-b border-slate-200 px-4 py-3 sticky top-[60px] z-30">
+      <header className="bg-white border-b border-zinc-200 px-4 py-3 sticky top-[60px] z-30">
         <div className="max-w-3xl mx-auto flex items-center gap-2 flex-wrap">
           <HomeButton />
-          <h1 className="text-lg font-bold text-slate-900 flex-1">סל הקניות</h1>
+          <h1 className="text-base font-semibold text-zinc-900 flex-1">סל הקניות</h1>
 
           {cart.length > 0 && (
             <>
-              <button
+              <Button
+                variant="secondary"
+                size="md"
                 onClick={() => setShowTemplate(true)}
                 title="תבניות סל"
-                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-zinc-800
-                  hover:text-zinc-950 border border-zinc-300 hover:bg-zinc-50 rounded-sm transition"
+                aria-label="תבניות סל"
+                icon={
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                  </svg>
+                }
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
-                </svg>
                 <span className="hidden sm:inline">תבניות</span>
-              </button>
+              </Button>
 
-              <button
+              <Button
+                variant="secondary"
+                size="md"
                 onClick={() => exportCartCSV(cart)}
                 title="ייצוא לקובץ CSV"
-                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-500
-                  hover:text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-sm transition"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span className="hidden sm:inline">ייצוא</span>
-              </button>
-
-              <button
-                onClick={() => setShowClearConfirm(true)}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-500
-                  hover:text-red-600 border border-red-200 hover:bg-red-50 rounded-sm transition"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                <span className="hidden sm:inline">רוקן</span>
-              </button>
-
-              <button
-                onClick={handleCompare}
-                disabled={compareLoading}
-                className="flex items-center gap-2 px-4 py-2 bg-zinc-900 hover:bg-zinc-800
-                  disabled:opacity-60 text-white text-sm font-semibold rounded-sm transition shadow-sm"
-              >
-                {compareLoading ? (
-                  <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />משווה...</>
-                ) : (
-                  <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                aria-label="ייצוא לקובץ CSV"
+                icon={
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>השווה</>
-                )}
-              </button>
+                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                }
+              >
+                <span className="hidden sm:inline">ייצוא</span>
+              </Button>
+
+              <Button
+                variant="danger"
+                size="md"
+                onClick={() => setShowClearConfirm(true)}
+                aria-label="רוקן את הסל"
+                icon={
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                }
+              >
+                <span className="hidden sm:inline">רוקן</span>
+              </Button>
+
+              <Button
+                variant="primary"
+                size="md"
+                onClick={handleCompare}
+                loading={compareLoading}
+                icon={
+                  !compareLoading && (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  )
+                }
+              >
+                {compareLoading ? "משווה..." : "השווה"}
+              </Button>
             </>
           )}
         </div>
@@ -238,12 +251,13 @@ const CartPage = () => {
       <main className="max-w-3xl mx-auto px-4 py-5 space-y-4">
 
         {/* ── חלונית הוספת מוצרים מתקפלת ──────────────────── */}
-        <div className="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-md border border-zinc-200 overflow-hidden">
 
           {/* כפתור פתיחה/סגירה */}
           <button
             onClick={() => setPickerOpen((v) => !v)}
-            className={`w-full flex items-center justify-between px-5 py-4 transition-colors
+            aria-expanded={pickerOpen}
+            className={`w-full flex items-center justify-between px-4 py-3 transition-colors
               ${pickerOpen ? "bg-zinc-50 border-b border-zinc-200" : "hover:bg-zinc-50"}`}
           >
             <div className="flex items-center gap-3">
@@ -254,35 +268,31 @@ const CartPage = () => {
                 </svg>
               </div>
               <div className="text-right">
-                <p className={`font-semibold text-sm ${pickerOpen ? "text-zinc-900" : "text-zinc-800"}`}>
-                  הוסף מוצרים לסל
-                </p>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="font-semibold text-sm text-zinc-900">הוסף מוצרים לסל</p>
+                <p className="text-xs text-zinc-500 mt-0.5">
                   {productsLoading ? "טוען..." : `${products.length + extraProducts.length} מוצרים זמינים`}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              {/* כפתור יצירת מוצר חדש — מופיע תמיד */}
               <span
                 role="button"
                 tabIndex={0}
                 onClick={(e) => { e.stopPropagation(); setShowAddProduct(true); }}
                 onKeyDown={(e) => e.key === "Enter" && (e.stopPropagation(), setShowAddProduct(true))}
-                className="flex items-center gap-1 text-xs font-semibold text-zinc-600
-                  hover:text-zinc-900 border border-zinc-300 hover:border-zinc-400
-                  hover:bg-zinc-50 px-2.5 py-1.5 rounded-sm transition"
+                className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold text-zinc-700
+                  hover:text-zinc-900 border border-zinc-300 hover:bg-zinc-100
+                  px-2.5 py-1.5 rounded-sm transition"
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
                 מוצר חדש
               </span>
 
               <svg
-                className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${pickerOpen ? "rotate-180" : ""}`}
+                className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${pickerOpen ? "rotate-180" : ""}`}
                 fill="none" viewBox="0 0 24 24" stroke="currentColor"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -295,7 +305,7 @@ const CartPage = () => {
             <div ref={pickerRef} className="px-4 pb-4 pt-3 space-y-3">
               {/* שדה חיפוש */}
               <div className="relative">
-                <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+                <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400"
                   fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z" />
@@ -306,15 +316,34 @@ const CartPage = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="חפש מוצר להוספה..."
-                  className="w-full pr-10 pl-9 py-2.5 rounded-sm border border-slate-200
-                    bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-400 text-sm"
+                  className="w-full pr-10 pl-9 py-2.5 rounded-sm border border-zinc-300
+                    bg-white focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400
+                    text-sm placeholder:text-zinc-400"
                 />
                 {search && (
                   <button
+                    type="button"
                     onClick={() => setSearch("")}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    aria-label="נקה חיפוש"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700"
                   >✕</button>
                 )}
+              </div>
+
+              <div className="sm:hidden">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  fullWidth
+                  onClick={() => setShowAddProduct(true)}
+                  icon={
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  }
+                >
+                  צור מוצר חדש
+                </Button>
               </div>
 
               {/* רשימת מוצרים */}
@@ -338,18 +367,19 @@ const CartPage = () => {
         {/* ── הסל שלי ─────────────────────────────────────── */}
         <div>
           <div className="flex items-center justify-between mb-3 px-1">
-            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+            <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">
               הסל שלי
               {cart.length > 0 && (
-                <span className="mr-2 text-zinc-700 normal-case tracking-normal">({totalItems} פריטים)</span>
+                <span className="mr-2 text-zinc-900 normal-case tracking-normal">· {totalItems} פריטים</span>
               )}
             </h2>
             {cart.length > 1 && (
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="text-xs border border-slate-200 rounded-sm px-2 py-1 bg-white
-                  text-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                aria-label="מיון הסל"
+                className="text-xs border border-zinc-300 rounded-sm px-2 py-1 bg-white
+                  text-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-400"
               >
                 {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
@@ -359,22 +389,27 @@ const CartPage = () => {
           {cartLoading && <><SkeletonCard rows={3} /><SkeletonCard rows={2} /></>}
 
           {!cartLoading && cartError && (
-            <div className="bg-red-50 border border-red-100 rounded-md p-8 text-center space-y-3">
-              <p className="text-3xl">⚠️</p>
-              <p className="text-red-600 text-sm font-medium">{cartError}</p>
-              <button onClick={fetchCart}
-                className="px-4 py-2 rounded-sm bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition">
+            <div role="alert" className="bg-red-50 border border-red-200 rounded-md p-5 text-center space-y-3">
+              <p className="text-red-700 text-sm font-medium">{cartError}</p>
+              <Button variant="primary" size="sm" onClick={fetchCart}>
                 נסה שוב
-              </button>
+              </Button>
             </div>
           )}
 
           {!cartLoading && !cartError && cart.length === 0 && (
-            <div className="bg-white rounded-md border border-zinc-200 shadow-sm p-10 text-center">
-              <p className="text-4xl mb-3">🛒</p>
-              <p className="text-slate-500 text-sm font-medium mb-1">הסל ריק</p>
-              <p className="text-slate-400 text-xs">לחץ על "הוסף מוצרים לסל" למעלה להתחיל</p>
-            </div>
+            <EmptyState
+              icon={
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              }
+              title="הסל שלך ריק"
+              description='פתח למעלה את "הוסף מוצרים לסל" או סרוק קבלה כדי לייבא פריטים אוטומטית.'
+              actionLabel="לסריקת קבלה"
+              actionTo="/scan"
+            />
           )}
 
           {!cartLoading && !cartError && Object.entries(groupedCart).map(([cat, items]) => (
@@ -412,29 +447,16 @@ const CartPage = () => {
         <NoPriceModal item={pending} onConfirm={handleModalConfirm} onCancel={() => setPending(null)} />
       )}
 
-      {showClearConfirm && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" dir="rtl">
-          <div className="bg-white rounded-md shadow-sm p-6 max-w-sm w-full">
-            <div className="text-center mb-5">
-              <p className="text-4xl mb-3">🗑️</p>
-              <h3 className="font-bold text-slate-800 text-lg">לרוקן את הסל?</h3>
-              <p className="text-slate-500 text-sm mt-1">
-                כל הפריטים יוסרו מהסל שלך.<br />המוצרים עצמם נשארים במאגר המערכת.
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <button onClick={() => setShowClearConfirm(false)}
-                className="flex-1 py-2.5 rounded-sm border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-medium transition">
-                ביטול
-              </button>
-              <button onClick={handleClearCart}
-                className="flex-1 py-2.5 rounded-sm bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition">
-                כן, רוקן
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={showClearConfirm}
+        title="לרוקן את הסל?"
+        description="כל הפריטים יוסרו מהסל שלך. המוצרים עצמם נשארים במאגר המערכת."
+        confirmLabel="כן, רוקן"
+        cancelLabel="ביטול"
+        destructive
+        onConfirm={handleClearCart}
+        onCancel={() => setShowClearConfirm(false)}
+      />
 
       {!cartLoading && cart.length > 0 && (
         <CartFooter totalItems={totalItems} totalPrice={totalPrice} missingPrice={missingPrice} />

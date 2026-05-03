@@ -1,13 +1,5 @@
 // components/cart/CartCategory.jsx
-// ─────────────────────────────────────────────────────────
 // קבוצת פריטים תחת קטגוריה אחת.
-// כל פריט: שם (עם עריכה inline), כמות, מחיר, מחיקה.
-//
-// עריכת שם מוצר:
-//   לחיצה על אייקון העיפרון (מופיע בhover) מעבירה את השם ל-input.
-//   אישור: Enter או עזיבת הפוקוס → קריאה ל-onRename(oldName, newName).
-//   ביטול: Escape → חזרה לשם המקורי ללא שמירה.
-// ─────────────────────────────────────────────────────────
 
 import { useState, useRef } from "react";
 
@@ -16,52 +8,41 @@ const formatPrice = (p) =>
     style: "currency", currency: "ILS", maximumFractionDigits: 2,
   }).format(p);
 
-// ── אייקון עריכה ───────────────────────────────────────
 const EditIcon = () => (
-  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
       d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
   </svg>
 );
 
-// ── פריט בודד ────────────────────────────────────────────
 const CartItem = ({ item, isLast, onIncrease, onDecrease, onRemove, onSetQty, onRename }) => {
-  // ── state כמות ──────────────────────────────────────────
   const [val, setVal] = useState(String(item.qty));
-
-  // ── state עריכת שם ──────────────────────────────────────
   const [editing,  setEditing]  = useState(false);
   const [editName, setEditName] = useState(item.name);
   const nameInputRef = useRef(null);
 
-  // ── אישור כמות ──────────────────────────────────────────
   const commitQty = () => {
     const n = Math.max(1, parseInt(val, 10) || 1);
     setVal(String(n));
     if (n !== item.qty) onSetQty(item, n);
   };
 
-  // ── התחלת עריכת שם ──────────────────────────────────────
   const startEdit = () => {
     setEditing(true);
     setEditName(item.name);
-    // פוקוס אוטומטי אחרי ה-render
     setTimeout(() => nameInputRef.current?.focus(), 40);
   };
 
-  // ── אישור שם חדש ────────────────────────────────────────
   const commitName = () => {
     const newName = editName.trim();
     setEditing(false);
     if (newName && newName !== item.name) {
       onRename(item.name, newName);
     } else {
-      // אין שינוי / שדה ריק — חזרה לשם הקיים
       setEditName(item.name);
     }
   };
 
-  // ── ביטול עריכה (Escape) ─────────────────────────────────
   const cancelEdit = () => {
     setEditing(false);
     setEditName(item.name);
@@ -69,14 +50,13 @@ const CartItem = ({ item, isLast, onIncrease, onDecrease, onRemove, onSetQty, on
 
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-3.5
-        ${!isLast ? "border-b border-slate-50" : ""}
-        hover:bg-slate-50 transition-colors group`}
+      className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3
+        ${!isLast ? "border-b border-zinc-100" : ""}
+        hover:bg-zinc-50 transition-colors group`}
     >
       {/* ── שם מוצר (תצוגה / עריכה) ─────────────────────── */}
       <div className="flex-1 min-w-0">
         {editing ? (
-          /* מצב עריכה — input עם שם נוכחי */
           <input
             ref={nameInputRef}
             type="text"
@@ -87,20 +67,19 @@ const CartItem = ({ item, isLast, onIncrease, onDecrease, onRemove, onSetQty, on
               if (e.key === "Enter")  commitName();
               if (e.key === "Escape") cancelEdit();
             }}
-            className="w-full text-sm font-medium text-slate-800
-              border border-emerald-400 rounded-sm px-2 py-0.5
-              focus:outline-none focus:ring-2 focus:ring-emerald-300"
+            className="w-full text-sm font-medium text-zinc-900
+              border border-zinc-400 rounded-sm px-2 py-1
+              focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white"
             aria-label="ערוך שם מוצר"
           />
         ) : (
-          /* מצב תצוגה — שם + אייקון עיפרון בhover */
           <div className="flex items-center gap-1.5">
-            <p className="font-medium text-slate-800 text-sm truncate">{item.name}</p>
+            <p className="font-medium text-zinc-900 text-sm truncate">{item.name}</p>
             <button
               onClick={startEdit}
-              /* מוסתר ברגיל, מופיע ב-hover של שורת הפריט */
-              className="opacity-0 group-hover:opacity-100 w-5 h-5 rounded flex items-center
-                justify-center text-slate-300 hover:text-emerald-500 transition flex-shrink-0"
+              className="opacity-50 hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100
+                w-6 h-6 rounded-sm flex items-center justify-center
+                text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition flex-shrink-0"
               title="ערוך שם מוצר"
               aria-label={`ערוך שם ${item.name}`}
             >
@@ -110,11 +89,9 @@ const CartItem = ({ item, isLast, onIncrease, onDecrease, onRemove, onSetQty, on
         )}
 
         {item.price > 0 ? (
-          <p className="text-xs text-slate-400 mt-0.5">
-            {formatPrice(item.price)} ליחידה
-          </p>
+          <p className="text-xs text-zinc-500 mt-0.5">{formatPrice(item.price)} ליחידה</p>
         ) : (
-          <p className="text-xs text-amber-500 mt-0.5">אין מחיר כרגע</p>
+          <p className="text-xs text-amber-700 mt-0.5">אין מחיר במאגר</p>
         )}
       </div>
 
@@ -122,8 +99,9 @@ const CartItem = ({ item, isLast, onIncrease, onDecrease, onRemove, onSetQty, on
       <div className="flex items-center gap-1 flex-shrink-0">
         <button
           onClick={() => onDecrease(item)}
-          className="w-7 h-7 rounded-sm bg-slate-100 hover:bg-slate-200
-            text-slate-600 font-bold text-sm flex items-center justify-center transition"
+          className="w-8 h-8 rounded-sm bg-zinc-100 hover:bg-zinc-200
+            text-zinc-700 font-semibold text-base flex items-center justify-center
+            transition focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
           aria-label="הפחת כמות"
         >
           −
@@ -136,16 +114,17 @@ const CartItem = ({ item, isLast, onIncrease, onDecrease, onRemove, onSetQty, on
           onChange={(e) => setVal(e.target.value)}
           onBlur={commitQty}
           onKeyDown={(e) => e.key === "Enter" && commitQty()}
-          className="w-12 text-center font-semibold text-slate-800 text-sm
-            border border-slate-200 rounded-sm py-1 focus:outline-none
-            focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
+          className="w-12 text-center font-semibold text-zinc-900 text-sm
+            border border-zinc-300 rounded-sm py-1.5 focus:outline-none
+            focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white"
           aria-label={`כמות ${item.name}`}
         />
 
         <button
           onClick={() => onIncrease(item)}
-          className="w-7 h-7 rounded-sm bg-emerald-100 hover:bg-emerald-200
-            text-emerald-700 font-bold text-sm flex items-center justify-center transition"
+          className="w-8 h-8 rounded-sm bg-zinc-900 hover:bg-zinc-800
+            text-white font-semibold text-base flex items-center justify-center
+            transition focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
           aria-label="הוסף כמות"
         >
           +
@@ -153,21 +132,23 @@ const CartItem = ({ item, isLast, onIncrease, onDecrease, onRemove, onSetQty, on
       </div>
 
       {/* ── סה"כ פריט ───────────────────────────────────── */}
-      <div className="w-16 text-left flex-shrink-0">
+      <div className="w-14 sm:w-16 text-left flex-shrink-0 tabular-nums">
         {item.price > 0 ? (
-          <span className="text-sm font-semibold text-slate-700">
+          <span className="text-sm font-semibold text-zinc-900">
             {formatPrice(item.price * item.qty)}
           </span>
         ) : (
-          <span className="text-xs text-slate-300">—</span>
+          <span className="text-xs text-zinc-400">—</span>
         )}
       </div>
 
       {/* ── מחיקה ───────────────────────────────────────── */}
       <button
         onClick={() => onRemove(item.name)}
-        className="w-7 h-7 rounded-sm hover:bg-red-50 text-slate-300
-          hover:text-red-400 flex items-center justify-center transition flex-shrink-0"
+        className="w-9 h-9 sm:w-8 sm:h-8 rounded-sm text-zinc-400
+          hover:bg-red-50 hover:text-red-700 flex items-center justify-center
+          transition flex-shrink-0 touch-manipulation
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
         aria-label={`הסר ${item.name}`}
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -179,19 +160,17 @@ const CartItem = ({ item, isLast, onIncrease, onDecrease, onRemove, onSetQty, on
   );
 };
 
-// ── קטגוריה ───────────────────────────────────────────────
 const CartCategory = ({ category, items, onIncrease, onDecrease, onRemove, onSetQty, onRename }) => (
-  <section className="mb-6">
-    {/* כותרת קטגוריה */}
+  <section className="mb-5">
     <div className="flex items-center gap-2 mb-2 px-1">
-      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+      <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">
         {category}
       </span>
-      <div className="flex-1 h-px bg-slate-100" />
-      <span className="text-xs text-slate-400">{items.length} פריטים</span>
+      <div className="flex-1 h-px bg-zinc-200" />
+      <span className="text-[11px] text-zinc-500">{items.length} פריטים</span>
     </div>
 
-    <div className="bg-white rounded-md border border-zinc-200 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-md border border-zinc-200 overflow-hidden">
       {items.map((item, idx) => (
         <CartItem
           key={`${item.name}-${item.qty}`}

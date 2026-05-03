@@ -1,8 +1,10 @@
 import { useMemo, useState, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "../Contexts/useToast.js";
 import { useAuth } from "../hooks/useAuth.js";
 import usePageTitle from "../hooks/usePageTitle.js";
+import HomeButton from "../Comps/HomeButton.jsx";
+import Button from "../Comps/ui/Button.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -16,12 +18,8 @@ const normalizeItems = (receipt) => {
   }));
 };
 
-const HomeIcon = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-      d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-  </svg>
-);
+const fmtPrice = (n) =>
+  new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", maximumFractionDigits: 2 }).format(n);
 
 const ReceiptDetailsPage = () => {
   const navigate       = useNavigate();
@@ -65,7 +63,6 @@ const ReceiptDetailsPage = () => {
       const token   = localStorage.getItem("token") || "";
       const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
 
-      // הוספה לסל
       const cartRes = await fetch(`${API_URL}/cart`, {
         method: "POST", headers,
         body: JSON.stringify({ data: [{ items: validItems }] }),
@@ -77,7 +74,6 @@ const ReceiptDetailsPage = () => {
       }
       if (!cartRes.ok) throw new Error("שגיאה בהוספת פריטים לסל");
 
-      // שמירה להיסטוריה (fire-and-forget — לא חוסם אם נכשל)
       const total = validItems.reduce((s, i) => s + i.price * i.qty, 0);
       try {
         const histRes = await fetch(`${API_URL}/history`, {
@@ -88,7 +84,7 @@ const ReceiptDetailsPage = () => {
             total,
           }),
         });
-        if (histRes.ok) await refreshUser(); // מעדכן דירוג אמון אחרי אישור קבלה
+        if (histRes.ok) await refreshUser();
       } catch {
         /* היסטוריה לא חוסמת את ה-flow */
       }
@@ -102,141 +98,129 @@ const ReceiptDetailsPage = () => {
     }
   };
 
-  // ממתין להפניה אוטומטית מה-useEffect למעלה
   if (!receipt) return null;
+
+  const inputClass =
+    "w-full text-sm bg-transparent border border-transparent rounded-sm px-2 py-1.5 " +
+    "focus:outline-none focus:bg-zinc-50 focus:border-zinc-300 hover:bg-zinc-50/60 transition";
 
   return (
     <div dir="rtl">
 
-      {/* ── Page sub-header ────────────────────────────────────────────────
-          Converted to a sticky bar (top-[60px]) that stacks below AppHeader.
-          Previously this page had no sticky header — title and nav vanished
-          on scroll. Now both the store name and the navigation buttons stay
-          accessible while the user reviews and edits the receipt items. */}
-      <header className="bg-white border-b border-slate-200 px-4 py-3 sticky top-[60px] z-10">
+      <header className="bg-white border-b border-zinc-200 px-4 py-3 sticky top-[60px] z-10">
         <div className="max-w-4xl mx-auto flex items-center gap-3 flex-wrap">
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold text-slate-900 truncate">
+            <h1 className="text-base font-semibold text-zinc-900 truncate">
               {receipt.store_name || "פרטי קבלה"}
             </h1>
-            <p className="text-xs text-slate-400 mt-0.5">{receipt.date || "תאריך לא זוהה"}</p>
+            <p className="text-xs text-zinc-500 mt-0.5">{receipt.date || "תאריך לא זוהה"}</p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button type="button" onClick={() => navigate("/scan")}
-              className="px-3 py-2 rounded-sm border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-medium transition">
+            <Button variant="secondary" size="md" onClick={() => navigate("/scan")}>
               חזרה לסריקה
-            </button>
-            <Link to="/"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-sm border border-slate-200
-                text-slate-600 hover:bg-slate-50 text-sm font-medium transition">
-              <HomeIcon />
-              בית
-            </Link>
+            </Button>
+            <HomeButton />
           </div>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
 
-      {/* hint */}
-      <p className="text-xs text-slate-400 bg-slate-50 border border-zinc-200 rounded-sm px-4 py-2.5">
-        ✏️ ניתן לערוך שם, כמות ומחיר לפני אישור — לתיקון שגיאות של הסריקה
-      </p>
+        {/* hint */}
+        <p className="text-xs text-zinc-600 bg-zinc-50 border border-zinc-200 rounded-sm px-3 py-2">
+          ניתן לערוך שם, כמות ומחיר לפני אישור — לתיקון שגיאות שזוהו בסריקה.
+        </p>
 
-      {/* Editable table — overflow-x-auto מונע גלישה אופקית במובייל */}
-      <div className="bg-white border border-slate-200 rounded-md shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-        <table className="w-full text-right min-w-[460px]">
-          <thead className="bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th className="px-4 py-3 text-sm font-semibold text-slate-600">מוצר</th>
-              <th className="px-4 py-3 text-sm font-semibold text-slate-600 w-24">כמות</th>
-              <th className="px-4 py-3 text-sm font-semibold text-slate-600 w-28">מחיר (₪)</th>
-              <th className="px-4 py-3 w-10" />
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item, index) => (
-              <tr key={index} className="border-b border-zinc-200 last:border-b-0 group">
-                <td className="px-3 py-2">
-                  <input
-                    type="text"
-                    value={item.name}
-                    onChange={(e) => updateField(index, "name", e.target.value)}
-                    className="w-full text-sm text-slate-800 bg-transparent border border-transparent
-                      rounded-sm px-2 py-1 focus:outline-none focus:border-emerald-300 focus:bg-emerald-50
-                      hover:border-slate-200 transition"
-                  />
-                </td>
-                <td className="px-3 py-2">
-                  <input
-                    type="number"
-                    min="0.001"
-                    step="1"
-                    value={item.qty}
-                    onChange={(e) => updateField(index, "qty", e.target.value)}
-                    className="w-full text-sm text-slate-700 bg-transparent border border-transparent
-                      rounded-sm px-2 py-1 focus:outline-none focus:border-emerald-300 focus:bg-emerald-50
-                      hover:border-slate-200 transition text-center"
-                  />
-                </td>
-                <td className="px-3 py-2">
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={item.price}
-                    onChange={(e) => updateField(index, "price", e.target.value)}
-                    className="w-full text-sm font-semibold text-slate-900 bg-transparent border border-transparent
-                      rounded-sm px-2 py-1 focus:outline-none focus:border-emerald-300 focus:bg-emerald-50
-                      hover:border-slate-200 transition text-center"
-                  />
-                </td>
-                <td className="px-2 py-2 text-center">
-                  <button
-                    type="button"
-                    onClick={() => removeRow(index)}
-                    className="opacity-0 group-hover:opacity-100 w-6 h-6 flex items-center justify-center
-                      rounded-full hover:bg-red-100 text-slate-300 hover:text-red-500 transition"
-                    aria-label="הסר שורה"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {!items.length && (
-              <tr>
-                <td className="px-4 py-5 text-sm text-slate-500" colSpan={4}>
-                  לא זוהו פריטים בקבלה.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+        {/* Editable table */}
+        <div className="bg-white border border-zinc-200 rounded-md overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-right min-w-[460px]">
+              <thead className="bg-zinc-50 border-b border-zinc-200">
+                <tr>
+                  <th className="px-4 py-2.5 text-[11px] uppercase tracking-wider font-semibold text-zinc-500">מוצר</th>
+                  <th className="px-4 py-2.5 text-[11px] uppercase tracking-wider font-semibold text-zinc-500 w-24 text-center">כמות</th>
+                  <th className="px-4 py-2.5 text-[11px] uppercase tracking-wider font-semibold text-zinc-500 w-28 text-center">מחיר (₪)</th>
+                  <th className="px-2 py-2.5 w-10" />
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item, index) => (
+                  <tr key={index} className="border-b border-zinc-100 last:border-b-0 group">
+                    <td className="px-3 py-1.5">
+                      <input
+                        type="text"
+                        value={item.name}
+                        onChange={(e) => updateField(index, "name", e.target.value)}
+                        className={`${inputClass} text-zinc-900 font-medium`}
+                      />
+                    </td>
+                    <td className="px-3 py-1.5">
+                      <input
+                        type="number"
+                        min="0.001"
+                        step="1"
+                        value={item.qty}
+                        onChange={(e) => updateField(index, "qty", e.target.value)}
+                        className={`${inputClass} text-zinc-700 text-center`}
+                      />
+                    </td>
+                    <td className="px-3 py-1.5">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={item.price}
+                        onChange={(e) => updateField(index, "price", e.target.value)}
+                        className={`${inputClass} text-zinc-900 text-center`}
+                      />
+                    </td>
+                    <td className="px-2 py-1.5 text-center">
+                      <button
+                        type="button"
+                        onClick={() => removeRow(index)}
+                        className="opacity-50 hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition
+                          w-7 h-7 flex items-center justify-center rounded-sm
+                          text-zinc-400 hover:text-red-700 hover:bg-red-50"
+                        aria-label="הסר שורה"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {!items.length && (
+                  <tr>
+                    <td className="px-4 py-5 text-sm text-zinc-500 text-center" colSpan={4}>
+                      לא זוהו פריטים בקבלה.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
 
-      {/* Total */}
-      <div className="bg-white border border-slate-200 rounded-md p-4 shadow-sm flex items-center justify-between">
-        <p className="text-sm text-slate-500">סה״כ מחושב</p>
-        <p className="text-xl font-bold text-emerald-700">₪{total.toFixed(2)}</p>
-      </div>
+        {/* Total */}
+        <div className="bg-white border border-zinc-200 rounded-md px-4 py-3 flex items-center justify-between">
+          <p className="text-[11px] uppercase tracking-wider text-zinc-500 font-semibold">סה״כ מחושב</p>
+          <p className="text-lg font-bold text-zinc-900">{fmtPrice(total)}</p>
+        </div>
 
-      {/* Approve */}
-      <button
-        type="button"
-        onClick={onApprove}
-        disabled={!items.length || approving}
-        className="w-full py-3 rounded-sm bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50
-          text-white font-semibold flex items-center justify-center gap-2"
-      >
-        {approving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-        {approving ? "מוסיף לסל..." : "אשר והוסף לסל"}
-      </button>
-      </div> {/* end max-w-4xl content wrapper */}
+        {/* Approve */}
+        <Button
+          type="button"
+          onClick={onApprove}
+          disabled={!items.length}
+          loading={approving}
+          variant="primary"
+          size="lg"
+          fullWidth
+        >
+          {approving ? "מוסיף לסל..." : "אשר והוסף לסל"}
+        </Button>
+      </div>
     </div>
   );
 };
